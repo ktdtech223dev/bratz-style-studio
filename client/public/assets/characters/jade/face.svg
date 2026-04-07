@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-face jade-face">
+  <defs>
+    <linearGradient id="jade-face-skin" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#D9985A"/>
+      <stop offset="50%" stop-color="#C68642"/>
+      <stop offset="100%" stop-color="#B87A3A"/>
+    </linearGradient>
+    <radialGradient id="jade-cheek-l" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#D4776B" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#D4776B" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="jade-cheek-r" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#D4776B" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#D4776B" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="jade-iris-l" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#8EEAB0"/>
+      <stop offset="50%" stop-color="#58D68D"/>
+      <stop offset="100%" stop-color="#38B06D"/>
+    </radialGradient>
+    <radialGradient id="jade-iris-r" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#8EEAB0"/>
+      <stop offset="50%" stop-color="#58D68D"/>
+      <stop offset="100%" stop-color="#38B06D"/>
+    </radialGradient>
+    <linearGradient id="jade-lip-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B2252"/>
+      <stop offset="50%" stop-color="#7A1E48"/>
+      <stop offset="100%" stop-color="#66183B"/>
+    </linearGradient>
+    <radialGradient id="jade-lip-shine" cx="0.5" cy="0.25" r="0.4">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="jade-face-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#8B5E3C" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Head shape -->
+  <ellipse class="head-shape" cx="200" cy="148" rx="72" ry="90" fill="url(#jade-face-skin)" filter="url(#jade-face-shadow)"/>
+
+  <!-- Ears -->
+  <ellipse cx="130" cy="155" rx="8" ry="14" fill="#BE7E3C"/>
+  <ellipse cx="131" cy="155" rx="5" ry="10" fill="#A87035" opacity="0.5"/>
+  <ellipse cx="270" cy="155" rx="8" ry="14" fill="#BE7E3C"/>
+  <ellipse cx="269" cy="155" rx="5" ry="10" fill="#A87035" opacity="0.5"/>
+
+  <!-- Eyebrows - sharp angled for edgy look -->
+  <path class="brow-left" d="M152,116 C158,108 172,106 186,113" fill="none" stroke="#2C1810" stroke-width="2.2" stroke-linecap="round"/>
+  <path class="brow-right" d="M214,113 C228,106 242,108 248,116" fill="none" stroke="#2C1810" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- Eye whites - slightly narrower for edgy/cat-eye look -->
+  <path class="eye-white-l" d="M150,140 C155,129 165,125 175,126 C185,127 193,133 196,140 C193,149 185,154 175,155 C165,154 155,149 150,140 Z" fill="white"/>
+  <path class="eye-white-r" d="M204,140 C207,133 215,127 225,126 C235,125 245,129 250,140 C245,149 235,154 225,155 C215,154 207,149 204,140 Z" fill="white"/>
+
+  <!-- Irises - green for Jade -->
+  <ellipse class="iris-l" cx="174" cy="141" rx="12" ry="12" fill="url(#jade-iris-l)"/>
+  <ellipse class="iris-r" cx="226" cy="141" rx="12" ry="12" fill="url(#jade-iris-r)"/>
+
+  <!-- Pupils -->
+  <circle class="pupil-l" cx="175" cy="140" r="5.5" fill="#0D1F15"/>
+  <circle class="pupil-r" cx="225" cy="140" r="5.5" fill="#0D1F15"/>
+
+  <!-- Pupil highlights -->
+  <circle cx="178" cy="137" r="2.5" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="137" r="2.5" fill="white" opacity="0.9"/>
+  <circle cx="172" cy="143" r="1.2" fill="white" opacity="0.5"/>
+  <circle cx="222" cy="143" r="1.2" fill="white" opacity="0.5"/>
+
+  <!-- Upper lash line - thick, cat-eye winged -->
+  <path class="lash-line-l" d="M148,139 C153,128 164,123 175,124 C185,125 193,130 196,138 L198,135" fill="none" stroke="#1A1A1A" stroke-width="2.8" stroke-linecap="round"/>
+  <path class="lash-line-r" d="M202,135 L204,138 C207,130 215,125 225,124 C236,123 247,128 252,139" fill="none" stroke="#1A1A1A" stroke-width="2.8" stroke-linecap="round"/>
+
+  <!-- Wing flick - cat eye -->
+  <path d="M148,139 L143,133" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M252,139 L257,133" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Individual lashes - left eye (6 lashes, more dramatic) -->
+  <line x1="148" y1="137" x2="141" y2="128" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="153" y1="131" x2="147" y2="121" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="160" y1="127" x2="155" y2="116" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="168" y1="125" x2="165" y2="113" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="176" y1="124" x2="176" y2="112" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="185" y1="125" x2="189" y2="114" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Individual lashes - right eye (6 lashes) -->
+  <line x1="215" y1="125" x2="211" y2="114" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="224" y1="124" x2="224" y2="112" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="232" y1="125" x2="235" y2="113" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="240" y1="127" x2="245" y2="116" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="247" y1="131" x2="253" y2="121" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="252" y1="137" x2="259" y2="128" stroke="#1A1A1A" stroke-width="1.6" stroke-linecap="round"/>
+
+  <!-- Lower lash line -->
+  <path d="M153,145 C160,151 170,154 180,153 C187,152 193,149 195,145" fill="none" stroke="#2A2A2A" stroke-width="0.9" opacity="0.5"/>
+  <path d="M205,145 C207,149 213,152 220,153 C230,154 240,151 247,145" fill="none" stroke="#2A2A2A" stroke-width="0.9" opacity="0.5"/>
+
+  <!-- Nose - small upturned, slightly wider bridge -->
+  <path class="nose" d="M196,160 C195,165 194,172 193,176 C192,179 194,182 197,183 L200,184 L203,183 C206,182 208,179 207,176 C206,172 205,165 204,160" fill="none" stroke="#A06E30" stroke-width="1.3" stroke-linecap="round"/>
+  <circle cx="195" cy="182" r="2.2" fill="#BE7E3C" stroke="#A06E30" stroke-width="0.5"/>
+  <circle cx="205" cy="182" r="2.2" fill="#BE7E3C" stroke="#A06E30" stroke-width="0.5"/>
+
+  <!-- Cheek blush - subtle bronze -->
+  <ellipse cx="158" cy="170" rx="18" ry="12" fill="url(#jade-cheek-l)"/>
+  <ellipse cx="242" cy="170" rx="18" ry="12" fill="url(#jade-cheek-r)"/>
+
+  <!-- Lips - plump pouty, deep burgundy for Jade -->
+  <!-- Upper lip - slight smirk for edgy -->
+  <path class="upper-lip" d="M181,198 C184,193 191,189 197,188 L200,187 L203,188 C209,189 216,193 220,197 C216,195 209,193 200,193 C191,193 184,195 181,198 Z" fill="url(#jade-lip-grad)"/>
+  <!-- Lower lip - full -->
+  <path class="lower-lip" d="M181,198 C184,201 191,209 200,211 C209,209 216,201 220,198 C216,195 209,193 200,193 C191,193 184,195 181,198 Z" fill="url(#jade-lip-grad)"/>
+  <!-- Lip shine -->
+  <ellipse cx="200" cy="200" rx="10" ry="5" fill="url(#jade-lip-shine)"/>
+  <!-- Lip line -->
+  <path d="M181,198 C189,195 195,194 200,194 C205,194 211,195 220,197" fill="none" stroke="#55142E" stroke-width="0.6"/>
+  <!-- Cupid's bow highlight -->
+  <path d="M195,190 L200,187 L205,190" fill="none" stroke="#D9985A" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Chin highlight -->
+  <ellipse cx="200" cy="222" rx="12" ry="6" fill="#D9985A" opacity="0.15"/>
+
+  <!-- Jaw contour -->
+  <path d="M145,180 C148,210 165,232 185,240 C195,244 205,244 215,240 C235,232 252,210 255,180" fill="none" stroke="#A06E30" stroke-width="0.5" opacity="0.15"/>
+</svg>

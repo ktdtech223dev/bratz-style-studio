@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff2d78"/>
+      <stop offset="100%" stop-color="#c2185b"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe44d"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="8" y="8" width="176" height="176" rx="36" ry="36" fill="url(#bg)"/>
+  <!-- Stylized B letter -->
+  <text x="96" y="136" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="130" font-weight="bold" font-style="italic" fill="url(#gold)" filter="url(#shadow)">B</text>
+  <!-- Sparkle star top-right -->
+  <g transform="translate(148, 38)" fill="#00e5ff">
+    <polygon points="0,-12 3,-3 12,0 3,3 0,12 -3,3 -12,0 -3,-3"/>
+    <polygon points="0,-8 1.5,-1.5 8,0 1.5,1.5 0,8 -1.5,1.5 -8,0 -1.5,-1.5" fill="#ffffff" opacity="0.6"/>
+  </g>
+  <!-- Small secondary sparkle -->
+  <g transform="translate(158, 56) scale(0.4)" fill="#00e5ff" opacity="0.7">
+    <polygon points="0,-12 3,-3 12,0 3,3 0,12 -3,3 -12,0 -3,-3"/>
+  </g>
+</svg>

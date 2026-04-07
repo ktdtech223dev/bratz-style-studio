@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-body yasmin-body">
+  <defs>
+    <linearGradient id="yasmin-skin" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C89A68"/>
+      <stop offset="35%" stop-color="#D4A574"/>
+      <stop offset="100%" stop-color="#CC9D6C"/>
+    </linearGradient>
+    <linearGradient id="yasmin-skin-shadow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#B88E5C"/>
+      <stop offset="100%" stop-color="#A88050"/>
+    </linearGradient>
+    <radialGradient id="yasmin-chest-highlight" cx="0.5" cy="0.3" r="0.5">
+      <stop offset="0%" stop-color="#E4BA8A"/>
+      <stop offset="100%" stop-color="#D4A574"/>
+    </radialGradient>
+  </defs>
+  <!-- Neck -->
+  <path class="neck" d="M188,258 C188,252 190,245 192,240 L208,240 C210,245 212,252 212,258 L212,290 L188,290 Z" fill="url(#yasmin-skin)"/>
+  <path class="neck-shadow" d="M192,258 C192,255 193,250 194,246 L198,246 L198,270 L192,270 Z" fill="#B88E5C" opacity="0.3"/>
+  <!-- Torso -->
+  <path class="torso" d="
+    M168,290
+    C165,290 155,295 148,310
+    C140,328 138,340 140,355
+    C141,362 143,368 148,375
+    L150,380
+    C148,390 145,400 144,408
+    C142,420 143,430 148,438
+    C155,450 165,458 178,462
+    L180,465
+    C175,472 168,480 160,490
+    C150,502 142,515 138,528
+    L140,530
+    L260,530
+    L262,528
+    C258,515 250,502 240,490
+    C232,480 225,472 220,465
+    L222,462
+    C235,458 245,450 252,438
+    C257,430 258,420 256,408
+    C255,400 252,390 250,380
+    L252,375
+    C257,368 259,362 260,355
+    C262,340 260,328 252,310
+    C245,295 235,290 232,290
+    Z" fill="url(#yasmin-skin)"/>
+  <ellipse cx="200" cy="330" rx="35" ry="25" fill="url(#yasmin-chest-highlight)" opacity="0.4"/>
+  <path class="torso-shadow-left" d="
+    M168,290
+    C165,290 155,295 148,310
+    C140,328 138,340 140,355
+    C141,362 143,368 148,375
+    L150,380
+    C148,390 145,400 144,408
+    C142,420 143,430 148,438
+    C155,450 160,454 168,458
+    L168,290 Z" fill="#B88E5C" opacity="0.2"/>
+  <path class="waist-line" d="M155,395 C170,388 200,385 200,385 C200,385 230,388 245,395" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.4"/>
+  <path class="collarbone-left" d="M175,292 C168,294 160,298 155,302" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.35"/>
+  <path class="collarbone-right" d="M225,292 C232,294 240,298 245,302" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.35"/>
+  <ellipse cx="200" cy="418" rx="2.5" ry="4" fill="#B88E5C" opacity="0.4"/>
+  <path class="shoulder-left" d="M168,290 C158,288 148,292 140,300 C138,303 137,306 138,310 L148,310 C150,302 158,295 168,292 Z" fill="url(#yasmin-skin)"/>
+  <path class="shoulder-right" d="M232,290 C242,288 252,292 260,300 C262,303 263,306 262,310 L252,310 C250,302 242,295 232,292 Z" fill="url(#yasmin-skin)"/>
+</svg>

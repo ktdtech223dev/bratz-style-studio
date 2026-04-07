@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-feet jade-feet">
+  <defs>
+    <linearGradient id="jade-foot-l" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#C68642"/>
+      <stop offset="100%" stop-color="#B87A3A"/>
+    </linearGradient>
+    <linearGradient id="jade-foot-r" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#C68642"/>
+      <stop offset="100%" stop-color="#B87A3A"/>
+    </linearGradient>
+    <radialGradient id="jade-ankle-shadow-l" cx="0.5" cy="0" r="0.8">
+      <stop offset="0%" stop-color="#946428" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#946428" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="jade-ankle-shadow-r" cx="0.5" cy="0" r="0.8">
+      <stop offset="0%" stop-color="#946428" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#946428" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Left foot -->
+  <g class="foot-left">
+    <path d="M155,678 C154,680 153,682 152,684 L170,684 C169,682 168,680 167,678 Z" fill="url(#jade-foot-l)"/>
+    <ellipse cx="153" cy="681" rx="2.5" ry="2" fill="#D9985A" opacity="0.3"/>
+    <ellipse cx="169" cy="681" rx="2.5" ry="2" fill="#D9985A" opacity="0.3"/>
+    <path d="M150,684 C148,686 146,688 144,690 C141,693 139,696 138,698 C137,700 137,702 139,703 C141,705 145,706 150,706 L160,706 C164,706 167,705 169,704 C171,703 172,701 172,699 C172,696 171,692 170,689 C169,687 168,685 168,684 Z" fill="url(#jade-foot-l)"/>
+    <path d="M142,702 C145,700 148,699 152,699" fill="none" stroke="#A06E30" stroke-width="0.5" opacity="0.3"/>
+    <path d="M148,704 C150,703 153,702 156,702" fill="none" stroke="#A06E30" stroke-width="0.4" opacity="0.25"/>
+    <ellipse cx="157" cy="692" rx="6" ry="4" fill="#D9985A" opacity="0.18"/>
+    <path d="M144,700 C148,698 154,697 160,698" fill="none" stroke="#A06E30" stroke-width="0.5" opacity="0.2"/>
+    <ellipse cx="160" cy="685" rx="10" ry="4" fill="url(#jade-ankle-shadow-l)"/>
+  </g>
+
+  <!-- Right foot -->
+  <g class="foot-right">
+    <path d="M225,678 C226,680 227,682 228,684 L210,684 C211,682 212,680 213,678 Z" fill="url(#jade-foot-r)"/>
+    <ellipse cx="227" cy="681" rx="2.5" ry="2" fill="#D9985A" opacity="0.3"/>
+    <ellipse cx="211" cy="681" rx="2.5" ry="2" fill="#D9985A" opacity="0.3"/>
+    <path d="M230,684 C232,686 234,688 236,690 C239,693 241,696 242,698 C243,700 243,702 241,703 C239,705 235,706 230,706 L220,706 C216,706 213,705 211,704 C209,703 208,701 208,699 C208,696 209,692 210,689 C211,687 212,685 212,684 Z" fill="url(#jade-foot-r)"/>
+    <path d="M238,702 C235,700 232,699 228,699" fill="none" stroke="#A06E30" stroke-width="0.5" opacity="0.3"/>
+    <path d="M232,704 C230,703 227,702 224,702" fill="none" stroke="#A06E30" stroke-width="0.4" opacity="0.25"/>
+    <ellipse cx="223" cy="692" rx="6" ry="4" fill="#D9985A" opacity="0.18"/>
+    <path d="M236,700 C232,698 226,697 220,698" fill="none" stroke="#A06E30" stroke-width="0.5" opacity="0.2"/>
+    <ellipse cx="220" cy="685" rx="10" ry="4" fill="url(#jade-ankle-shadow-r)"/>
+  </g>
+</svg>

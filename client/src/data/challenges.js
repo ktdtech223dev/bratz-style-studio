@@ -1,0 +1,61 @@
+export const dailyChallenges = [
+  { id: 'daily_01', description: 'Wear 3 items of the same aesthetic', reward: { coins: 75 }, checker: 'aesthetic_match_3' },
+  { id: 'daily_02', description: 'Create an outfit using only pink items', reward: { coins: 100 }, checker: 'color_match_pink' },
+  { id: 'daily_03', description: 'Equip a complete set', reward: { coins: 150 }, checker: 'complete_set' },
+  { id: 'daily_04', description: 'Use items from 4 different categories', reward: { coins: 75 }, checker: 'category_variety_4' },
+  { id: 'daily_05', description: 'Wear at least 2 accessories', reward: { coins: 50 }, checker: 'accessories_count_2' },
+  { id: 'daily_06', description: 'Create an all-black outfit', reward: { coins: 100 }, checker: 'color_match_black' },
+  { id: 'daily_07', description: 'Equip a legendary item', reward: { coins: 200 }, checker: 'equip_legendary' },
+  { id: 'daily_08', description: 'Dress in Y2K aesthetic', reward: { coins: 100 }, checker: 'aesthetic_match_y2k' },
+  { id: 'daily_09', description: 'Wear 5 items of the same color', reward: { coins: 125 }, checker: 'color_match_5' },
+  { id: 'daily_10', description: 'Create an outfit with no common items', reward: { coins: 150 }, checker: 'no_common_items' },
+  { id: 'daily_11', description: 'Equip jewelry in every jewelry slot', reward: { coins: 100 }, checker: 'all_jewelry_slots' },
+  { id: 'daily_12', description: 'Wear sunglasses with a hat', reward: { coins: 75 }, checker: 'headwear_combo' },
+  { id: 'daily_13', description: 'Create a streetwear look', reward: { coins: 100 }, checker: 'aesthetic_match_streetwear' },
+  { id: 'daily_14', description: 'Dress each character in a different outfit', reward: { coins: 200 }, checker: 'all_characters_dressed' },
+  { id: 'daily_15', description: 'Use a dyed hairstyle', reward: { coins: 75 }, checker: 'dyed_hair_equipped' },
+  { id: 'daily_16', description: 'Wear an outfit with boots', reward: { coins: 50 }, checker: 'boots_equipped' },
+  { id: 'daily_17', description: 'Create a glamorous evening look', reward: { coins: 125 }, checker: 'aesthetic_match_glam' },
+  { id: 'daily_18', description: 'Mix two different aesthetics in one outfit', reward: { coins: 100 }, checker: 'mixed_aesthetics_2' },
+  { id: 'daily_19', description: 'Equip an animated item', reward: { coins: 150 }, checker: 'animated_item_equipped' },
+  { id: 'daily_20', description: 'Wear white from head to toe', reward: { coins: 100 }, checker: 'color_match_white' },
+  { id: 'daily_21', description: 'Create an outfit with matching bag and shoes', reward: { coins: 75 }, checker: 'bag_shoes_match' },
+  { id: 'daily_22', description: 'Wear 3 rare items at once', reward: { coins: 100 }, checker: 'rare_count_3' },
+  { id: 'daily_23', description: 'Dress in boho aesthetic', reward: { coins: 100 }, checker: 'aesthetic_match_boho' },
+  { id: 'daily_24', description: 'Equip makeup with matching lip and eye color', reward: { coins: 75 }, checker: 'makeup_color_match' },
+  { id: 'daily_25', description: 'Create a sporty outfit', reward: { coins: 75 }, checker: 'aesthetic_match_sporty' },
+  { id: 'daily_26', description: 'Wear outerwear over a complete outfit', reward: { coins: 100 }, checker: 'layered_outfit' },
+  { id: 'daily_27', description: 'Create a monochrome purple look', reward: { coins: 125 }, checker: 'color_match_purple' },
+  { id: 'daily_28', description: 'Use items from 3 different rarity tiers', reward: { coins: 100 }, checker: 'rarity_variety_3' },
+  { id: 'daily_29', description: 'Perform a gacha pull', reward: { coins: 50 }, checker: 'gacha_pull_1' },
+  { id: 'daily_30', description: 'Try on 10 different items', reward: { coins: 75 }, checker: 'try_on_count_10' },
+  { id: 'daily_31', description: 'Create a retro 70s inspired look', reward: { coins: 100 }, checker: 'aesthetic_match_retro' },
+  { id: 'daily_32', description: 'Wear socks or tights with any outfit', reward: { coins: 50 }, checker: 'socks_equipped' },
+  { id: 'daily_33', description: 'Save an outfit to your closet', reward: { coins: 50 }, checker: 'outfit_saved' },
+  { id: 'daily_34', description: 'Wear a belt with jeans', reward: { coins: 75 }, checker: 'belt_jeans_combo' },
+  { id: 'daily_35', description: 'Create a party look with sparkle items', reward: { coins: 125 }, checker: 'sparkle_party_look' }
+];
+
+export const weeklyChallenges = [
+  { id: 'weekly_01', description: 'Complete 5 daily challenges', reward: { coins: 500, gachaTicket: 1 }, checker: 'daily_complete_5' },
+  { id: 'weekly_02', description: 'Collect 20 new items', reward: { coins: 750, gachaTicket: 2 }, checker: 'collect_items_20' },
+  { id: 'weekly_03', description: 'Create outfits in 5 different aesthetics', reward: { coins: 500, gachaTicket: 1 }, checker: 'aesthetic_outfits_5' },
+  { id: 'weekly_04', description: 'Perform 10 gacha pulls', reward: { coins: 600, gachaTicket: 1 }, checker: 'gacha_pulls_10' },
+  { id: 'weekly_05', description: 'Dress all 4 characters in matching outfits', reward: { coins: 1000, gachaTicket: 3 }, checker: 'all_chars_matching' },
+  { id: 'weekly_06', description: 'Earn 2000 coins total', reward: { coins: 400, gachaTicket: 2 }, checker: 'coins_earned_2000' },
+  { id: 'weekly_07', description: 'Equip 10 different legendary or epic items', reward: { coins: 800, gachaTicket: 2 }, checker: 'high_rarity_equip_10' },
+  { id: 'weekly_08', description: 'Try every category in one outfit', reward: { coins: 600, gachaTicket: 1 }, checker: 'all_categories_outfit' }
+];
+
+export const achievements = [
+  { id: 'achieve_01', name: 'First Steps', description: 'Create your first outfit', reward: { coins: 100, title: 'Stylist Newbie' }, checker: 'first_outfit' },
+  { id: 'achieve_02', name: 'Collector', description: 'Collect 100 items', reward: { coins: 500, title: 'Fashion Hoarder' }, checker: 'collect_items_100' },
+  { id: 'achieve_03', name: 'Legendary Luck', description: 'Pull a legendary item from gacha', reward: { coins: 300, title: 'Lucky Star' }, checker: 'pull_legendary' },
+  { id: 'achieve_04', name: 'Full Squad', description: 'Unlock all 4 characters', reward: { coins: 1000, title: 'Squad Goals' }, checker: 'all_characters_unlocked' },
+  { id: 'achieve_05', name: 'Aesthetic Master', description: 'Create outfits in every aesthetic', reward: { coins: 750, title: 'Vibe Queen' }, checker: 'all_aesthetics_used' },
+  { id: 'achieve_06', name: 'Set Collector', description: 'Complete 10 full sets', reward: { coins: 1500, title: 'Set Slayer' }, checker: 'complete_sets_10' },
+  { id: 'achieve_07', name: 'Daily Devotion', description: 'Complete 30 daily challenges', reward: { coins: 2000, title: 'Dedicated Diva' }, checker: 'daily_challenges_30' },
+  { id: 'achieve_08', name: 'Rainbow Closet', description: 'Own items in every color', reward: { coins: 500, title: 'Color Queen' }, checker: 'all_colors_owned' },
+  { id: 'achieve_09', name: 'Hair Chameleon', description: 'Try 50 different hairstyles', reward: { coins: 600, title: 'Hair Icon' }, checker: 'hairstyles_tried_50' },
+  { id: 'achieve_10', name: 'Bratz Legacy', description: 'Reach 500 total items collected', reward: { coins: 5000, title: 'Fashion Royalty' }, checker: 'collect_items_500' }
+];

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff2d78"/>
+      <stop offset="100%" stop-color="#c2185b"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe44d"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="1" y="1" width="30" height="30" rx="6" ry="6" fill="url(#bg)"/>
+  <!-- Stylized B letter -->
+  <text x="16" y="24" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="bold" font-style="italic" fill="url(#gold)">B</text>
+  <!-- Small sparkle -->
+  <g transform="translate(25, 6)" fill="#00e5ff">
+    <polygon points="0,-3 0.8,-0.8 3,0 0.8,0.8 0,3 -0.8,0.8 -3,0 -0.8,-0.8"/>
+  </g>
+</svg>

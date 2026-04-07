@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="gacha-capsule capsule-rare">
+  <defs>
+    <radialGradient id="rare-top" cx="0.4" cy="0.35" r="0.55">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="60%" stop-color="#4A90D9"/>
+      <stop offset="100%" stop-color="#2E6CB5"/>
+    </radialGradient>
+    <radialGradient id="rare-bottom" cx="0.4" cy="0.55" r="0.55">
+      <stop offset="0%" stop-color="#6AB0E8"/>
+      <stop offset="60%" stop-color="#3878C0"/>
+      <stop offset="100%" stop-color="#1E5AA0"/>
+    </radialGradient>
+    <linearGradient id="rare-seam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2060A0"/>
+      <stop offset="50%" stop-color="#5098D8"/>
+      <stop offset="100%" stop-color="#2060A0"/>
+    </linearGradient>
+    <filter id="rare-shadow" x="-10%" y="-5%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#1E3A5F" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <g filter="url(#rare-shadow)">
+    <!-- Top half -->
+    <path d="M15,40 C15,20 25,8 40,8 C55,8 65,20 65,40 Z" fill="url(#rare-top)"/>
+    <!-- Bottom half -->
+    <path d="M15,40 C15,60 25,72 40,72 C55,72 65,60 65,40 Z" fill="url(#rare-bottom)"/>
+    <!-- Seam line -->
+    <ellipse cx="40" cy="40" rx="25" ry="3" fill="url(#rare-seam)"/>
+    <!-- Highlight shine -->
+    <ellipse cx="30" cy="25" rx="10" ry="8" fill="white" opacity="0.35" transform="rotate(-15,30,25)"/>
+    <ellipse cx="28" cy="22" rx="5" ry="3" fill="white" opacity="0.5" transform="rotate(-15,28,22)"/>
+    <!-- Rim light -->
+    <path d="M18,35 C18,18 28,10 40,10" fill="none" stroke="white" stroke-width="0.8" opacity="0.3"/>
+    <!-- Sparkle -->
+    <g fill="white" opacity="0.8">
+      <circle cx="52" cy="18" r="1.5"/>
+      <line x1="52" y1="14" x2="52" y2="22" stroke="white" stroke-width="0.8"/>
+      <line x1="48" y1="18" x2="56" y2="18" stroke="white" stroke-width="0.8"/>
+      <line x1="49.2" y1="15.2" x2="54.8" y2="20.8" stroke="white" stroke-width="0.5"/>
+      <line x1="54.8" y1="15.2" x2="49.2" y2="20.8" stroke="white" stroke-width="0.5"/>
+    </g>
+  </g>
+</svg>

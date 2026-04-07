@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 500" class="gacha-machine">
+  <defs>
+    <!-- Chrome gradient -->
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B8B8B8"/>
+      <stop offset="20%" stop-color="#E8E8E8"/>
+      <stop offset="40%" stop-color="#F5F5F5"/>
+      <stop offset="60%" stop-color="#E0E0E0"/>
+      <stop offset="80%" stop-color="#C8C8C8"/>
+      <stop offset="100%" stop-color="#A8A8A8"/>
+    </linearGradient>
+    <linearGradient id="chrome-v" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8E8E8"/>
+      <stop offset="50%" stop-color="#D0D0D0"/>
+      <stop offset="100%" stop-color="#B0B0B0"/>
+    </linearGradient>
+    <!-- Hot pink gradient -->
+    <linearGradient id="hot-pink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF69B4"/>
+      <stop offset="50%" stop-color="#FF1493"/>
+      <stop offset="100%" stop-color="#DB0F7E"/>
+    </linearGradient>
+    <linearGradient id="hot-pink-h" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#DB0F7E"/>
+      <stop offset="30%" stop-color="#FF1493"/>
+      <stop offset="70%" stop-color="#FF69B4"/>
+      <stop offset="100%" stop-color="#DB0F7E"/>
+    </linearGradient>
+    <!-- Glass gradient -->
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="30%" stop-color="#E8F4FD" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#B8D8F0" stop-opacity="0.1"/>
+    </linearGradient>
+    <radialGradient id="glass-shine" cx="0.3" cy="0.2" r="0.5">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Capsule colors for inside -->
+    <radialGradient id="cap-pink" cx="0.4" cy="0.35" r="0.5">
+      <stop offset="0%" stop-color="#FFB6D9"/>
+      <stop offset="100%" stop-color="#FF69B4"/>
+    </radialGradient>
+    <radialGradient id="cap-blue" cx="0.4" cy="0.35" r="0.5">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="100%" stop-color="#4A90D9"/>
+    </radialGradient>
+    <radialGradient id="cap-purple" cx="0.4" cy="0.35" r="0.5">
+      <stop offset="0%" stop-color="#D8B4FE"/>
+      <stop offset="100%" stop-color="#9333EA"/>
+    </radialGradient>
+    <radialGradient id="cap-yellow" cx="0.4" cy="0.35" r="0.5">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+    <radialGradient id="cap-green" cx="0.4" cy="0.35" r="0.5">
+      <stop offset="0%" stop-color="#A7F3D0"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </radialGradient>
+    <filter id="machine-shadow" x="-10%" y="-5%" width="120%" height="115%">
+      <feDropShadow dx="3" dy="5" stdDeviation="6" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+    <filter id="inner-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#machine-shadow)">
+    <!-- Base/stand -->
+    <rect x="70" y="440" width="160" height="40" rx="5" fill="url(#chrome)"/>
+    <rect x="60" y="470" width="180" height="15" rx="4" fill="url(#chrome-v)"/>
+    <line x1="65" y1="477" x2="235" y2="477" stroke="#999" stroke-width="0.5" opacity="0.5"/>
+
+    <!-- Machine body - lower section (dispenser) -->
+    <rect x="80" y="340" width="140" height="100" rx="8" fill="url(#hot-pink)"/>
+    <!-- Chrome trim on dispenser -->
+    <rect x="80" y="335" width="140" height="10" rx="3" fill="url(#chrome)"/>
+    <rect x="80" y="430" width="140" height="10" rx="3" fill="url(#chrome)"/>
+
+    <!-- Capsule exit chute -->
+    <rect x="105" y="395" width="90" height="35" rx="12" fill="#2A0A1A"/>
+    <rect x="108" y="398" width="84" height="29" rx="10" fill="#1A0610" stroke="#FF69B4" stroke-width="0.5" opacity="0.8"/>
+    <!-- Chute inner glow -->
+    <ellipse cx="150" cy="412" rx="30" ry="8" fill="#FF1493" opacity="0.1"/>
+
+    <!-- Coin slot area -->
+    <circle cx="240" cy="380" r="15" fill="url(#chrome-v)" stroke="#999" stroke-width="1"/>
+    <rect x="236" y="372" width="8" height="16" rx="2" fill="#333"/>
+
+    <!-- Turn knob -->
+    <circle cx="150" cy="370" r="18" fill="url(#chrome)" stroke="#AAA" stroke-width="1.5"/>
+    <circle cx="150" cy="370" r="12" fill="url(#hot-pink-h)"/>
+    <circle cx="150" cy="370" r="3" fill="url(#chrome)"/>
+    <!-- Knob arrow -->
+    <path d="M150,360 L156,366 L150,364 L144,366 Z" fill="white" opacity="0.7"/>
+
+    <!-- Globe/dome - clear window -->
+    <path d="M85,120 C85,60 110,25 150,25 C190,25 215,60 215,120 L215,335 L85,335 Z" fill="#C8E8F8" opacity="0.15" stroke="url(#chrome)" stroke-width="3"/>
+    <!-- Glass effect -->
+    <path d="M85,120 C85,60 110,25 150,25 C190,25 215,60 215,120 L215,335 L85,335 Z" fill="url(#glass)"/>
+    <!-- Glass reflection -->
+    <path d="M95,120 C95,68 115,38 145,33 C130,38 110,65 110,120 L110,320 L95,320 Z" fill="white" opacity="0.15"/>
+
+    <!-- Capsules inside the globe -->
+    <!-- Row 1 - top -->
+    <circle cx="120" cy="280" r="14" fill="url(#cap-pink)"/>
+    <circle cx="150" cy="275" r="14" fill="url(#cap-blue)"/>
+    <circle cx="180" cy="280" r="14" fill="url(#cap-purple)"/>
+    <!-- Row 2 -->
+    <circle cx="110" cy="305" r="14" fill="url(#cap-yellow)"/>
+    <circle cx="140" cy="300" r="14" fill="url(#cap-green)"/>
+    <circle cx="165" cy="302" r="14" fill="url(#cap-pink)"/>
+    <circle cx="192" cy="305" r="14" fill="url(#cap-blue)"/>
+    <!-- Row 3 -->
+    <circle cx="118" cy="325" r="14" fill="url(#cap-purple)"/>
+    <circle cx="150" cy="322" r="14" fill="url(#cap-yellow)"/>
+    <circle cx="182" cy="325" r="14" fill="url(#cap-green)"/>
+    <!-- Scattered higher -->
+    <circle cx="130" cy="255" r="14" fill="url(#cap-green)"/>
+    <circle cx="165" cy="250" r="14" fill="url(#cap-yellow)"/>
+    <circle cx="140" cy="230" r="14" fill="url(#cap-pink)"/>
+    <circle cx="170" cy="228" r="14" fill="url(#cap-purple)"/>
+    <circle cx="155" cy="208" r="14" fill="url(#cap-blue)"/>
+    <!-- Capsule highlights -->
+    <circle cx="116" cy="276" r="4" fill="white" opacity="0.4"/>
+    <circle cx="146" cy="271" r="4" fill="white" opacity="0.4"/>
+    <circle cx="176" cy="276" r="4" fill="white" opacity="0.4"/>
+    <circle cx="126" cy="251" r="4" fill="white" opacity="0.4"/>
+    <circle cx="136" cy="226" r="4" fill="white" opacity="0.4"/>
+    <circle cx="151" cy="204" r="4" fill="white" opacity="0.4"/>
+
+    <!-- Top dome cap -->
+    <ellipse cx="150" cy="28" rx="40" ry="12" fill="url(#chrome)"/>
+    <!-- Decorative knob on top -->
+    <circle cx="150" cy="18" r="8" fill="url(#hot-pink)"/>
+    <circle cx="150" cy="18" r="4" fill="url(#chrome)"/>
+    <circle cx="148" cy="15" r="1.5" fill="white" opacity="0.6"/>
+
+    <!-- "STYLE STUDIO" text area -->
+    <rect x="95" y="100" width="110" height="32" rx="6" fill="url(#hot-pink)" opacity="0.9"/>
+    <rect x="97" y="102" width="106" height="28" rx="5" fill="none" stroke="#FFB6D9" stroke-width="1" opacity="0.6"/>
+    <text x="150" y="121" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="13" font-weight="bold" fill="white" letter-spacing="1.5">STYLE STUDIO</text>
+
+    <!-- Chrome frame around globe -->
+    <path d="M82,335 L82,120 C82,58 108,22 150,22 C192,22 218,58 218,120 L218,335" fill="none" stroke="url(#chrome)" stroke-width="5"/>
+  </g>
+
+  <!-- Decorative stars -->
+  <g fill="#FFD700" opacity="0.8">
+    <!-- Star 1 - top left -->
+    <path d="M45,50 L48,42 L51,50 L59,50 L53,55 L55,63 L48,58 L41,63 L43,55 L37,50 Z" transform="scale(0.7)"/>
+    <!-- Star 2 - top right -->
+    <path d="M255,30 L258,22 L261,30 L269,30 L263,35 L265,43 L258,38 L251,43 L253,35 L247,30 Z"/>
+    <!-- Star 3 - left side -->
+    <path d="M30,200 L33,192 L36,200 L44,200 L38,205 L40,213 L33,208 L26,213 L28,205 L22,200 Z" transform="scale(0.6)"/>
+    <!-- Star 4 - right side -->
+    <path d="M270,180 L272,175 L274,180 L279,180 L275,183 L276,188 L272,185 L268,188 L269,183 L265,180 Z"/>
+    <!-- Star 5 - bottom left -->
+    <path d="M50,420 L52,415 L54,420 L59,420 L55,423 L56,428 L52,425 L48,428 L49,423 L45,420 Z"/>
+  </g>
+
+  <!-- Sparkle effects -->
+  <g fill="white" opacity="0.7">
+    <circle cx="40" cy="100" r="2"/>
+    <line x1="40" y1="95" x2="40" y2="105" stroke="white" stroke-width="1" opacity="0.7"/>
+    <line x1="35" y1="100" x2="45" y2="100" stroke="white" stroke-width="1" opacity="0.7"/>
+
+    <circle cx="265" cy="120" r="1.5"/>
+    <line x1="265" y1="116" x2="265" y2="124" stroke="white" stroke-width="0.8" opacity="0.6"/>
+    <line x1="261" y1="120" x2="269" y2="120" stroke="white" stroke-width="0.8" opacity="0.6"/>
+
+    <circle cx="55" cy="310" r="1.5"/>
+    <line x1="55" y1="306" x2="55" y2="314" stroke="white" stroke-width="0.8" opacity="0.5"/>
+    <line x1="51" y1="310" x2="59" y2="310" stroke="white" stroke-width="0.8" opacity="0.5"/>
+  </g>
+</svg>

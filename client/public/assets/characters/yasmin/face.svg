@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-face yasmin-face">
+  <defs>
+    <linearGradient id="yasmin-face-skin" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#E4BA8A"/>
+      <stop offset="50%" stop-color="#D4A574"/>
+      <stop offset="100%" stop-color="#C89A68"/>
+    </linearGradient>
+    <radialGradient id="yasmin-cheek-l" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E0908A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#E0908A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="yasmin-cheek-r" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E0908A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#E0908A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="yasmin-iris-l" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#B8A070"/>
+      <stop offset="40%" stop-color="#8B7355"/>
+      <stop offset="100%" stop-color="#6B5540"/>
+    </radialGradient>
+    <radialGradient id="yasmin-iris-r" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#B8A070"/>
+      <stop offset="40%" stop-color="#8B7355"/>
+      <stop offset="100%" stop-color="#6B5540"/>
+    </radialGradient>
+    <linearGradient id="yasmin-lip-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B88090"/>
+      <stop offset="50%" stop-color="#A67080"/>
+      <stop offset="100%" stop-color="#946070"/>
+    </linearGradient>
+    <radialGradient id="yasmin-lip-shine" cx="0.5" cy="0.25" r="0.4">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="yasmin-face-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#A08050" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Head shape -->
+  <ellipse class="head-shape" cx="200" cy="148" rx="72" ry="90" fill="url(#yasmin-face-skin)" filter="url(#yasmin-face-shadow)"/>
+
+  <!-- Ears -->
+  <ellipse cx="130" cy="155" rx="8" ry="14" fill="#CC9D6C"/>
+  <ellipse cx="131" cy="155" rx="5" ry="10" fill="#C09262" opacity="0.5"/>
+  <ellipse cx="270" cy="155" rx="8" ry="14" fill="#CC9D6C"/>
+  <ellipse cx="269" cy="155" rx="5" ry="10" fill="#C09262" opacity="0.5"/>
+
+  <!-- Eyebrows - soft rounded arch, dreamy -->
+  <path class="brow-left" d="M155,118 C162,111 174,109 186,114" fill="none" stroke="#3D2B1A" stroke-width="2" stroke-linecap="round"/>
+  <path class="brow-right" d="M214,114 C226,109 238,111 245,118" fill="none" stroke="#3D2B1A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Eye whites - slightly wider, rounder for dreamy look -->
+  <ellipse class="eye-white-l" cx="172" cy="140" rx="23" ry="15" fill="#FEFEFE"/>
+  <ellipse class="eye-white-r" cx="228" cy="140" rx="23" ry="15" fill="#FEFEFE"/>
+
+  <!-- Irises - hazel for Yasmin -->
+  <ellipse class="iris-l" cx="174" cy="142" rx="12.5" ry="12.5" fill="url(#yasmin-iris-l)"/>
+  <ellipse class="iris-r" cx="226" cy="142" rx="12.5" ry="12.5" fill="url(#yasmin-iris-r)"/>
+
+  <!-- Hazel fleck ring -->
+  <circle cx="174" cy="142" r="9" fill="none" stroke="#A89060" stroke-width="0.8" opacity="0.3"/>
+  <circle cx="226" cy="142" r="9" fill="none" stroke="#A89060" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Pupils -->
+  <circle class="pupil-l" cx="175" cy="141" r="5.5" fill="#1A1208"/>
+  <circle class="pupil-r" cx="225" cy="141" r="5.5" fill="#1A1208"/>
+
+  <!-- Pupil highlights - larger for dreamy sparkle -->
+  <circle cx="178" cy="138" r="3" fill="white" opacity="0.92"/>
+  <circle cx="228" cy="138" r="3" fill="white" opacity="0.92"/>
+  <circle cx="171" cy="144" r="1.5" fill="white" opacity="0.55"/>
+  <circle cx="221" cy="144" r="1.5" fill="white" opacity="0.55"/>
+  <!-- Extra dreamy sparkle -->
+  <circle cx="180" cy="135" r="0.8" fill="white" opacity="0.6"/>
+  <circle cx="230" cy="135" r="0.8" fill="white" opacity="0.6"/>
+
+  <!-- Upper lash line - soft, sweeping -->
+  <path class="lash-line-l" d="M149,138 C153,127 164,123 175,124 C186,125 194,131 197,139" fill="none" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+  <path class="lash-line-r" d="M203,139 C206,131 214,125 225,124 C236,123 247,127 251,138" fill="none" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Individual lashes - left eye (6 lashes, soft and fluttery) -->
+  <line x1="149" y1="137" x2="143" y2="129" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="154" y1="131" x2="149" y2="122" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="161" y1="127" x2="157" y2="117" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="168" y1="125" x2="166" y2="114" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="176" y1="124" x2="176" y2="113" stroke="#1A1A1A" stroke-width="1.1" stroke-linecap="round"/>
+  <line x1="184" y1="125" x2="188" y2="115" stroke="#1A1A1A" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Individual lashes - right eye (6 lashes) -->
+  <line x1="216" y1="125" x2="212" y2="115" stroke="#1A1A1A" stroke-width="1" stroke-linecap="round"/>
+  <line x1="224" y1="124" x2="224" y2="113" stroke="#1A1A1A" stroke-width="1.1" stroke-linecap="round"/>
+  <line x1="232" y1="125" x2="234" y2="114" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="239" y1="127" x2="243" y2="117" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="246" y1="131" x2="251" y2="122" stroke="#1A1A1A" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="251" y1="137" x2="257" y2="129" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- Lower lash line - soft -->
+  <path d="M153,147 C160,153 170,156 180,155 C187,154 193,151 195,147" fill="none" stroke="#3A3A3A" stroke-width="0.7" opacity="0.4"/>
+  <path d="M205,147 C207,151 213,154 220,155 C230,156 240,153 247,147" fill="none" stroke="#3A3A3A" stroke-width="0.7" opacity="0.4"/>
+
+  <!-- Nose - small upturned, delicate -->
+  <path class="nose" d="M196,160 C195,165 194,172 193,176 C192,179 194,182 197,183 L200,184 L203,183 C206,182 208,179 207,176 C206,172 205,165 204,160" fill="none" stroke="#B88E5C" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="195" cy="182" r="2" fill="#CC9D6C" stroke="#B88E5C" stroke-width="0.5"/>
+  <circle cx="205" cy="182" r="2" fill="#CC9D6C" stroke="#B88E5C" stroke-width="0.5"/>
+  <!-- Nose highlight -->
+  <path d="M199,164 L199,175" stroke="#E4BA8A" stroke-width="0.8" opacity="0.25" stroke-linecap="round"/>
+
+  <!-- Cheek blush - warm rose -->
+  <ellipse cx="158" cy="170" rx="18" ry="12" fill="url(#yasmin-cheek-l)"/>
+  <ellipse cx="242" cy="170" rx="18" ry="12" fill="url(#yasmin-cheek-r)"/>
+
+  <!-- Lips - plump pouty, warm mauve for Yasmin, soft dreamy expression -->
+  <!-- Upper lip -->
+  <path class="upper-lip" d="M182,198 C185,193 191,189 197,188 L200,187 L203,188 C209,189 215,193 218,198 C215,196 209,194 200,194 C191,194 185,196 182,198 Z" fill="url(#yasmin-lip-grad)"/>
+  <!-- Lower lip - soft and full -->
+  <path class="lower-lip" d="M182,198 C185,201 191,209 200,211 C209,209 215,201 218,198 C215,196 209,194 200,194 C191,194 185,196 182,198 Z" fill="url(#yasmin-lip-grad)"/>
+  <!-- Lip shine -->
+  <ellipse cx="200" cy="200" rx="10" ry="5" fill="url(#yasmin-lip-shine)"/>
+  <!-- Lip line -->
+  <path d="M182,198 C190,195 196,194 200,194 C204,194 210,195 218,198" fill="none" stroke="#7E4858" stroke-width="0.6"/>
+  <!-- Cupid's bow highlight -->
+  <path d="M195,190 L200,187 L205,190" fill="none" stroke="#E4BA8A" stroke-width="0.8" opacity="0.45"/>
+  <!-- Soft dreamy smile hint -->
+  <path d="M184,200 C183,199 182,198 182,198" fill="none" stroke="#946070" stroke-width="0.4" opacity="0.4"/>
+  <path d="M216,200 C217,199 218,198 218,198" fill="none" stroke="#946070" stroke-width="0.4" opacity="0.4"/>
+
+  <!-- Chin highlight -->
+  <ellipse cx="200" cy="222" rx="12" ry="6" fill="#E4BA8A" opacity="0.15"/>
+
+  <!-- Jaw contour -->
+  <path d="M145,180 C148,210 165,232 185,240 C195,244 205,244 215,240 C235,232 252,210 255,180" fill="none" stroke="#B88E5C" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Beauty mark - Yasmin's signature -->
+  <circle cx="218" cy="195" r="1.2" fill="#5C3D28" opacity="0.6"/>
+</svg>

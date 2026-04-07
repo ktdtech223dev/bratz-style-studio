@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="gacha-capsule capsule-epic">
+  <defs>
+    <radialGradient id="epic-top" cx="0.4" cy="0.35" r="0.55">
+      <stop offset="0%" stop-color="#D8B4FE"/>
+      <stop offset="60%" stop-color="#9333EA"/>
+      <stop offset="100%" stop-color="#6B21A8"/>
+    </radialGradient>
+    <radialGradient id="epic-bottom" cx="0.4" cy="0.55" r="0.55">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="60%" stop-color="#7E22CE"/>
+      <stop offset="100%" stop-color="#581C87"/>
+    </radialGradient>
+    <linearGradient id="epic-seam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#581C87"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#581C87"/>
+    </linearGradient>
+    <radialGradient id="epic-glow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="#A855F7" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#A855F7" stop-opacity="0"/>
+      <stop offset="85%" stop-color="#A855F7" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="epic-shadow" x="-15%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#4C1D95" flood-opacity="0.35"/>
+    </filter>
+    <filter id="purple-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Outer glow -->
+  <circle cx="40" cy="40" r="36" fill="url(#epic-glow)"/>
+
+  <g filter="url(#epic-shadow)">
+    <!-- Top half -->
+    <path d="M15,40 C15,20 25,8 40,8 C55,8 65,20 65,40 Z" fill="url(#epic-top)"/>
+    <!-- Bottom half -->
+    <path d="M15,40 C15,60 25,72 40,72 C55,72 65,60 65,40 Z" fill="url(#epic-bottom)"/>
+    <!-- Seam line -->
+    <ellipse cx="40" cy="40" rx="25" ry="3" fill="url(#epic-seam)"/>
+    <!-- Highlight shine -->
+    <ellipse cx="30" cy="25" rx="10" ry="8" fill="white" opacity="0.3" transform="rotate(-15,30,25)"/>
+    <ellipse cx="28" cy="22" rx="5" ry="3" fill="white" opacity="0.5" transform="rotate(-15,28,22)"/>
+    <!-- Rim light -->
+    <path d="M18,35 C18,18 28,10 40,10" fill="none" stroke="white" stroke-width="0.8" opacity="0.3"/>
+    <!-- Glow ring around capsule -->
+    <ellipse cx="40" cy="40" rx="27" ry="34" fill="none" stroke="#C084FC" stroke-width="1.5" opacity="0.25"/>
+  </g>
+
+  <!-- Glow particles -->
+  <g opacity="0.7">
+    <circle cx="18" cy="28" r="1.5" fill="#D8B4FE"/>
+    <circle cx="62" cy="22" r="1" fill="#D8B4FE"/>
+    <circle cx="12" cy="48" r="1" fill="#C084FC"/>
+    <circle cx="66" cy="55" r="1.2" fill="#C084FC"/>
+    <circle cx="55" cy="12" r="0.8" fill="#E9D5FF"/>
+    <circle cx="25" cy="65" r="0.8" fill="#E9D5FF"/>
+  </g>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="ui-gem">
+  <defs>
+    <linearGradient id="gem-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF8ED4"/>
+      <stop offset="100%" stop-color="#E040A0"/>
+    </linearGradient>
+    <linearGradient id="gem-left" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D03090"/>
+      <stop offset="100%" stop-color="#A01870"/>
+    </linearGradient>
+    <linearGradient id="gem-right" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F050B0"/>
+      <stop offset="100%" stop-color="#C02888"/>
+    </linearGradient>
+    <linearGradient id="gem-bottom-l" x1="0.5" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B82080"/>
+      <stop offset="100%" stop-color="#8A1060"/>
+    </linearGradient>
+    <linearGradient id="gem-bottom-r" x1="0.5" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D83898"/>
+      <stop offset="100%" stop-color="#A01870"/>
+    </linearGradient>
+    <filter id="gem-shadow" x="-10%" y="-5%" width="125%" height="125%">
+      <feDropShadow dx="0.5" dy="1" stdDeviation="1" flood-color="#80105A" flood-opacity="0.4"/>
+    </filter>
+    <filter id="gem-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur"/>
+      <feFlood flood-color="#FF69B4" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#gem-glow)">
+    <!-- Diamond shape facets -->
+    <!-- Top crown - center facet -->
+    <polygon points="16,3 22,11 10,11" fill="url(#gem-top)"/>
+    <!-- Top crown - left facet -->
+    <polygon points="16,3 10,11 5,11" fill="#D840A0"/>
+    <!-- Top crown - right facet -->
+    <polygon points="16,3 22,11 27,11" fill="#FF70C0"/>
+    <!-- Girdle left -->
+    <polygon points="5,11 10,11 6,13" fill="#C03090"/>
+    <!-- Girdle center -->
+    <polygon points="10,11 22,11 24,13 8,13" fill="#E850B0" opacity="0.8"/>
+    <!-- Girdle right -->
+    <polygon points="22,11 27,11 26,13" fill="#E050A8"/>
+    <!-- Pavilion - left facet -->
+    <polygon points="5,11 8,13 16,29" fill="url(#gem-bottom-l)"/>
+    <!-- Pavilion - center left -->
+    <polygon points="8,13 16,13 16,29" fill="#B02078"/>
+    <!-- Pavilion - center right -->
+    <polygon points="16,13 24,13 16,29" fill="#C82888"/>
+    <!-- Pavilion - right facet -->
+    <polygon points="27,11 24,13 16,29" fill="url(#gem-bottom-r)"/>
+    <!-- Facet edge lines -->
+    <line x1="10" y1="11" x2="16" y2="29" stroke="#A01868" stroke-width="0.3" opacity="0.4"/>
+    <line x1="22" y1="11" x2="16" y2="29" stroke="#A01868" stroke-width="0.3" opacity="0.4"/>
+    <line x1="16" y1="3" x2="16" y2="13" stroke="#FFB0D8" stroke-width="0.3" opacity="0.3"/>
+    <!-- Highlight shine on top -->
+    <polygon points="12,5 16,4 14,9 10,10" fill="white" opacity="0.3"/>
+    <polygon points="13,6 15,5 14,8" fill="white" opacity="0.35"/>
+    <!-- Sparkle -->
+    <circle cx="12" cy="7" r="0.8" fill="white" opacity="0.7"/>
+  </g>
+</svg>

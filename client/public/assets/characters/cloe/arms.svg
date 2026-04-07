@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-arms cloe-arms">
+  <defs>
+    <linearGradient id="cloe-arm-l" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="#E8BA96"/>
+      <stop offset="50%" stop-color="#F5CBA7"/>
+      <stop offset="100%" stop-color="#F0C09E"/>
+    </linearGradient>
+    <linearGradient id="cloe-arm-r" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#E8BA96"/>
+      <stop offset="50%" stop-color="#F5CBA7"/>
+      <stop offset="100%" stop-color="#F0C09E"/>
+    </linearGradient>
+    <linearGradient id="cloe-hand-l" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBE0C8"/>
+      <stop offset="100%" stop-color="#F5CBA7"/>
+    </linearGradient>
+    <linearGradient id="cloe-hand-r" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBE0C8"/>
+      <stop offset="100%" stop-color="#F5CBA7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left arm -->
+  <g class="arm-left">
+    <!-- Upper arm -->
+    <path d="
+      M138,310
+      C132,325 125,345 120,365
+      C117,378 115,390 114,400
+      L114,410
+      C113,425 112,440 112,452
+      L104,452
+      C104,438 105,422 106,408
+      L106,398
+      C107,386 109,374 112,360
+      C117,340 124,320 130,305
+      Z" fill="url(#cloe-arm-l)"/>
+    <!-- Forearm -->
+    <path d="
+      M112,452
+      C111,462 110,472 109,480
+      C108,490 107,498 107,505
+      L99,505
+      C99,497 100,488 101,478
+      C102,468 103,458 104,452
+      Z" fill="url(#cloe-arm-l)"/>
+    <!-- Inner arm shadow -->
+    <path d="M130,310 C126,325 122,342 118,360 C116,372 114,384 113,396 L110,396 C111,383 113,370 115,358 C119,340 123,322 128,308 Z" fill="#D4A07A" opacity="0.15"/>
+    <!-- Elbow crease -->
+    <path d="M106,448 C108,446 111,445 113,446" fill="none" stroke="#D4A07A" stroke-width="0.6" opacity="0.3"/>
+    <!-- Wrist -->
+    <path d="M100,505 C100,508 101,510 103,512 L110,512 C112,510 113,508 113,505" fill="url(#cloe-arm-l)"/>
+    <!-- Hand - left, resting at side -->
+    <g class="hand-left">
+      <path d="
+        M100,512
+        C98,518 96,525 95,530
+        C94,534 93,538 94,541
+        C95,544 97,546 100,547
+        L103,547
+        C105,546 106,544 107,542
+        L108,538
+        C109,536 110,534 111,533
+        C112,536 113,540 113,543
+        C114,546 115,547 117,547
+        C119,546 120,544 120,541
+        C120,537 119,532 118,528
+        C118,526 117,524 116,522
+        C116,520 115,517 114,514
+        L113,512
+        Z" fill="url(#cloe-hand-l)"/>
+      <!-- Finger lines -->
+      <path d="M103,530 L103,543" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <path d="M107,528 L108,538" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <!-- Thumb -->
+      <path d="M100,520 C97,522 95,526 94,530" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <!-- Knuckle highlights -->
+      <circle cx="102" cy="528" r="1" fill="#FBE0C8" opacity="0.3"/>
+      <circle cx="108" cy="526" r="1" fill="#FBE0C8" opacity="0.3"/>
+    </g>
+  </g>
+
+  <!-- Right arm -->
+  <g class="arm-right">
+    <!-- Upper arm -->
+    <path d="
+      M262,310
+      C268,325 275,345 280,365
+      C283,378 285,390 286,400
+      L286,410
+      C287,425 288,440 288,452
+      L296,452
+      C296,438 295,422 294,408
+      L294,398
+      C293,386 291,374 288,360
+      C283,340 276,320 270,305
+      Z" fill="url(#cloe-arm-r)"/>
+    <!-- Forearm -->
+    <path d="
+      M288,452
+      C289,462 290,472 291,480
+      C292,490 293,498 293,505
+      L301,505
+      C301,497 300,488 299,478
+      C298,468 297,458 296,452
+      Z" fill="url(#cloe-arm-r)"/>
+    <!-- Inner arm shadow -->
+    <path d="M270,310 C274,325 278,342 282,360 C284,372 286,384 287,396 L290,396 C289,383 287,370 285,358 C281,340 277,322 272,308 Z" fill="#D4A07A" opacity="0.15"/>
+    <!-- Elbow crease -->
+    <path d="M294,448 C292,446 289,445 287,446" fill="none" stroke="#D4A07A" stroke-width="0.6" opacity="0.3"/>
+    <!-- Wrist -->
+    <path d="M294,505 C294,508 293,510 291,512 L284,512 C282,510 281,508 281,505" fill="url(#cloe-arm-r)"/>
+    <!-- Hand - right, resting at side -->
+    <g class="hand-right">
+      <path d="
+        M294,512
+        C296,518 298,525 299,530
+        C300,534 301,538 300,541
+        C299,544 297,546 294,547
+        L291,547
+        C289,546 288,544 287,542
+        L286,538
+        C285,536 284,534 283,533
+        C282,536 281,540 281,543
+        C280,546 279,547 277,547
+        C275,546 274,544 274,541
+        C274,537 275,532 276,528
+        C276,526 277,524 278,522
+        C278,520 279,517 280,514
+        L281,512
+        Z" fill="url(#cloe-hand-r)"/>
+      <!-- Finger lines -->
+      <path d="M291,530 L291,543" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <path d="M287,528 L286,538" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <!-- Thumb -->
+      <path d="M294,520 C297,522 299,526 300,530" fill="none" stroke="#D4A07A" stroke-width="0.5" opacity="0.3"/>
+      <!-- Knuckle highlights -->
+      <circle cx="292" cy="528" r="1" fill="#FBE0C8" opacity="0.3"/>
+      <circle cx="286" cy="526" r="1" fill="#FBE0C8" opacity="0.3"/>
+    </g>
+  </g>
+</svg>

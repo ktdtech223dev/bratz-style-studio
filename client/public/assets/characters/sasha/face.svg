@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-face sasha-face">
+  <defs>
+    <linearGradient id="sasha-face-skin" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#A07050"/>
+      <stop offset="50%" stop-color="#8B5E3C"/>
+      <stop offset="100%" stop-color="#7D5434"/>
+    </linearGradient>
+    <radialGradient id="sasha-cheek-l" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#B86858" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#B86858" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sasha-cheek-r" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#B86858" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#B86858" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sasha-iris-l" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#9B7040"/>
+      <stop offset="50%" stop-color="#784212"/>
+      <stop offset="100%" stop-color="#5C3310"/>
+    </radialGradient>
+    <radialGradient id="sasha-iris-r" cx="0.45" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#9B7040"/>
+      <stop offset="50%" stop-color="#784212"/>
+      <stop offset="100%" stop-color="#5C3310"/>
+    </radialGradient>
+    <linearGradient id="sasha-lip-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9E7468"/>
+      <stop offset="50%" stop-color="#8B6358"/>
+      <stop offset="100%" stop-color="#7A5548"/>
+    </linearGradient>
+    <radialGradient id="sasha-lip-shine" cx="0.5" cy="0.25" r="0.4">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="sasha-face-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#5E3D24" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Head shape -->
+  <ellipse class="head-shape" cx="200" cy="148" rx="72" ry="90" fill="url(#sasha-face-skin)" filter="url(#sasha-face-shadow)"/>
+
+  <!-- Ears -->
+  <ellipse cx="130" cy="155" rx="8" ry="14" fill="#835838"/>
+  <ellipse cx="131" cy="155" rx="5" ry="10" fill="#7A5232" opacity="0.5"/>
+  <ellipse cx="270" cy="155" rx="8" ry="14" fill="#835838"/>
+  <ellipse cx="269" cy="155" rx="5" ry="10" fill="#7A5232" opacity="0.5"/>
+
+  <!-- Eyebrows - strong, confident arch -->
+  <path class="brow-left" d="M153,115 C160,109 173,107 187,114" fill="none" stroke="#1A0E08" stroke-width="2.4" stroke-linecap="round"/>
+  <path class="brow-right" d="M213,114 C227,107 240,109 247,115" fill="none" stroke="#1A0E08" stroke-width="2.4" stroke-linecap="round"/>
+
+  <!-- Eye whites - slightly narrowed for confident look -->
+  <path class="eye-white-l" d="M150,140 C154,130 164,126 175,127 C186,128 194,133 197,140 C194,148 186,153 175,154 C164,153 154,148 150,140 Z" fill="#FEFEFE"/>
+  <path class="eye-white-r" d="M203,140 C206,133 214,128 225,127 C236,126 246,130 250,140 C246,148 236,153 225,154 C214,153 206,148 203,140 Z" fill="#FEFEFE"/>
+
+  <!-- Irises - deep brown for Sasha -->
+  <ellipse class="iris-l" cx="174" cy="141" rx="12" ry="12" fill="url(#sasha-iris-l)"/>
+  <ellipse class="iris-r" cx="226" cy="141" rx="12" ry="12" fill="url(#sasha-iris-r)"/>
+
+  <!-- Pupils -->
+  <circle class="pupil-l" cx="175" cy="140" r="5.5" fill="#0A0604"/>
+  <circle class="pupil-r" cx="225" cy="140" r="5.5" fill="#0A0604"/>
+
+  <!-- Pupil highlights -->
+  <circle cx="178" cy="137" r="2.8" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="137" r="2.8" fill="white" opacity="0.9"/>
+  <circle cx="171" cy="143" r="1.3" fill="white" opacity="0.5"/>
+  <circle cx="221" cy="143" r="1.3" fill="white" opacity="0.5"/>
+
+  <!-- Upper lash line - bold and confident -->
+  <path class="lash-line-l" d="M149,138 C153,128 164,123 175,124 C186,125 194,130 197,138" fill="none" stroke="#0A0604" stroke-width="3" stroke-linecap="round"/>
+  <path class="lash-line-r" d="M203,138 C206,130 214,125 225,124 C236,123 247,128 251,138" fill="none" stroke="#0A0604" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Individual lashes - left eye (6 lashes, bold) -->
+  <line x1="149" y1="136" x2="143" y2="127" stroke="#0A0604" stroke-width="1.7" stroke-linecap="round"/>
+  <line x1="154" y1="130" x2="149" y2="120" stroke="#0A0604" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="161" y1="126" x2="157" y2="115" stroke="#0A0604" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="168" y1="125" x2="166" y2="113" stroke="#0A0604" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="176" y1="124" x2="176" y2="112" stroke="#0A0604" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="185" y1="125" x2="189" y2="114" stroke="#0A0604" stroke-width="1.3" stroke-linecap="round"/>
+
+  <!-- Individual lashes - right eye (6 lashes) -->
+  <line x1="215" y1="125" x2="211" y2="114" stroke="#0A0604" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="224" y1="124" x2="224" y2="112" stroke="#0A0604" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="232" y1="125" x2="234" y2="113" stroke="#0A0604" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="239" y1="126" x2="243" y2="115" stroke="#0A0604" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="246" y1="130" x2="251" y2="120" stroke="#0A0604" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="251" y1="136" x2="257" y2="127" stroke="#0A0604" stroke-width="1.7" stroke-linecap="round"/>
+
+  <!-- Lower lash line -->
+  <path d="M153,145 C160,151 170,154 180,153 C187,152 193,149 195,145" fill="none" stroke="#1A1410" stroke-width="0.9" opacity="0.45"/>
+  <path d="M205,145 C207,149 213,152 220,153 C230,154 240,151 247,145" fill="none" stroke="#1A1410" stroke-width="0.9" opacity="0.45"/>
+
+  <!-- Nose - small upturned, slightly broader -->
+  <path class="nose" d="M196,160 C195,165 194,172 192,176 C191,179 193,183 196,184 L200,185 L204,184 C207,183 209,179 208,176 C206,172 205,165 204,160" fill="none" stroke="#6B472C" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="194" cy="183" r="2.5" fill="#835838" stroke="#6B472C" stroke-width="0.5"/>
+  <circle cx="206" cy="183" r="2.5" fill="#835838" stroke="#6B472C" stroke-width="0.5"/>
+  <!-- Nose bridge highlight -->
+  <path d="M198,162 L198,174" stroke="#A07050" stroke-width="1" opacity="0.2" stroke-linecap="round"/>
+
+  <!-- Cheek blush - warm bronze -->
+  <ellipse cx="158" cy="170" rx="18" ry="12" fill="url(#sasha-cheek-l)"/>
+  <ellipse cx="242" cy="170" rx="18" ry="12" fill="url(#sasha-cheek-r)"/>
+
+  <!-- Lips - plump pouty, nude brown for Sasha, confident slight smile -->
+  <!-- Upper lip -->
+  <path class="upper-lip" d="M180,197 C183,192 190,188 197,187 L200,186 L203,187 C210,188 217,192 221,197 C217,195 210,193 200,193 C190,193 183,195 180,197 Z" fill="url(#sasha-lip-grad)"/>
+  <!-- Lower lip - full and pouty -->
+  <path class="lower-lip" d="M180,197 C183,200 190,209 200,211 C210,209 217,200 221,197 C217,195 210,193 200,193 C190,193 183,195 180,197 Z" fill="url(#sasha-lip-grad)"/>
+  <!-- Lip shine -->
+  <ellipse cx="200" cy="200" rx="11" ry="5" fill="url(#sasha-lip-shine)"/>
+  <!-- Lip line - slight confident smile upturn -->
+  <path d="M180,197 C188,194 195,193 200,193 C205,193 212,194 221,196" fill="none" stroke="#664840" stroke-width="0.6"/>
+  <!-- Smile upturn -->
+  <path d="M178,197 C179,195 180,194 181,194" fill="none" stroke="#7A5548" stroke-width="0.5" opacity="0.5"/>
+  <path d="M222,196 C221,194 220,193 219,193" fill="none" stroke="#7A5548" stroke-width="0.5" opacity="0.5"/>
+  <!-- Cupid's bow highlight -->
+  <path d="M195,189 L200,186 L205,189" fill="none" stroke="#A07050" stroke-width="0.8" opacity="0.35"/>
+
+  <!-- Chin highlight -->
+  <ellipse cx="200" cy="222" rx="12" ry="6" fill="#A07050" opacity="0.12"/>
+
+  <!-- Jaw contour -->
+  <path d="M145,180 C148,210 165,232 185,240 C195,244 205,244 215,240 C235,232 252,210 255,180" fill="none" stroke="#6B472C" stroke-width="0.5" opacity="0.15"/>
+</svg>
