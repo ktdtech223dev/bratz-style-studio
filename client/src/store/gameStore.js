@@ -41,16 +41,57 @@ const INITIAL_GACHA = {
   pity: {},
 };
 
-async function apiFetch(url, options = {}) {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || body.message || `Request failed (${res.status})`);
+// All API calls go through here — normalises camelCase from snake_case responses
+async function apiFetch(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      ...options,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || body.message || `Request failed (${res.status})`);
+    }
+    return res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error('Request timed out — check your connection');
+    throw err;
   }
-  return res.json();
+}
+
+// Server returns snake_case — map to camelCase player object
+function mapPlayer(raw) {
+  if (!raw) return null;
+  return {
+    id: raw.id,
+    sessionId: raw.session_id,
+    coins: raw.coins ?? 500,
+    gems: raw.gems ?? 10,
+    styleShards: raw.style_shards ?? 0,
+    loginStreak: raw.login_streak ?? 0,
+    totalPulls: raw.total_pulls ?? 0,
+  };
+}
+
+// Map a server pull result item to frontend shape
+function mapPullResult(r) {
+  if (!r) return null;
+  const item = r.item || r;
+  return {
+    item: {
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      rarity: item.rarity,
+    },
+    isDuplicate: r.isDuplicate ?? r.is_duplicate ?? false,
+    shardsEarned: r.shardsEarned ?? r.shards_earned ?? 0,
+  };
 }
 
 const useGameStore = create((set, get) => ({
@@ -64,66 +105,62 @@ const useGameStore = create((set, get) => ({
   // ── Player actions ────────────────────────────────────────────
 
   initPlayer: async (sessionId) => {
-    set((state) => ({ ui: { ...state.ui, isLoading: true } }));
+    set((s) => ({ ui: { ...s.ui, isLoading: true } }));
     try {
+      // Server expects snake_case
       const data = await apiFetch('/api/player/init', {
         method: 'POST',
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ session_id: sessionId }),
       });
+      const player = mapPlayer(data.player || data);
+      const collectionIds = (data.collection || []).map((c) => c.item_id || c.id || c);
       set({
-        player: {
-          id: data.player?.id ?? null,
-          sessionId: data.player?.sessionId ?? sessionId,
-          coins: data.player?.coins ?? 500,
-          gems: data.player?.gems ?? 10,
-          styleShards: data.player?.styleShards ?? 0,
-          loginStreak: data.player?.loginStreak ?? 0,
-          totalPulls: data.player?.totalPulls ?? 0,
-        },
-        collection: new Set(data.collection ?? []),
+        player: player || { ...INITIAL_PLAYER, sessionId },
+        collection: new Set(collectionIds),
         ui: { ...get().ui, isLoading: false },
       });
+
+      // Check if daily reward available
+      if (data.dailyAvailable || data.daily_available) {
+        set((s) => ({ ui: { ...s.ui, showDailyReward: true } }));
+      }
     } catch (err) {
-      set((state) => ({ ui: { ...state.ui, isLoading: false } }));
-      get().showToast(err.message || 'Failed to initialize player', 'error');
+      // On network error, start with defaults so the game still loads
+      set((s) => ({ ui: { ...s.ui, isLoading: false } }));
+      console.warn('initPlayer failed, using defaults:', err.message);
     }
   },
 
   // ── UI actions ────────────────────────────────────────────────
 
   setScreen: (screen) => {
-    set((state) => ({ ui: { ...state.ui, currentScreen: screen } }));
+    set((s) => ({ ui: { ...s.ui, currentScreen: screen } }));
   },
 
   showToast: (message, type = 'info') => {
-    set((state) => ({ ui: { ...state.ui, showToast: { message, type } } }));
+    set((s) => ({ ui: { ...s.ui, showToast: { message, type } } }));
     setTimeout(() => {
-      set((state) => {
-        if (state.ui.showToast?.message === message) {
-          return { ui: { ...state.ui, showToast: null } };
+      set((s) => {
+        if (s.ui.showToast?.message === message) {
+          return { ui: { ...s.ui, showToast: null } };
         }
-        return state;
+        return s;
       });
     }, 3000);
   },
 
-  setLoading: (isLoading) => {
-    set((state) => ({ ui: { ...state.ui, isLoading } }));
-  },
-
   setShowDailyReward: (show) => {
-    set((state) => ({ ui: { ...state.ui, showDailyReward: show } }));
+    set((s) => ({ ui: { ...s.ui, showDailyReward: show } }));
   },
 
   // ── Outfit / Character actions ────────────────────────────────
 
   selectCharacter: (charId) => {
-    const defaultHair = DEFAULT_HAIRS[charId] || `hair_${charId}_01`;
-    set((state) => ({
+    set((s) => ({
       outfit: {
-        ...state.outfit,
+        ...s.outfit,
         character: charId,
-        hairId: defaultHair,
+        hairId: DEFAULT_HAIRS[charId] || `hair_${charId}_01`,
         equipped: {},
       },
     }));
@@ -131,108 +168,111 @@ const useGameStore = create((set, get) => ({
 
   equipItem: (item) => {
     if (!item || !item.slot || !item.id) return;
-    set((state) => {
-      const currentEquipped = state.outfit.equipped[item.slot];
-      const newEquipped = { ...state.outfit.equipped };
-      if (currentEquipped === item.id) {
-        delete newEquipped[item.slot];
-      } else {
-        newEquipped[item.slot] = item.id;
-      }
-      return { outfit: { ...state.outfit, equipped: newEquipped } };
+    set((s) => {
+      const cur = s.outfit.equipped[item.slot];
+      const next = { ...s.outfit.equipped };
+      if (cur === item.id) delete next[item.slot];
+      else next[item.slot] = item.id;
+      return { outfit: { ...s.outfit, equipped: next } };
     });
   },
 
   equipSet: (setItem) => {
     if (!setItem || !Array.isArray(setItem.items)) return;
-    set((state) => {
-      const newEquipped = { ...state.outfit.equipped };
+    set((s) => {
+      const next = { ...s.outfit.equipped };
       for (const item of setItem.items) {
-        if (item.slot && item.id) {
-          newEquipped[item.slot] = item.id;
-        }
+        if (item.slot && item.id) next[item.slot] = item.id;
       }
-      return { outfit: { ...state.outfit, equipped: newEquipped } };
+      return { outfit: { ...s.outfit, equipped: next } };
     });
   },
 
-  setHair: (hairId) => {
-    set((state) => ({ outfit: { ...state.outfit, hairId } }));
-  },
+  setHair: (hairId) => set((s) => ({ outfit: { ...s.outfit, hairId } })),
 
   setHairColor: (primary, secondary = null, mode = 'single') => {
-    set((state) => ({
-      outfit: {
-        ...state.outfit,
-        hairColorPrimary: primary,
-        hairColorSecondary: secondary,
-        hairDyeMode: mode,
-      },
+    set((s) => ({
+      outfit: { ...s.outfit, hairColorPrimary: primary, hairColorSecondary: secondary, hairDyeMode: mode },
     }));
   },
 
-  setSkinTone: (index) => {
-    set((state) => ({ outfit: { ...state.outfit, skinTone: index } }));
-  },
+  setSkinTone: (index) => set((s) => ({ outfit: { ...s.outfit, skinTone: index } })),
 
   // ── Gacha actions ─────────────────────────────────────────────
 
-  pullGacha: async (banner, count = 1) => {
+  pullGacha: async (banner = 'standard', count = 1) => {
     const state = get();
     if (state.gacha.pulling) return null;
+
+    // Pre-flight coin check
+    const cost = count >= 10 ? 800 : 100;
+    if (state.player.coins < cost) {
+      get().showToast(`Not enough coins 💸 (need ${cost})`, 'error');
+      return null;
+    }
 
     set((s) => ({ gacha: { ...s.gacha, pulling: true, pullResults: null } }));
 
     try {
       const endpoint = count >= 10 ? '/api/gacha/pull10' : '/api/gacha/pull';
+      // Server expects snake_case
       const data = await apiFetch(endpoint, {
         method: 'POST',
         body: JSON.stringify({
-          bannerId: banner,
-          playerId: state.player.id,
+          player_id: state.player.id,
+          banner_id: banner,
         }),
-      });
+      }, 10000);
 
-      const results = data.results ?? data.items ?? [];
+      // Server returns { pull: {...}, isDuplicate, shardsEarned, player: {...} } for single
+      // or { pulls: [{...}], player: {...} } for 10-pull
+      let results;
+      if (count >= 10) {
+        results = (data.pulls || []).map(mapPullResult);
+      } else {
+        results = [mapPullResult(data)];
+      }
+
+      const serverPlayer = mapPlayer(data.player);
       const newCollection = new Set(state.collection);
-      for (const item of results) {
-        if (item.id) newCollection.add(item.id);
+      for (const r of results) {
+        if (r?.item?.id && !r.isDuplicate) newCollection.add(r.item.id);
       }
 
       set((s) => ({
-        player: {
+        player: serverPlayer ? {
           ...s.player,
-          coins: data.coins ?? s.player.coins,
-          gems: data.gems ?? s.player.gems,
-          styleShards: data.styleShards ?? s.player.styleShards,
-          totalPulls: s.player.totalPulls + (results.length || count),
+          coins: serverPlayer.coins,
+          gems: serverPlayer.gems,
+          styleShards: serverPlayer.styleShards,
+          totalPulls: serverPlayer.totalPulls,
+        } : {
+          ...s.player,
+          coins: s.player.coins - cost,
         },
         collection: newCollection,
         gacha: {
           ...s.gacha,
           pulling: false,
           pullResults: results,
-          pity: {
-            ...s.gacha.pity,
-            [banner]: data.pity ?? (s.gacha.pity[banner] || 0) + count,
-          },
+          pity: { ...s.gacha.pity, [banner]: 0 },
         },
       }));
 
       return results;
     } catch (err) {
       set((s) => ({ gacha: { ...s.gacha, pulling: false } }));
-      get().showToast(err.message || 'Gacha pull failed', 'error');
+      get().showToast(err.message || 'Pull failed — try again', 'error');
       return null;
     }
   },
 
   setCurrentBanner: (banner) => {
-    set((state) => ({ gacha: { ...state.gacha, currentBanner: banner } }));
+    set((s) => ({ gacha: { ...s.gacha, currentBanner: banner } }));
   },
 
   clearPullResults: () => {
-    set((state) => ({ gacha: { ...state.gacha, pullResults: null } }));
+    set((s) => ({ gacha: { ...s.gacha, pullResults: null } }));
   },
 
   // ── Economy actions ───────────────────────────────────────────
@@ -241,20 +281,27 @@ const useGameStore = create((set, get) => ({
     try {
       const data = await apiFetch('/api/economy/daily', {
         method: 'POST',
-        body: JSON.stringify({ playerId: get().player.id }),
+        body: JSON.stringify({ player_id: get().player.id }),
       });
-      set((state) => ({
-        player: {
-          ...state.player,
-          coins: data.coins ?? state.player.coins,
-          gems: data.gems ?? state.player.gems,
-          loginStreak: data.loginStreak ?? state.player.loginStreak + 1,
+      const serverPlayer = mapPlayer(data.player);
+      set((s) => ({
+        player: serverPlayer ? {
+          ...s.player,
+          coins: serverPlayer.coins,
+          gems: serverPlayer.gems,
+          loginStreak: serverPlayer.loginStreak,
+        } : {
+          ...s.player,
+          coins: s.player.coins + (data.coins_awarded || data.coinsAwarded || 0),
+          gems: s.player.gems + (data.gems_awarded || data.gemsAwarded || 0),
         },
-        ui: { ...state.ui, showDailyReward: false },
+        ui: { ...s.ui, showDailyReward: false },
       }));
+      const coinsAwarded = data.coins_awarded || data.coinsAwarded || 0;
+      const gemsAwarded = data.gems_awarded || data.gemsAwarded || 0;
       get().showToast(
-        `Daily reward claimed! +${data.coinsAwarded ?? 0} coins${data.gemsAwarded ? `, +${data.gemsAwarded} gems` : ''}`,
-        'success'
+        `Day ${data.day || data.streak || '?'} reward! +${coinsAwarded} coins${gemsAwarded ? ` +${gemsAwarded} gems` : ''} 🪙`,
+        'reward'
       );
       return data;
     } catch (err) {
@@ -264,43 +311,31 @@ const useGameStore = create((set, get) => ({
   },
 
   addCoins: (amount) => {
-    set((state) => ({
-      player: { ...state.player, coins: state.player.coins + amount },
-    }));
+    set((s) => ({ player: { ...s.player, coins: s.player.coins + amount } }));
   },
 
   addGems: (amount) => {
-    set((state) => ({
-      player: { ...state.player, gems: state.player.gems + amount },
-    }));
+    set((s) => ({ player: { ...s.player, gems: s.player.gems + amount } }));
   },
 
   purchaseItem: async (itemId, cost, currency = 'coins') => {
     try {
       const data = await apiFetch('/api/collection/purchase', {
         method: 'POST',
-        body: JSON.stringify({
-          playerId: get().player.id,
-          itemId,
-          cost,
-          currency,
-        }),
+        body: JSON.stringify({ player_id: get().player.id, item_id: itemId, cost, currency }),
       });
-
       const newCollection = new Set(get().collection);
       newCollection.add(itemId);
-
-      const playerUpdate = { ...get().player };
-      if (currency === 'coins') {
-        playerUpdate.coins = data.coins ?? playerUpdate.coins - cost;
-      } else if (currency === 'styleShards' || currency === 'shards') {
-        playerUpdate.styleShards = data.styleShards ?? playerUpdate.styleShards - cost;
-      } else if (currency === 'gems') {
-        playerUpdate.gems = data.gems ?? playerUpdate.gems - cost;
-      }
-
-      set({ player: playerUpdate, collection: newCollection });
-      get().showToast('Item purchased!', 'success');
+      const serverPlayer = mapPlayer(data.player);
+      set((s) => ({
+        player: serverPlayer ? { ...s.player, ...serverPlayer } : {
+          ...s.player,
+          coins: currency === 'coins' ? s.player.coins - cost : s.player.coins,
+          styleShards: currency === 'shards' ? s.player.styleShards - cost : s.player.styleShards,
+        },
+        collection: newCollection,
+      }));
+      get().showToast('Item unlocked! ✨', 'success');
       return true;
     } catch (err) {
       get().showToast(err.message || 'Purchase failed', 'error');
@@ -308,7 +343,7 @@ const useGameStore = create((set, get) => ({
     }
   },
 
-  // ── Looks (saved outfits) ─────────────────────────────────────
+  // ── Looks ─────────────────────────────────────────────────────
 
   saveLook: async (name) => {
     try {
@@ -316,12 +351,18 @@ const useGameStore = create((set, get) => ({
       const data = await apiFetch('/api/looks', {
         method: 'POST',
         body: JSON.stringify({
-          playerId: get().player.id,
-          name,
-          outfit,
+          player_id: get().player.id,
+          look_name: name || 'My Look',
+          character: outfit.character,
+          skin_tone: outfit.skinTone,
+          hair_id: outfit.hairId,
+          hair_color_primary: outfit.hairColorPrimary,
+          hair_color_secondary: outfit.hairColorSecondary,
+          hair_dye_mode: outfit.hairDyeMode,
+          equipped_items: outfit.equipped,
         }),
       });
-      get().showToast('Look saved!', 'success');
+      get().showToast('Look saved! 💾', 'success');
       return data;
     } catch (err) {
       get().showToast(err.message || 'Failed to save look', 'error');
@@ -341,12 +382,17 @@ const useGameStore = create((set, get) => ({
   },
 
   loadLook: (look) => {
-    if (!look || !look.outfit) return;
-    set((state) => ({
+    if (!look) return;
+    set((s) => ({
       outfit: {
-        ...state.outfit,
-        ...look.outfit,
-        equipped: { ...(look.outfit.equipped || {}) },
+        ...s.outfit,
+        character: look.character || s.outfit.character,
+        skinTone: look.skin_tone ?? s.outfit.skinTone,
+        hairId: look.hair_id || s.outfit.hairId,
+        hairColorPrimary: look.hair_color_primary || s.outfit.hairColorPrimary,
+        hairColorSecondary: look.hair_color_secondary || null,
+        hairDyeMode: look.hair_dye_mode || 'single',
+        equipped: look.equipped_items || {},
       },
     }));
   },
@@ -357,9 +403,8 @@ const useGameStore = create((set, get) => ({
     try {
       const data = await apiFetch('/api/challenges/complete', {
         method: 'POST',
-        body: JSON.stringify({ playerId: get().player.id, challengeId: id }),
+        body: JSON.stringify({ player_id: get().player.id, challenge_id: id }),
       });
-      get().showToast('Challenge completed!', 'success');
       return data;
     } catch (err) {
       get().showToast(err.message || 'Failed to complete challenge', 'error');
@@ -371,19 +416,24 @@ const useGameStore = create((set, get) => ({
     try {
       const data = await apiFetch('/api/challenges/claim', {
         method: 'POST',
-        body: JSON.stringify({ playerId: get().player.id, challengeId: id }),
+        body: JSON.stringify({ player_id: get().player.id, challenge_id: id }),
       });
-      set((state) => ({
-        player: {
-          ...state.player,
-          coins: data.coins ?? state.player.coins,
-          gems: data.gems ?? state.player.gems,
-        },
-      }));
-      get().showToast(
-        `Reward claimed! +${data.coinsAwarded ?? 0} coins${data.gemsAwarded ? `, +${data.gemsAwarded} gems` : ''}`,
-        'success'
-      );
+      const serverPlayer = mapPlayer(data.player);
+      if (serverPlayer) {
+        set((s) => ({
+          player: { ...s.player, coins: serverPlayer.coins, gems: serverPlayer.gems },
+        }));
+      } else {
+        const coins = data.coins_awarded || data.coinsAwarded || 0;
+        const gems = data.gems_awarded || data.gemsAwarded || 0;
+        set((s) => ({
+          player: {
+            ...s.player,
+            coins: s.player.coins + coins,
+            gems: s.player.gems + gems,
+          },
+        }));
+      }
       return data;
     } catch (err) {
       get().showToast(err.message || 'Failed to claim reward', 'error');
@@ -396,10 +446,10 @@ const useGameStore = create((set, get) => ({
   hasItem: (itemId) => get().collection.has(itemId),
 
   addToCollection: (itemId) => {
-    set((state) => {
-      const newCollection = new Set(state.collection);
-      newCollection.add(itemId);
-      return { collection: newCollection };
+    set((s) => {
+      const next = new Set(s.collection);
+      next.add(itemId);
+      return { collection: next };
     });
   },
 

@@ -1,64 +1,127 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" class="character-body yasmin-body">
-  <defs>
-    <linearGradient id="yasmin-skin" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#C89A68"/>
-      <stop offset="35%" stop-color="#D4A574"/>
-      <stop offset="100%" stop-color="#CC9D6C"/>
-    </linearGradient>
-    <linearGradient id="yasmin-skin-shadow" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#B88E5C"/>
-      <stop offset="100%" stop-color="#A88050"/>
-    </linearGradient>
-    <radialGradient id="yasmin-chest-highlight" cx="0.5" cy="0.3" r="0.5">
-      <stop offset="0%" stop-color="#E4BA8A"/>
-      <stop offset="100%" stop-color="#D4A574"/>
-    </radialGradient>
-  </defs>
-  <!-- Neck -->
-  <path class="neck" d="M188,258 C188,252 190,245 192,240 L208,240 C210,245 212,252 212,258 L212,290 L188,290 Z" fill="url(#yasmin-skin)"/>
-  <path class="neck-shadow" d="M192,258 C192,255 193,250 194,246 L198,246 L198,270 L192,270 Z" fill="#B88E5C" opacity="0.3"/>
-  <!-- Torso -->
-  <path class="torso" d="
-    M168,290
-    C165,290 155,295 148,310
-    C140,328 138,340 140,355
-    C141,362 143,368 148,375
-    L150,380
-    C148,390 145,400 144,408
-    C142,420 143,430 148,438
-    C155,450 165,458 178,462
-    L180,465
-    C175,472 168,480 160,490
-    C150,502 142,515 138,528
-    L140,530
-    L260,530
-    L262,528
-    C258,515 250,502 240,490
-    C232,480 225,472 220,465
-    L222,462
-    C235,458 245,450 252,438
-    C257,430 258,420 256,408
-    C255,400 252,390 250,380
-    L252,375
-    C257,368 259,362 260,355
-    C262,340 260,328 252,310
-    C245,295 235,290 232,290
-    Z" fill="url(#yasmin-skin)"/>
-  <ellipse cx="200" cy="330" rx="35" ry="25" fill="url(#yasmin-chest-highlight)" opacity="0.4"/>
-  <path class="torso-shadow-left" d="
-    M168,290
-    C165,290 155,295 148,310
-    C140,328 138,340 140,355
-    C141,362 143,368 148,375
-    L150,380
-    C148,390 145,400 144,408
-    C142,420 143,430 148,438
-    C155,450 160,454 168,458
-    L168,290 Z" fill="#B88E5C" opacity="0.2"/>
-  <path class="waist-line" d="M155,395 C170,388 200,385 200,385 C200,385 230,388 245,395" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.4"/>
-  <path class="collarbone-left" d="M175,292 C168,294 160,298 155,302" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.35"/>
-  <path class="collarbone-right" d="M225,292 C232,294 240,298 245,302" fill="none" stroke="#B88E5C" stroke-width="0.8" opacity="0.35"/>
-  <ellipse cx="200" cy="418" rx="2.5" ry="4" fill="#B88E5C" opacity="0.4"/>
-  <path class="shoulder-left" d="M168,290 C158,288 148,292 140,300 C138,303 137,306 138,310 L148,310 C150,302 158,295 168,292 Z" fill="url(#yasmin-skin)"/>
-  <path class="shoulder-right" d="M232,290 C242,288 252,292 260,300 C262,303 263,306 262,310 L252,310 C250,302 242,295 232,292 Z" fill="url(#yasmin-skin)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 560" width="200" height="560">
+  <!-- YASMIN "The Pretty Princess" — simple geometric Bratz style -->
+  <!-- Skin:#D4A574  Eyes:#7D9B5A  Lips:#D4896A  Hair:#3D2314 long wavy dark brown -->
+
+  <!-- GROUND SHADOW -->
+  <ellipse cx="100" cy="548" rx="45" ry="8" fill="rgba(0,0,0,0.2)"/>
+
+  <!-- 1. HAIR BACK — long wavy dark brown, falls to hips -->
+  <path d="M36 120 Q38 55 100 48 Q162 55 164 120 Q162 200 158 280 Q152 340 148 360 Q145 380 142 390 Q130 360 128 320 Q124 280 120 240 L100 230 L80 240 Q76 280 72 320 Q70 360 58 390 Q55 380 52 360 Q48 340 42 280 Q38 200 36 120 Z" fill="#3D2314" stroke="#2C1A0E" stroke-width="1.5"/>
+  <!-- Wave detail lines on hair -->
+  <path d="M45 200 Q55 210 50 225" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M42 255 Q52 265 47 280" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M40 305 Q50 315 45 330" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M155 200 Q145 210 150 225" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M158 255 Q148 265 153 280" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M160 305 Q150 315 155 330" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <!-- Hair sheen -->
+  <path d="M65 70 Q80 55 100 52" fill="none" stroke="#6B4423" stroke-width="3" opacity="0.6"/>
+
+  <!-- 2. LEGS -->
+  <rect x="80" y="340" width="18" height="170" rx="9" fill="#D4A574" stroke="#111" stroke-width="2"/>
+  <rect x="102" y="340" width="18" height="170" rx="9" fill="#D4A574" stroke="#111" stroke-width="2"/>
+
+  <!-- 3. FEET -->
+  <ellipse cx="87" cy="516" rx="18" ry="9" fill="#D4A574" stroke="#111" stroke-width="2"/>
+  <ellipse cx="113" cy="516" rx="18" ry="9" fill="#D4A574" stroke="#111" stroke-width="2"/>
+
+  <!-- 4. BODY TORSO -->
+  <path d="M75 220 Q70 250 72 290 Q80 320 100 325 Q120 320 128 290 Q130 250 125 220 Q115 215 100 214 Q85 215 75 220 Z" fill="#D4A574" stroke="#111" stroke-width="2.5"/>
+
+  <!-- 5. ARMS -->
+  <rect x="58" y="222" width="16" height="85" rx="8" fill="#D4A574" stroke="#111" stroke-width="2" transform="rotate(-5 66 260)"/>
+  <rect x="126" y="222" width="16" height="85" rx="8" fill="#D4A574" stroke="#111" stroke-width="2" transform="rotate(5 134 260)"/>
+
+  <!-- 6. FLOWING SKIRT — bohemian/romantic style -->
+  <path d="M72 290 Q66 325 60 368 Q78 378 100 379 Q122 378 140 368 Q134 325 128 290 Q119 302 100 303 Q81 302 72 290 Z" fill="#9B59B6" stroke="#7D3C98" stroke-width="1.5"/>
+  <!-- Skirt wave hem -->
+  <path d="M60 368 Q70 380 80 374 Q90 380 100 375 Q110 380 120 374 Q130 380 140 368" fill="none" stroke="#7D3C98" stroke-width="2"/>
+  <!-- Skirt floral pattern detail -->
+  <circle cx="85" cy="325" r="4" fill="#E8DAEF" opacity="0.7"/>
+  <circle cx="85" cy="325" r="2" fill="#C39BD3"/>
+  <circle cx="115" cy="335" r="4" fill="#E8DAEF" opacity="0.7"/>
+  <circle cx="115" cy="335" r="2" fill="#C39BD3"/>
+  <circle cx="100" cy="350" r="4" fill="#E8DAEF" opacity="0.7"/>
+  <circle cx="100" cy="350" r="2" fill="#C39BD3"/>
+  <!-- Tiny leaf details -->
+  <path d="M90 323 Q93 318 96 322" fill="none" stroke="#7D3C98" stroke-width="1.5"/>
+  <path d="M120 333 Q123 328 126 332" fill="none" stroke="#7D3C98" stroke-width="1.5"/>
+
+  <!-- 7. CROP TOP — romantic purple/violet with embroidery feel -->
+  <path d="M75 220 Q70 252 72 272 Q80 282 100 283 Q120 282 128 272 Q130 252 125 220 Q115 215 100 214 Q85 215 75 220 Z" fill="#BB8FCE" stroke="#7D3C98" stroke-width="1.5"/>
+  <!-- Embroidery-style trim at neckline -->
+  <path d="M82 218 Q100 213 118 218" fill="none" stroke="#9B59B6" stroke-width="2"/>
+  <!-- Waist trim -->
+  <path d="M74 268 Q100 275 126 268" fill="none" stroke="#9B59B6" stroke-width="1.5"/>
+  <!-- Center flower motif -->
+  <circle cx="100" cy="248" r="5" fill="#E8DAEF" opacity="0.8"/>
+  <circle cx="100" cy="248" r="3" fill="#9B59B6"/>
+  <path d="M100 242 Q104 245 100 248 Q96 245 100 242 Z" fill="#E8DAEF" opacity="0.6"/>
+  <path d="M100 248 Q104 251 100 254 Q96 251 100 248 Z" fill="#E8DAEF" opacity="0.6"/>
+  <path d="M94 248 Q97 244 100 248 Q97 252 94 248 Z" fill="#E8DAEF" opacity="0.6"/>
+  <path d="M106 248 Q103 244 100 248 Q103 252 106 248 Z" fill="#E8DAEF" opacity="0.6"/>
+  <!-- Off-shoulder sleeve detail -->
+  <path d="M75 220 Q66 224 62 232 Q66 228 75 224" fill="#BB8FCE" stroke="#7D3C98" stroke-width="1"/>
+  <path d="M125 220 Q134 224 138 232 Q134 228 125 224" fill="#BB8FCE" stroke="#7D3C98" stroke-width="1"/>
+
+  <!-- 8. NECK -->
+  <rect x="91" y="200" width="18" height="24" rx="7" fill="#D4A574" stroke="#111" stroke-width="2"/>
+
+  <!-- 9. HEAD -->
+  <ellipse cx="100" cy="145" rx="68" ry="72" fill="#D4A574" stroke="#111" stroke-width="2.5"/>
+
+  <!-- 10. CHEEKS -->
+  <ellipse cx="72" cy="168" rx="14" ry="8" fill="#FFB6C1" opacity="0.45"/>
+  <ellipse cx="128" cy="168" rx="14" ry="8" fill="#FFB6C1" opacity="0.45"/>
+
+  <!-- 11. EYEBROWS — soft, slightly arched -->
+  <path d="M73 138 Q82 132 91 136" fill="none" stroke="#3D2314" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M109 136 Q118 132 127 138" fill="none" stroke="#3D2314" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- 12. EYES — LEFT -->
+  <ellipse cx="83" cy="155" rx="16" ry="13" fill="white" stroke="#111" stroke-width="2"/>
+  <ellipse cx="83" cy="157" rx="11" ry="11" fill="#7D9B5A"/>
+  <circle cx="83" cy="157" r="5" fill="#1a1a1a"/>
+  <circle cx="87" cy="153" r="3" fill="white"/>
+  <path d="M67 148 Q75 140 83 142 Q91 140 99 148 Q93 143 83 144 Q73 143 67 148 Z" fill="#111"/>
+  <path d="M97 146 Q103 140 106 144 Q105 147 99 149 Z" fill="#111"/>
+
+  <!-- 12. EYES — RIGHT -->
+  <ellipse cx="117" cy="155" rx="16" ry="13" fill="white" stroke="#111" stroke-width="2"/>
+  <ellipse cx="117" cy="157" rx="11" ry="11" fill="#7D9B5A"/>
+  <circle cx="117" cy="157" r="5" fill="#1a1a1a"/>
+  <circle cx="121" cy="153" r="3" fill="white"/>
+  <path d="M101 148 Q109 140 117 142 Q125 140 133 148 Q127 143 117 144 Q107 143 101 148 Z" fill="#111"/>
+  <path d="M131 146 Q137 140 140 144 Q139 147 133 149 Z" fill="#111"/>
+
+  <!-- 13. NOSE -->
+  <path d="M96 170 Q100 174 104 170" fill="none" stroke="#A87540" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 14. LIPS — warm peachy tone -->
+  <path d="M86 182 Q90 178 100 180 Q110 178 114 182 Q108 183 100 184 Q92 183 86 182 Z" fill="#D4896A" stroke="#111" stroke-width="1.5"/>
+  <path d="M86 182 Q88 192 100 194 Q112 192 114 182 Q108 183 100 184 Q92 183 86 182 Z" fill="#D4896A" stroke="#111" stroke-width="1.5"/>
+  <ellipse cx="100" cy="188" rx="7" ry="3" fill="white" opacity="0.5"/>
+
+  <!-- 15. HAIR FRONT (over face, framing it) -->
+  <!-- Top of head, center part -->
+  <path d="M58 105 Q68 78 100 70 Q132 78 142 105 Q132 92 100 90 Q68 92 58 105 Z" fill="#3D2314" stroke="#2C1A0E" stroke-width="1.5"/>
+  <!-- Left face-framing wave -->
+  <path d="M42 130 Q36 155 38 178 Q44 168 48 148 Q50 135 46 125 Z" fill="#3D2314" stroke="#2C1A0E" stroke-width="1"/>
+  <!-- Right face-framing wave -->
+  <path d="M158 130 Q164 155 162 178 Q156 168 152 148 Q150 135 154 125 Z" fill="#3D2314" stroke="#2C1A0E" stroke-width="1"/>
+  <!-- Hair wave detail on front strands -->
+  <path d="M40 148 Q44 156 41 164" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+  <path d="M160 148 Q156 156 159 164" fill="none" stroke="#5C3A1E" stroke-width="1.5"/>
+
+  <!-- 16. SHOES — strappy purple sandal heels -->
+  <!-- Left sandal -->
+  <ellipse cx="87" cy="516" rx="18" ry="9" fill="#9B59B6" stroke="#7D3C98" stroke-width="2"/>
+  <rect x="80" y="506" width="14" height="7" rx="3" fill="#9B59B6" stroke="#7D3C98" stroke-width="1.5"/>
+  <!-- Strap detail -->
+  <path d="M79 510 Q87 508 95 510" fill="none" stroke="#BB8FCE" stroke-width="1.5"/>
+  <!-- Right sandal -->
+  <ellipse cx="113" cy="516" rx="18" ry="9" fill="#9B59B6" stroke="#7D3C98" stroke-width="2"/>
+  <rect x="106" y="506" width="14" height="7" rx="3" fill="#9B59B6" stroke="#7D3C98" stroke-width="1.5"/>
+  <path d="M105 510 Q113 508 121 510" fill="none" stroke="#BB8FCE" stroke-width="1.5"/>
+
 </svg>

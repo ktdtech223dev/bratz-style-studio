@@ -1,82 +1,136 @@
 import React, { useMemo, useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { LAYER_ORDER, getLayerIndex } from '../../utils/layerOrder';
-import { getItemPreviewSvg, getCharacterPreviewSvg } from '../../utils/itemPreview';
-import characters from '../../data/characters';
 import clothing from '../../data/clothing';
-import hair from '../../data/hair';
-import CanvasLayer from './CanvasLayer';
+import characters from '../../data/characters';
 
-/**
- * Maps clothing slot names to their layer indices.
- */
-const SLOT_TO_LAYER = {};
-LAYER_ORDER.forEach((slot, i) => {
-  SLOT_TO_LAYER[slot] = i;
-});
+// Color name → hex
+const COLOR_MAP = {
+  pink: '#FF69B4', 'hot-pink': '#FF1493', magenta: '#E91E8C',
+  black: '#1a1a2e', white: '#F8F8FF', red: '#DC143C',
+  blue: '#4169E1', purple: '#9B59B6', green: '#2ECC71',
+  gold: '#FFD700', silver: '#C0C0C0', orange: '#FF8C00',
+  yellow: '#FFD700', brown: '#8B4513', beige: '#DEB887',
+  denim: '#4682B4', multicolor: '#FF69B4', lavender: '#C9B1E8',
+  coral: '#FF7F50', teal: '#008080', burgundy: '#800020',
+  cream: '#FFFDD0', grey: '#A0A0A0', gray: '#A0A0A0',
+  nude: '#E8C9A0', camel: '#C19A6B', sage: '#9CAF88',
+  mint: '#98FF98', olive: '#808000', rust: '#B7410E',
+  champagne: '#F7E7CE', ivory: '#FFFFF0', lime: '#32CD32',
+};
 
-/**
- * Returns a simple inline SVG data URI for base character parts.
- */
-function makeBaseSvg(partType, skinColor) {
-  const parts = {
-    shadow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400"><ellipse cx="100" cy="380" rx="60" ry="12" fill="rgba(0,0,0,0.2)"/></svg>`,
-    legs: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <rect x="62" y="230" width="28" height="100" rx="10" fill="${skinColor}"/>
-      <rect x="110" y="230" width="28" height="100" rx="10" fill="${skinColor}"/>
-    </svg>`,
-    'feet-base': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <ellipse cx="76" cy="335" rx="18" ry="8" fill="${skinColor}"/>
-      <ellipse cx="124" cy="335" rx="18" ry="8" fill="${skinColor}"/>
-    </svg>`,
-    'body-torso': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <rect x="65" y="130" width="70" height="105" rx="18" fill="${skinColor}"/>
-    </svg>`,
-    arms: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <rect x="38" y="135" width="26" height="80" rx="10" fill="${skinColor}"/>
-      <rect x="136" y="135" width="26" height="80" rx="10" fill="${skinColor}"/>
-    </svg>`,
-    'head-base': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <ellipse cx="100" cy="75" rx="42" ry="50" fill="${skinColor}"/>
-      <rect x="88" y="110" width="24" height="25" rx="8" fill="${skinColor}"/>
-    </svg>`,
-    'face-features': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <ellipse cx="82" cy="65" rx="7" ry="5" fill="#333"/>
-      <ellipse cx="118" cy="65" rx="7" ry="5" fill="#333"/>
-      <path d="M90 85 Q100 92 110 85" fill="none" stroke="#e8838f" stroke-width="2.5" stroke-linecap="round"/>
-      <ellipse cx="100" cy="76" rx="3" ry="2.5" fill="${skinColor}" stroke="#c4956e" stroke-width="0.5"/>
-    </svg>`,
+function resolveColor(color) {
+  if (!color) return '#FF69B4';
+  if (color.startsWith('#')) return color;
+  return COLOR_MAP[color.toLowerCase()] || '#FF69B4';
+}
+
+// Generate a clothing overlay SVG (300x560 canvas coords)
+// Each slot draws the garment at the correct body position
+function makeClothingOverlay(item) {
+  const fill = resolveColor(item.color);
+  // Slightly darker shade for details
+  const dark = fill + 'CC';
+
+  const shapes = {
+    'tops-layer': `
+      <!-- Torso fabric -->
+      <path d="M118 195 Q115 190 100 188 Q85 190 82 195
+               L78 250 Q85 258 100 260 Q115 258 122 250 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <!-- Left sleeve -->
+      <path d="M82 195 Q75 195 68 205 Q65 220 70 228 Q76 222 80 215 L82 205 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <!-- Right sleeve -->
+      <path d="M118 195 Q125 195 132 205 Q135 220 130 228 Q124 222 120 215 L118 205 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>`,
+
+    'bottoms-layer': `
+      <!-- Skirt/pants -->
+      <path d="M82 258 Q85 258 100 260 Q115 258 118 258
+               L122 330 Q110 340 100 340 Q90 340 78 330 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <!-- Waistband -->
+      <rect x="80" y="255" width="40" height="8" rx="3"
+            fill="${dark}" stroke="#111" stroke-width="1.5"/>`,
+
+    'shoes-layer': `
+      <!-- Left shoe -->
+      <ellipse cx="91" cy="456" rx="16" ry="8" fill="${fill}" stroke="#111" stroke-width="2"/>
+      <rect x="82" y="442" width="12" height="16" rx="4" fill="${fill}" stroke="#111" stroke-width="2"/>
+      <!-- Right shoe -->
+      <ellipse cx="109" cy="456" rx="16" ry="8" fill="${fill}" stroke="#111" stroke-width="2"/>
+      <rect x="106" y="442" width="12" height="16" rx="4" fill="${fill}" stroke="#111" stroke-width="2"/>`,
+
+    'outerwear-layer': `
+      <path d="M115 188 Q125 185 138 190 L145 250 Q130 260 118 258 L122 250 L120 195 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <path d="M85 188 Q75 185 62 190 L55 250 Q70 260 82 258 L78 250 L80 195 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <path d="M85 188 Q100 185 115 188 L118 258 Q100 265 82 258 Z"
+            fill="${fill}" stroke="#111" stroke-width="2" opacity="0.9"/>`,
+
+    'neck-layer': `
+      <path d="M90 180 Q100 175 110 180 Q112 188 100 190 Q88 188 90 180 Z"
+            fill="${fill}" stroke="#111" stroke-width="1.5"/>`,
+
+    'headwear-layer': `
+      <path d="M60 155 Q65 130 100 125 Q135 130 140 155 L142 165 L58 165 Z"
+            fill="${fill}" stroke="#111" stroke-width="2"/>
+      <rect x="56" y="162" width="88" height="10" rx="4" fill="${dark}" stroke="#111" stroke-width="1.5"/>`,
+
+    'socks-tights-layer': `
+      <rect x="82" y="400" width="16" height="50" rx="6" fill="${fill}" stroke="#111" stroke-width="1.5" opacity="0.9"/>
+      <rect x="102" y="400" width="16" height="50" rx="6" fill="${fill}" stroke="#111" stroke-width="1.5" opacity="0.9"/>`,
+
+    'makeup-layer': `
+      <!-- Eyeshadow L -->
+      <ellipse cx="88" cy="166" rx="11" ry="5" fill="${fill}" opacity="0.45"/>
+      <!-- Eyeshadow R -->
+      <ellipse cx="112" cy="166" rx="11" ry="5" fill="${fill}" opacity="0.45"/>
+      <!-- Lip tint -->
+      <path d="M92 182 Q100 186 108 182 Q104 190 100 191 Q96 190 92 182 Z"
+            fill="${fill}" opacity="0.6"/>`,
+
+    'ear-layer': `
+      <!-- Left earring -->
+      <circle cx="72" cy="175" r="5" fill="${fill}" stroke="#111" stroke-width="1.5"/>
+      <!-- Right earring -->
+      <circle cx="128" cy="175" r="5" fill="${fill}" stroke="#111" stroke-width="1.5"/>`,
+
+    'wrist-layer': `
+      <rect x="66" y="268" width="16" height="8" rx="3" fill="${fill}" stroke="#111" stroke-width="1.5"/>
+      <rect x="118" y="268" width="16" height="8" rx="3" fill="${fill}" stroke="#111" stroke-width="1.5"/>`,
+
+    'bag-layer': `
+      <rect x="132" y="220" width="28" height="36" rx="6" fill="${fill}" stroke="#111" stroke-width="2"/>
+      <path d="M138 220 Q138 208 146 208 Q154 208 154 220" fill="none" stroke="#111" stroke-width="2"/>
+      <rect x="140" y="232" width="10" height="6" rx="2" fill="${dark}"/>`,
   };
-  const raw = parts[partType];
-  if (!raw) return null;
-  return `data:image/svg+xml,${encodeURIComponent(raw)}`;
+
+  const body = shapes[item.slot] || shapes['tops-layer'];
+
+  // Legendary shimmer overlay
+  const legendaryFx = item.rarity === 'legendary' ? `
+    <defs>
+      <linearGradient id="holo_${item.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFD700" stop-opacity="0.3">
+          <animate attributeName="stop-opacity" values="0.1;0.5;0.1" dur="2s" repeatCount="indefinite"/>
+        </stop>
+        <stop offset="100%" stop-color="#FF69B4" stop-opacity="0.2">
+          <animate attributeName="stop-opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+        </stop>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="200" height="400" fill="url(#holo_${item.id})"/>` : '';
+
+  return (
+    `data:image/svg+xml,` +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 560">${legendaryFx}${body}</svg>`
+    )
+  );
 }
 
-/**
- * Generates a hair SVG (back or front layer).
- */
-function makeHairSvg(layer, color) {
-  const c = color || '#8B4513';
-  if (layer === 'back') {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-      <ellipse cx="100" cy="80" rx="50" ry="55" fill="${c}" opacity="0.9"/>
-      <path d="M55 80 Q50 160 60 200 Q70 220 80 200 Q60 160 65 100" fill="${c}" opacity="0.7"/>
-      <path d="M145 80 Q150 160 140 200 Q130 220 120 200 Q140 160 135 100" fill="${c}" opacity="0.7"/>
-    </svg>`;
-    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-  }
-  // front - bangs
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-    <path d="M60 40 Q70 25 100 22 Q130 25 140 40 L142 55 Q130 42 100 38 Q70 42 58 55 Z" fill="${c}"/>
-    <path d="M60 40 Q55 55 58 70 Q62 55 68 45" fill="${c}" opacity="0.8"/>
-    <path d="M140 40 Q145 55 142 70 Q138 55 132 45" fill="${c}" opacity="0.8"/>
-  </svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
-/**
- * DressUpCanvas - Renders the character as stacked SVG layers.
- */
 export default function DressUpCanvas() {
   const outfit = useGameStore((s) => s.outfit);
   const [spinning, setSpinning] = useState(false);
@@ -86,179 +140,123 @@ export default function DressUpCanvas() {
     [outfit.character]
   );
 
-  const skinColor = charData.skinTones?.[outfit.skinTone] || charData.skinBase;
-  const hairColor = outfit.hairColorPrimary || '#8B4513';
+  // Build sorted list of equipped clothing overlays
+  const clothingLayers = useMemo(() => {
+    const SLOT_Z = {
+      'socks-tights-layer': 1, 'shoes-layer': 2, 'bottoms-layer': 3,
+      'tops-layer': 4, 'outerwear-layer': 5, 'neck-layer': 6,
+      'wrist-layer': 7, 'bag-layer': 8, 'makeup-layer': 9,
+      'ear-layer': 10, 'headwear-layer': 11,
+    };
 
-  // Build layers array
-  const layers = useMemo(() => {
-    const result = [];
-    const baseParts = ['shadow', 'legs', 'feet-base', 'body-torso', 'arms', 'head-base', 'face-features'];
+    return Object.entries(outfit.equipped || {})
+      .map(([slot, itemId]) => {
+        const item = clothing.find((c) => c.id === itemId);
+        if (!item) return null;
+        return { item, slot, z: SLOT_Z[slot] ?? 5 };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.z - b.z);
+  }, [outfit.equipped]);
 
-    // Base character layers
-    baseParts.forEach((part) => {
-      const src = makeBaseSvg(part, skinColor);
-      if (src) {
-        result.push({
-          key: part,
-          src,
-          zIndex: getLayerIndex(part),
-          visible: true,
-          animated: false,
-          isLegendary: false,
-        });
-      }
-    });
+  const equippedCount = clothingLayers.length;
 
-    // Hair back layer
-    result.push({
-      key: 'hair-back',
-      src: makeHairSvg('back', hairColor),
-      zIndex: getLayerIndex('hair-back-layer'),
-      visible: true,
-      animated: false,
-      isLegendary: false,
-    });
-
-    // Hair front layer
-    result.push({
-      key: 'hair-front',
-      src: makeHairSvg('front', hairColor),
-      zIndex: getLayerIndex('hair-front-layer'),
-      visible: true,
-      animated: false,
-      isLegendary: false,
-    });
-
-    // Equipped clothing items
-    const equipped = outfit.equipped || {};
-    Object.entries(equipped).forEach(([slot, itemId]) => {
-      const item = clothing.find((c) => c.id === itemId);
-      if (!item) return;
-
-      const svgUri = getItemPreviewSvg(item);
-      // Wrap the item preview in a positioned SVG for the correct body area
-      const positionedSvg = makePositionedItemSvg(item, svgUri);
-
-      result.push({
-        key: `equip-${slot}`,
-        src: positionedSvg,
-        zIndex: getLayerIndex(slot),
-        visible: true,
-        animated: true,
-        isLegendary: item.rarity === 'legendary',
-      });
-    });
-
-    return result.sort((a, b) => a.zIndex - b.zIndex);
-  }, [outfit, skinColor, hairColor]);
-
-  // Check if full outfit (3+ items equipped)
-  const equippedCount = Object.keys(outfit.equipped || {}).length;
-
-  const triggerSpin = () => {
+  const handleTap = () => {
     if (equippedCount >= 3 && !spinning) {
       setSpinning(true);
-      setTimeout(() => setSpinning(false), 600);
+      setTimeout(() => setSpinning(false), 700);
     }
   };
 
+  const charSrc = `/assets/characters/${outfit.character}/body.svg`;
+
   return (
     <div
-      className="relative w-full mx-auto select-none"
-      style={{ maxWidth: '280px', aspectRatio: '1 / 2' }}
-      onClick={triggerSpin}
+      className="relative select-none mx-auto"
+      onClick={handleTap}
+      style={{
+        width: '100%',
+        maxWidth: 300,
+        aspectRatio: '300 / 560',
+        border: '3px solid #FF1493',
+        boxShadow: '4px 4px 0 #C2185B, 0 8px 32px rgba(255,20,147,0.3)',
+        borderRadius: 6,
+        overflow: 'hidden',
+        background: '#FFF0F5',
+        cursor: equippedCount >= 3 ? 'pointer' : 'default',
+      }}
     >
+      {/* Layer 0: Boutique background */}
+      <img
+        src="/assets/boutique-bg.svg"
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center top',
+          zIndex: 0, pointerEvents: 'none', display: 'block',
+        }}
+      />
+
+      {/* Layer 1: Base character body SVG */}
+      <img
+        src={charSrc}
+        alt={charData?.name || 'Character'}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'contain', objectPosition: 'center bottom',
+          zIndex: 1, pointerEvents: 'none',
+        }}
+      />
+
+      {/* Layers 2+: Clothing overlays */}
       <div
-        className={`relative w-full h-full transition-transform duration-500 ${
-          spinning ? 'animate-runway-spin' : ''
-        }`}
+        className={spinning ? 'canvas-spin' : ''}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          zIndex: 2,
+        }}
       >
-        {layers.map((layer) => (
-          <CanvasLayer
-            key={layer.key}
-            src={layer.src}
-            zIndex={layer.zIndex}
-            visible={layer.visible}
-            animated={layer.animated}
-            isLegendary={layer.isLegendary}
+        {clothingLayers.map(({ item, slot }) => (
+          <img
+            key={`${slot}-${item.id}`}
+            src={makeClothingOverlay(item)}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'contain', objectPosition: 'center bottom',
+              pointerEvents: 'none',
+              animation: 'fadeIn 0.1s ease-out',
+            }}
           />
         ))}
       </div>
 
-      {/* Runway spin animation */}
+      {/* Tap hint */}
+      {equippedCount >= 3 && !spinning && (
+        <div style={{
+          position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(255,20,147,0.85)', color: '#fff',
+          fontSize: 8, fontFamily: "'Nunito',sans-serif", fontWeight: 700,
+          padding: '2px 8px', borderRadius: 8, pointerEvents: 'none',
+          whiteSpace: 'nowrap', zIndex: 10,
+        }}>
+          TAP FOR RUNWAY! ✨
+        </div>
+      )}
+
       <style>{`
-        @keyframes runway-spin {
-          0% { transform: perspective(600px) rotateY(0deg) scale(1); }
-          25% { transform: perspective(600px) rotateY(15deg) scale(1.02); }
-          50% { transform: perspective(600px) rotateY(0deg) scale(1.05); }
-          75% { transform: perspective(600px) rotateY(-15deg) scale(1.02); }
-          100% { transform: perspective(600px) rotateY(0deg) scale(1); }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes canvasSpin {
+          0%   { transform: perspective(800px) rotateY(0deg) scale(1); }
+          25%  { transform: perspective(800px) rotateY(12deg) scale(1.03); }
+          50%  { transform: perspective(800px) rotateY(0deg) scale(1.05); }
+          75%  { transform: perspective(800px) rotateY(-12deg) scale(1.03); }
+          100% { transform: perspective(800px) rotateY(0deg) scale(1); }
         }
-        .animate-runway-spin {
-          animation: runway-spin 0.6s ease-in-out;
-        }
-        .holo-shimmer {
-          animation: holo 2s linear infinite;
-        }
-        @keyframes holo {
-          0% { filter: hue-rotate(0deg) brightness(1); }
-          50% { filter: hue-rotate(45deg) brightness(1.2); }
-          100% { filter: hue-rotate(0deg) brightness(1); }
-        }
+        .canvas-spin { animation: canvasSpin 0.7s ease-in-out; }
       `}</style>
     </div>
   );
-}
-
-/**
- * Wraps an item preview SVG into a full-body-sized SVG positioned at the correct body area.
- */
-function makePositionedItemSvg(item) {
-  const fill = getResolvedColor(item.color);
-
-  const positioned = {
-    'tops-layer': `<rect x="60" y="130" width="80" height="60" rx="10" fill="${fill}" opacity="0.85"/>
-      <rect x="42" y="130" width="20" height="40" rx="6" fill="${fill}" opacity="0.65"/>
-      <rect x="138" y="130" width="20" height="40" rx="6" fill="${fill}" opacity="0.65"/>`,
-    'bottoms-layer': `<path d="M62 230 L138 230 L135 320 L108 320 L100 270 L92 320 L65 320 Z" fill="${fill}" opacity="0.85"/>`,
-    'shoes-layer': `<ellipse cx="76" cy="335" rx="20" ry="10" fill="${fill}"/>
-      <ellipse cx="124" cy="335" rx="20" ry="10" fill="${fill}"/>
-      <rect x="64" y="328" width="12" height="14" rx="3" fill="${fill}" opacity="0.8"/>
-      <rect x="124" y="328" width="12" height="14" rx="3" fill="${fill}" opacity="0.8"/>`,
-    'outerwear-layer': `<rect x="38" y="128" width="124" height="90" rx="8" fill="${fill}" opacity="0.75"/>
-      <line x1="100" y1="128" x2="100" y2="218" stroke="${fill}" stroke-width="2" opacity="0.4"/>`,
-    'neck-layer': `<ellipse cx="100" cy="125" rx="20" ry="8" fill="${fill}" opacity="0.9"/>
-      <circle cx="100" cy="133" r="5" fill="${fill}"/>`,
-    'wrist-layer': `<rect x="38" y="200" width="22" height="10" rx="4" fill="${fill}"/>
-      <rect x="140" y="200" width="22" height="10" rx="4" fill="${fill}"/>`,
-    'bag-layer': `<rect x="148" y="170" width="30" height="40" rx="6" fill="${fill}" opacity="0.9"/>
-      <path d="M155 170 Q155 155 163 155 Q171 155 171 170" fill="none" stroke="${fill}" stroke-width="3"/>`,
-    'socks-tights-layer': `<rect x="62" y="290" width="28" height="40" rx="8" fill="${fill}" opacity="0.8"/>
-      <rect x="110" y="290" width="28" height="40" rx="8" fill="${fill}" opacity="0.8"/>`,
-    'makeup-layer': `<ellipse cx="82" cy="65" rx="9" ry="6" fill="${fill}" opacity="0.3"/>
-      <ellipse cx="118" cy="65" rx="9" ry="6" fill="${fill}" opacity="0.3"/>
-      <path d="M88 85 Q100 94 112 85" fill="${fill}" opacity="0.6"/>`,
-    'ear-layer': `<circle cx="55" cy="75" r="6" fill="${fill}"/>
-      <circle cx="145" cy="75" r="6" fill="${fill}"/>`,
-    'headwear-layer': `<path d="M58 45 Q60 15 100 10 Q140 15 142 45 L145 50 L55 50 Z" fill="${fill}" opacity="0.9"/>
-      <ellipse cx="100" cy="50" rx="48" ry="8" fill="${fill}" opacity="0.7"/>`,
-  };
-
-  const shapes = positioned[item.slot] || positioned['tops-layer'] || '';
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">${shapes}</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
-function getResolvedColor(color) {
-  const map = {
-    pink: '#FF69B4', black: '#1a1a2e', white: '#f0f0f0', red: '#DC143C',
-    blue: '#4169E1', purple: '#9B59B6', green: '#2ECC71', gold: '#FFD700',
-    silver: '#C0C0C0', orange: '#FF8C00', yellow: '#FFD700', brown: '#8B4513',
-    beige: '#DEB887', denim: '#4682B4', multicolor: '#FF69B4', lavender: '#E6E6FA',
-    coral: '#FF7F50', teal: '#008080', burgundy: '#800020', cream: '#FFFDD0',
-  };
-  if (!color) return '#FF69B4';
-  if (color.startsWith('#')) return color;
-  return map[color.toLowerCase()] || '#FF69B4';
 }

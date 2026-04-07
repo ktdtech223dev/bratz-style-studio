@@ -1,0 +1,642 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 500" width="390" height="500">
+  <defs>
+    <!-- Subtle ceiling gradient -->
+    <linearGradient id="ceilingGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF9ECE"/>
+      <stop offset="100%" stop-color="#E91E8C"/>
+    </linearGradient>
+    <!-- Pink runway strip gradient -->
+    <linearGradient id="runwayGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFB3D9"/>
+      <stop offset="100%" stop-color="#FF69B4"/>
+    </linearGradient>
+    <!-- Glass display case gradient -->
+    <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    </linearGradient>
+    <!-- Floor depth fog overlay -->
+    <linearGradient id="fogGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E91E8C" stop-opacity="0.38"/>
+      <stop offset="60%" stop-color="#E91E8C" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#E91E8C" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Left wall side gradient -->
+    <linearGradient id="leftWallGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C2185B"/>
+      <stop offset="100%" stop-color="#E91E8C"/>
+    </linearGradient>
+    <!-- Right wall side gradient -->
+    <linearGradient id="rightWallGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#E91E8C"/>
+      <stop offset="100%" stop-color="#C2185B"/>
+    </linearGradient>
+    <!-- Ceiling light halo -->
+    <radialGradient id="ceilLight" cx="50%" cy="100%" r="60%">
+      <stop offset="0%" stop-color="#FFD6EC" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FF9ECE" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Boot shine -->
+    <linearGradient id="bootShine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FF4444"/>
+      <stop offset="40%" stop-color="#FF6666"/>
+      <stop offset="100%" stop-color="#CC0000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ═══════════════════════════════════════
+       BACKGROUND WALLS
+  ════════════════════════════════════════ -->
+
+  <!-- Back wall — hot pink/magenta -->
+  <rect x="0" y="0" width="390" height="230" fill="#E91E8C"/>
+
+  <!-- Ceiling light halo on back wall -->
+  <rect x="0" y="0" width="390" height="230" fill="url(#ceilLight)"/>
+
+  <!-- Center panel on back wall — slightly lighter stripe -->
+  <rect x="110" y="0" width="170" height="220" fill="#EE2D97" opacity="0.6"/>
+  <!-- Subtle center highlight bar -->
+  <rect x="155" y="0" width="80" height="220" fill="#F06DB0" opacity="0.25"/>
+
+  <!-- Left wall side panel (perspective trapezoid) -->
+  <polygon points="0,0 110,0 110,220 0,230" fill="url(#leftWallGrad)"/>
+  <!-- Left wall baseboard -->
+  <polygon points="0,225 110,218 110,224 0,234" fill="#880E4F"/>
+
+  <!-- Right wall side panel (perspective trapezoid) -->
+  <polygon points="280,0 390,0 390,230 280,220" fill="url(#rightWallGrad)"/>
+  <!-- Right wall baseboard -->
+  <polygon points="280,218 390,225 390,234 280,224" fill="#880E4F"/>
+
+  <!-- Horizon line / floor-wall seam -->
+  <line x1="0" y1="228" x2="390" y2="228" stroke="#880E4F" stroke-width="2"/>
+
+  <!-- ═══════════════════════════════════════
+       CEILING
+  ════════════════════════════════════════ -->
+  <!-- Top ceiling band -->
+  <rect x="0" y="0" width="390" height="22" fill="#F06DB0" opacity="0.5"/>
+  <!-- Ceiling trim line -->
+  <line x1="0" y1="22" x2="390" y2="22" stroke="#C2185B" stroke-width="1.5"/>
+
+  <!-- ═══════════════════════════════════════
+       CHECKERBOARD FLOOR — Perspective
+       Vanishing point: (195, 228)
+       Floor spans y=228 to y=500
+       Drawn as trapezoid rows, 8 columns
+  ════════════════════════════════════════ -->
+
+  <!--
+    Strategy: manually draw each checkerboard cell as a trapezoid.
+    VP = (195, 228)
+    Floor columns: 8 divisions across width
+    Floor rows: 7 rows with exponential spacing for perspective feel
+
+    Column edges at bottom (y=500): x = 0, 48.75, 97.5, 146.25, 195, 243.75, 292.5, 341.25, 390
+    Column edges at horizon (y=228): they all converge to near VP but stay spread for readability
+    We use linear interpolation: at horizon, x-edges span from ~60 to ~330 (8 cols = ~33.75px each)
+
+    col_edge(col, y) = VP_x + (col_bottom_x - VP_x) * (y - VP_y) / (500 - VP_y)
+    col_bottom[i] = i * 390/8 = i * 48.75
+    col_horiz[i] = 195 + (i*48.75 - 195) * 0   → all collapse to 195 at VP
+
+    We'll define rows at these y levels (perspective spacing):
+    y0=228, y1=248, y2=272, y3=302, y4=340, y5=390, y6=450, y7=500
+  -->
+
+  <!-- Helper: col_x(col, y) = 195 + (col * 48.75 - 195) * (y - 228) / 272 -->
+  <!-- col=0..8, y from 228..500 -->
+
+  <!-- ROW 0: y=228..248  (darkest perspective row, smallest) -->
+  <!-- c0 -->
+  <polygon points="
+    195,228
+    195,228
+    208.82,248
+    181.18,248
+  " fill="#1a1a1a"/>
+  <!-- c1 -->
+  <polygon points="
+    195,228
+    195,228
+    222.65,248
+    208.82,248
+  " fill="#F5F5F5"/>
+  <!-- c2 -->
+  <polygon points="
+    195,228
+    195,228
+    236.47,248
+    222.65,248
+  " fill="#1a1a1a"/>
+  <!-- c3 -->
+  <polygon points="
+    195,228
+    195,228
+    250.29,248
+    236.47,248
+  " fill="#F5F5F5"/>
+  <!-- c4 (mirror of c3) -->
+  <polygon points="
+    195,228
+    195,228
+    167.35,248
+    153.53,248
+  " fill="#F5F5F5"/>
+  <!-- c5 -->
+  <polygon points="
+    195,228
+    195,228
+    153.53,248
+    139.71,248
+  " fill="#1a1a1a"/>
+  <!-- c6 -->
+  <polygon points="
+    195,228
+    195,228
+    139.71,248
+    125.88,248
+  " fill="#F5F5F5"/>
+  <!-- c7 -->
+  <polygon points="
+    195,228
+    195,228
+    125.88,248
+    112.06,248
+  " fill="#1a1a1a"/>
+  <!-- far right half -->
+  <polygon points="
+    195,228
+    195,228
+    264.12,248
+    250.29,248
+  " fill="#1a1a1a"/>
+  <polygon points="
+    195,228
+    195,228
+    278.71,248
+    264.12,248
+  " fill="#F5F5F5"/>
+  <polygon points="
+    195,228
+    195,228
+    293.97,248
+    278.71,248
+  " fill="#1a1a1a"/>
+  <polygon points="
+    195,228
+    195,228
+    181.18,248
+    167.35,248
+  " fill="#1a1a1a"/>
+
+  <!-- ── ROW 1: y=248..272 ── -->
+  <!-- col_x(i, y) = 195 + (i*48.75 - 195) * (y-228)/272 -->
+  <!-- at y=248: factor=(248-228)/272=20/272=0.07353 -->
+  <!-- at y=272: factor=(272-228)/272=44/272=0.16176 -->
+  <!-- col positions at y=248: 0→181.18,1→196.59... wait let me recompute cleanly -->
+  <!--
+    col_x(col, y) = 195 + (col*48.75 - 195) * (y-228)/272
+    col 0: base=-195        col 4: base=0     col 8: base=195
+    y=228 factor=0:   all=195
+    y=248 factor=0.0735:
+      c0: 195+(-195*0.0735)=195-14.33=180.67
+      c1: 195+(48.75-195)*0.0735=195+(-146.25*0.0735)=195-10.75=184.25...
+
+      Actually col*48.75: c0=0,c1=48.75,c2=97.5,c3=146.25,c4=195,c5=243.75,c6=292.5,c7=341.25,c8=390
+      c0: 195+(0-195)*f = 195-195f
+      c1: 195+(48.75-195)*f = 195-146.25f
+      c2: 195+(97.5-195)*f = 195-97.5f
+      c3: 195+(146.25-195)*f = 195-48.75f
+      c4: 195+0=195
+      c5: 195+48.75f
+      c6: 195+97.5f
+      c7: 195+146.25f
+      c8: 195+195f
+
+    f(248)=20/272=0.07353
+      c0=195-14.34=180.66
+      c1=195-10.75=184.25  -- wait this means c1>c0, good
+      Actually c1=195-146.25*0.07353=195-10.75=184.25... but c0=195-195*0.07353=195-14.34=180.66
+      So c0<c1 which is correct: 180.66 < 184.25... but spacing is tiny. Let me reconsider.
+
+      Actually I should spread the columns more. Let me set the horizon spread wider.
+      At horizon y=228, col edges: c0=30, c1=67.5, c2=105, c3=142.5, c4=195(center skipped),
+      ... Actually easier to just draw this with a fixed formula and wider spread.
+
+      Let me use:
+        bottom_x[i] = i * 390/8 (for i=0..8)
+        horiz_x[i] = 195 + (i - 4) * 22   (22px per col at horizon, so span=8*22=176px, from 195-88=107 to 195+88=283)
+
+        bottom: 0, 48.75, 97.5, 146.25, 195, 243.75, 292.5, 341.25, 390
+        horiz:  107, 129, 151, 173, 195, 217, 239, 261, 283
+
+        x(i,y) = horiz_x[i] + (bottom_x[i] - horiz_x[i]) * (y-228)/(500-228)
+               = horiz_x[i] + (bottom_x[i] - horiz_x[i]) * (y-228)/272
+  -->
+
+  <!-- I'll pre-calculate all needed coordinates and draw clean trapezoids.
+       Row y-levels: 228, 248, 272, 302, 340, 390, 450, 500
+       horiz_x = [107, 129, 151, 173, 195, 217, 239, 261, 283]
+       bottom_x = [0, 48.75, 97.5, 146.25, 195, 243.75, 292.5, 341.25, 390]
+
+       x(i,f) = horiz[i] + (bottom[i]-horiz[i])*f,  f=(y-228)/272
+
+       f values:
+         y=228: f=0
+         y=248: f=0.0735
+         y=272: f=0.1618
+         y=302: f=0.2721
+         y=340: f=0.4118
+         y=390: f=0.5956
+         y=450: f=0.8088
+         y=500: f=1.0
+
+       Let me compute x(i,f) for each row/col combo:
+
+       diff[i] = bottom[i]-horiz[i]:
+         i=0: 0-107=-107
+         i=1: 48.75-129=-80.25
+         i=2: 97.5-151=-53.5
+         i=3: 146.25-173=-26.75
+         i=4: 195-195=0
+         i=5: 243.75-217=26.75
+         i=6: 292.5-239=53.5
+         i=7: 341.25-261=80.25
+         i=8: 390-283=107
+
+       x(i,f) = horiz[i] + diff[i]*f
+
+       y=228 (f=0):   107,129,151,173,195,217,239,261,283
+       y=248 (f=0.0735): 107-7.86,129-5.9,151-3.93,173-1.97,195,217+1.97,239+3.93,261+5.9,283+7.86
+                       = 99.1,123.1,147.1,171.0,195,219.0,242.9,266.9,290.9
+       y=272 (f=0.1618): 107-17.31,129-12.98,151-8.66,173-4.33,195,217+4.33,239+8.66,261+12.98,283+17.31
+                        = 89.7,116.0,142.3,168.7,195,221.3,247.7,274.0,300.3
+       y=302 (f=0.2721): 107-29.11,129-21.83,151-14.56,173-7.28,195,217+7.28,239+14.56,261+21.83,283+29.11
+                        = 77.9,107.2,136.4,165.7,195,224.3,253.6,282.8,312.1
+       y=340 (f=0.4118): 107-44.06,129-33.05,151-22.03,173-11.02,195,217+11.02,239+22.03,261+33.05,283+44.06
+                        = 62.9,96.0,129.0,162.0,195,228.0,261.0,294.1,327.1
+       y=390 (f=0.5956): 107-63.73,129-47.80,151-31.86,173-15.93,195,217+15.93,239+31.86,261+47.80,283+63.73
+                        = 43.3,81.2,119.1,157.1,195,232.9,270.9,308.8,346.7
+       y=450 (f=0.8088): 107-86.54,129-64.91,151-43.27,173-21.64,195,217+21.64,239+43.27,261+64.91,283+86.54
+                        = 20.5,64.1,107.7,151.4,195,238.6,282.3,325.9,369.5
+       y=500 (f=1.0):   0,48.75,97.5,146.25,195,243.75,292.5,341.25,390
+
+       Now each cell (row r, col c) is black if (r+c) is even, white if odd.
+       Top of row r: y_r, bottom: y_{r+1}
+       Left x of col c at top: x(c, f_r), right: x(c+1, f_r)
+       Left x of col c at bottom: x(c, f_{r+1}), right: x(c+1, f_{r+1})
+
+       Rows: 0=228-248, 1=248-272, 2=272-302, 3=302-340, 4=340-390, 5=390-450, 6=450-500
+       Cols: 0-7
+       Cell color: black if (r+c)%2==0, white if (r+c)%2==1
+  -->
+
+  <!-- ROW 0: y=228..248, top=[107,129,151,173,195,217,239,261,283], bottom=[99.1,123.1,147.1,171.0,195,219.0,242.9,266.9,290.9] -->
+  <!-- col0 (r=0,c=0, even=black): -->
+  <polygon points="107,228 129,228 123.1,248 99.1,248" fill="#1a1a1a"/>
+  <!-- col1 (odd=white): -->
+  <polygon points="129,228 151,228 147.1,248 123.1,248" fill="#F5F5F5"/>
+  <!-- col2 (even=black): -->
+  <polygon points="151,228 173,228 171.0,248 147.1,248" fill="#1a1a1a"/>
+  <!-- col3 (odd=white): -->
+  <polygon points="173,228 195,228 195,248 171.0,248" fill="#F5F5F5"/>
+  <!-- col4 (even=black): -->
+  <polygon points="195,228 217,228 219.0,248 195,248" fill="#1a1a1a"/>
+  <!-- col5 (odd=white): -->
+  <polygon points="217,228 239,228 242.9,248 219.0,248" fill="#F5F5F5"/>
+  <!-- col6 (even=black): -->
+  <polygon points="239,228 261,228 266.9,248 242.9,248" fill="#1a1a1a"/>
+  <!-- col7 (odd=white): -->
+  <polygon points="261,228 283,228 290.9,248 266.9,248" fill="#F5F5F5"/>
+  <!-- Fill left & right gaps at row0 -->
+  <polygon points="0,228 107,228 99.1,248 0,248" fill="#1a1a1a"/>
+  <polygon points="283,228 390,228 390,248 290.9,248" fill="#1a1a1a"/>
+
+  <!-- ROW 1: y=248..272, top=[99.1,123.1,147.1,171.0,195,219.0,242.9,266.9,290.9], bottom=[89.7,116.0,142.3,168.7,195,221.3,247.7,274.0,300.3] -->
+  <!-- (r=1, c=0 → odd=white) -->
+  <polygon points="99.1,248 123.1,248 116.0,272 89.7,272" fill="#F5F5F5"/>
+  <polygon points="123.1,248 147.1,248 142.3,272 116.0,272" fill="#1a1a1a"/>
+  <polygon points="147.1,248 171.0,248 168.7,272 142.3,272" fill="#F5F5F5"/>
+  <polygon points="171.0,248 195,248 195,272 168.7,272" fill="#1a1a1a"/>
+  <polygon points="195,248 219.0,248 221.3,272 195,272" fill="#F5F5F5"/>
+  <polygon points="219.0,248 242.9,248 247.7,272 221.3,272" fill="#1a1a1a"/>
+  <polygon points="242.9,248 266.9,248 274.0,272 247.7,272" fill="#F5F5F5"/>
+  <polygon points="266.9,248 290.9,248 300.3,272 274.0,272" fill="#1a1a1a"/>
+  <!-- gaps -->
+  <polygon points="0,248 99.1,248 89.7,272 0,272" fill="#F5F5F5"/>
+  <polygon points="290.9,248 390,248 390,272 300.3,272" fill="#F5F5F5"/>
+
+  <!-- ROW 2: y=272..302, top=[89.7,116.0,142.3,168.7,195,221.3,247.7,274.0,300.3], bottom=[77.9,107.2,136.4,165.7,195,224.3,253.6,282.8,312.1] -->
+  <!-- (r=2, c=0 → even=black) -->
+  <polygon points="89.7,272 116.0,272 107.2,302 77.9,302" fill="#1a1a1a"/>
+  <polygon points="116.0,272 142.3,272 136.4,302 107.2,302" fill="#F5F5F5"/>
+  <polygon points="142.3,272 168.7,272 165.7,302 136.4,302" fill="#1a1a1a"/>
+  <polygon points="168.7,272 195,272 195,302 165.7,302" fill="#F5F5F5"/>
+  <polygon points="195,272 221.3,272 224.3,302 195,302" fill="#1a1a1a"/>
+  <polygon points="221.3,272 247.7,272 253.6,302 224.3,302" fill="#F5F5F5"/>
+  <polygon points="247.7,272 274.0,272 282.8,302 253.6,302" fill="#1a1a1a"/>
+  <polygon points="274.0,272 300.3,272 312.1,302 282.8,302" fill="#F5F5F5"/>
+  <!-- gaps -->
+  <polygon points="0,272 89.7,272 77.9,302 0,302" fill="#1a1a1a"/>
+  <polygon points="300.3,272 390,272 390,302 312.1,302" fill="#1a1a1a"/>
+
+  <!-- ROW 3: y=302..340, top=[77.9,107.2,136.4,165.7,195,224.3,253.6,282.8,312.1], bottom=[62.9,96.0,129.0,162.0,195,228.0,261.0,294.1,327.1] -->
+  <!-- (r=3, c=0 → odd=white) -->
+  <polygon points="77.9,302 107.2,302 96.0,340 62.9,340" fill="#F5F5F5"/>
+  <polygon points="107.2,302 136.4,302 129.0,340 96.0,340" fill="#1a1a1a"/>
+  <polygon points="136.4,302 165.7,302 162.0,340 129.0,340" fill="#F5F5F5"/>
+  <polygon points="165.7,302 195,302 195,340 162.0,340" fill="#1a1a1a"/>
+  <polygon points="195,302 224.3,302 228.0,340 195,340" fill="#F5F5F5"/>
+  <polygon points="224.3,302 253.6,302 261.0,340 228.0,340" fill="#1a1a1a"/>
+  <polygon points="253.6,302 282.8,302 294.1,340 261.0,340" fill="#F5F5F5"/>
+  <polygon points="282.8,302 312.1,302 327.1,340 294.1,340" fill="#1a1a1a"/>
+  <!-- gaps -->
+  <polygon points="0,302 77.9,302 62.9,340 0,340" fill="#F5F5F5"/>
+  <polygon points="312.1,302 390,302 390,340 327.1,340" fill="#F5F5F5"/>
+
+  <!-- ROW 4: y=340..390, top=[62.9,96.0,129.0,162.0,195,228.0,261.0,294.1,327.1], bottom=[43.3,81.2,119.1,157.1,195,232.9,270.9,308.8,346.7] -->
+  <!-- (r=4, c=0 → even=black) -->
+  <polygon points="62.9,340 96.0,340 81.2,390 43.3,390" fill="#1a1a1a"/>
+  <polygon points="96.0,340 129.0,340 119.1,390 81.2,390" fill="#F5F5F5"/>
+  <polygon points="129.0,340 162.0,340 157.1,390 119.1,390" fill="#1a1a1a"/>
+  <polygon points="162.0,340 195,340 195,390 157.1,390" fill="#F5F5F5"/>
+  <polygon points="195,340 228.0,340 232.9,390 195,390" fill="#1a1a1a"/>
+  <polygon points="228.0,340 261.0,340 270.9,390 232.9,390" fill="#F5F5F5"/>
+  <polygon points="261.0,340 294.1,340 308.8,390 270.9,390" fill="#1a1a1a"/>
+  <polygon points="294.1,340 327.1,340 346.7,390 308.8,390" fill="#F5F5F5"/>
+  <!-- gaps -->
+  <polygon points="0,340 62.9,340 43.3,390 0,390" fill="#1a1a1a"/>
+  <polygon points="327.1,340 390,340 390,390 346.7,390" fill="#1a1a1a"/>
+
+  <!-- ROW 5: y=390..450, top=[43.3,81.2,119.1,157.1,195,232.9,270.9,308.8,346.7], bottom=[20.5,64.1,107.7,151.4,195,238.6,282.3,325.9,369.5] -->
+  <!-- (r=5, c=0 → odd=white) -->
+  <polygon points="43.3,390 81.2,390 64.1,450 20.5,450" fill="#F5F5F5"/>
+  <polygon points="81.2,390 119.1,390 107.7,450 64.1,450" fill="#1a1a1a"/>
+  <polygon points="119.1,390 157.1,390 151.4,450 107.7,450" fill="#F5F5F5"/>
+  <polygon points="157.1,390 195,390 195,450 151.4,450" fill="#1a1a1a"/>
+  <polygon points="195,390 232.9,390 238.6,450 195,450" fill="#F5F5F5"/>
+  <polygon points="232.9,390 270.9,390 282.3,450 238.6,450" fill="#1a1a1a"/>
+  <polygon points="270.9,390 308.8,390 325.9,450 282.3,450" fill="#F5F5F5"/>
+  <polygon points="308.8,390 346.7,390 369.5,450 325.9,450" fill="#1a1a1a"/>
+  <!-- gaps -->
+  <polygon points="0,390 43.3,390 20.5,450 0,450" fill="#F5F5F5"/>
+  <polygon points="346.7,390 390,390 390,450 369.5,450" fill="#F5F5F5"/>
+
+  <!-- ROW 6: y=450..500, top=[20.5,64.1,107.7,151.4,195,238.6,282.3,325.9,369.5], bottom=[0,48.75,97.5,146.25,195,243.75,292.5,341.25,390] -->
+  <!-- (r=6, c=0 → even=black) -->
+  <polygon points="20.5,450 64.1,450 48.75,500 0,500" fill="#1a1a1a"/>
+  <polygon points="64.1,450 107.7,450 97.5,500 48.75,500" fill="#F5F5F5"/>
+  <polygon points="107.7,450 151.4,450 146.25,500 97.5,500" fill="#1a1a1a"/>
+  <polygon points="151.4,450 195,450 195,500 146.25,500" fill="#F5F5F5"/>
+  <polygon points="195,450 238.6,450 243.75,500 195,500" fill="#1a1a1a"/>
+  <polygon points="238.6,450 282.3,450 292.5,500 243.75,500" fill="#F5F5F5"/>
+  <polygon points="282.3,450 325.9,450 341.25,500 292.5,500" fill="#1a1a1a"/>
+  <polygon points="325.9,450 369.5,450 390,500 341.25,500" fill="#F5F5F5"/>
+  <!-- gaps -->
+  <polygon points="0,450 20.5,450 0,500" fill="#1a1a1a"/>
+  <polygon points="369.5,450 390,450 390,500" fill="#1a1a1a"/>
+
+  <!-- ═══════════════════════════════════════
+       PINK RUNWAY CARPET — center strip
+  ════════════════════════════════════════ -->
+  <!-- Carpet strip: runs from bottom center to horizon, narrowing with perspective -->
+  <!-- Bottom: x=137.5..252.5 (115px wide), Horizon: x=172..218 (46px wide) -->
+  <polygon points="172,228 218,228 252.5,500 137.5,500" fill="url(#runwayGrad)" opacity="0.82"/>
+  <!-- Carpet edge highlights -->
+  <line x1="172" y1="228" x2="137.5" y2="500" stroke="#FF1493" stroke-width="2" opacity="0.6"/>
+  <line x1="218" y1="228" x2="252.5" y2="500" stroke="#FF1493" stroke-width="2" opacity="0.6"/>
+
+  <!-- Floor depth fog (simulates perspective fading near horizon) -->
+  <rect x="0" y="228" width="390" height="272" fill="url(#fogGrad)"/>
+
+  <!-- ═══════════════════════════════════════
+       LEFT GLASS DISPLAY CASE — Red Boots
+  ════════════════════════════════════════ -->
+  <!-- Cabinet body -->
+  <rect x="0" y="60" width="80" height="180" fill="#C2185B" rx="2"/>
+  <!-- Cabinet top -->
+  <rect x="0" y="55" width="84" height="10" fill="#880E4F" rx="1"/>
+  <!-- Cabinet base -->
+  <rect x="0" y="238" width="84" height="8" fill="#880E4F"/>
+  <!-- Cabinet frame legs -->
+  <rect x="0" y="246" width="14" height="20" fill="#6A0036"/>
+  <rect x="70" y="246" width="14" height="20" fill="#6A0036"/>
+
+  <!-- Glass panels — front face -->
+  <rect x="4" y="65" width="72" height="170" fill="url(#glassGrad)" rx="1"/>
+  <!-- Glass highlight reflection -->
+  <rect x="8" y="68" width="12" height="160" fill="#FFFFFF" opacity="0.22" rx="1"/>
+
+  <!-- Cabinet shelf dividers -->
+  <rect x="4" y="120" width="72" height="4" fill="#FFFFFF" opacity="0.5"/>
+  <rect x="4" y="175" width="72" height="4" fill="#FFFFFF" opacity="0.5"/>
+
+  <!-- Frame border lines -->
+  <rect x="4" y="65" width="72" height="170" fill="none" stroke="#FFFFFF" stroke-width="2" rx="1" opacity="0.7"/>
+  <!-- Inner frame detail -->
+  <rect x="4" y="65" width="72" height="51" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+  <rect x="4" y="120" width="72" height="51" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+  <rect x="4" y="175" width="72" height="60" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+
+  <!-- RED PLATFORM BOOTS — Top shelf -->
+  <!-- Boot left -->
+  <g transform="translate(14, 75)">
+    <!-- Boot shaft -->
+    <rect x="0" y="0" width="14" height="28" fill="url(#bootShine)" rx="2"/>
+    <!-- Boot toe box -->
+    <rect x="0" y="26" width="16" height="8" fill="#CC0000" rx="1"/>
+    <!-- Platform sole -->
+    <rect x="-1" y="32" width="18" height="5" fill="#880000" rx="1"/>
+    <!-- Boot shine highlight -->
+    <rect x="2" y="2" width="4" height="16" fill="#FF8888" opacity="0.5" rx="1"/>
+  </g>
+  <!-- Boot right -->
+  <g transform="translate(38, 75)">
+    <rect x="0" y="0" width="14" height="28" fill="url(#bootShine)" rx="2"/>
+    <rect x="0" y="26" width="16" height="8" fill="#CC0000" rx="1"/>
+    <rect x="-1" y="32" width="18" height="5" fill="#880000" rx="1"/>
+    <rect x="2" y="2" width="4" height="16" fill="#FF8888" opacity="0.5" rx="1"/>
+  </g>
+
+  <!-- Middle shelf: handbag display -->
+  <g transform="translate(20, 130)">
+    <!-- Pink purse shape -->
+    <rect x="0" y="8" width="36" height="24" fill="#FF69B4" rx="3"/>
+    <!-- Purse flap -->
+    <ellipse cx="18" cy="8" rx="18" ry="10" fill="#FF1493"/>
+    <!-- Purse strap -->
+    <path d="M8,8 Q18,0 28,8" stroke="#CC0066" stroke-width="2" fill="none"/>
+    <!-- Clasp -->
+    <circle cx="18" cy="8" r="3" fill="#FFD700"/>
+  </g>
+
+  <!-- Bottom shelf: accessories -->
+  <g transform="translate(12, 185)">
+    <!-- Sunglasses shape -->
+    <circle cx="10" cy="12" r="8" fill="none" stroke="#9C27B0" stroke-width="2"/>
+    <circle cx="28" cy="12" r="8" fill="none" stroke="#9C27B0" stroke-width="2"/>
+    <line x1="18" y1="12" x2="20" y2="12" stroke="#9C27B0" stroke-width="2"/>
+    <line x1="0" y1="12" x2="-4" y2="10" stroke="#9C27B0" stroke-width="2"/>
+    <line x1="36" y1="12" x2="40" y2="10" stroke="#9C27B0" stroke-width="2"/>
+    <!-- Lens tint -->
+    <circle cx="10" cy="12" r="7" fill="#9C27B0" opacity="0.3"/>
+    <circle cx="28" cy="12" r="7" fill="#9C27B0" opacity="0.3"/>
+  </g>
+
+  <!-- Cabinet side panel (3D effect) -->
+  <polygon points="80,60 84,58 84,246 80,248" fill="#A01050" opacity="0.8"/>
+
+  <!-- ═══════════════════════════════════════
+       RIGHT GLASS DISPLAY / CLOTHING RACK
+  ════════════════════════════════════════ -->
+  <!-- Cabinet body -->
+  <rect x="310" y="60" width="80" height="180" fill="#C2185B" rx="2"/>
+  <!-- Cabinet top -->
+  <rect x="306" y="55" width="84" height="10" fill="#880E4F" rx="1"/>
+  <!-- Cabinet base -->
+  <rect x="306" y="238" width="84" height="8" fill="#880E4F"/>
+  <!-- Cabinet frame legs -->
+  <rect x="316" y="246" width="14" height="20" fill="#6A0036"/>
+  <rect x="376" y="246" width="14" height="20" fill="#6A0036"/>
+
+  <!-- Glass panels — front face -->
+  <rect x="314" y="65" width="72" height="170" fill="url(#glassGrad)" rx="1"/>
+  <!-- Glass highlight reflection -->
+  <rect x="370" y="68" width="12" height="160" fill="#FFFFFF" opacity="0.22" rx="1"/>
+
+  <!-- Cabinet shelf dividers -->
+  <rect x="314" y="120" width="72" height="4" fill="#FFFFFF" opacity="0.5"/>
+  <rect x="314" y="175" width="72" height="4" fill="#FFFFFF" opacity="0.5"/>
+
+  <!-- Frame border lines -->
+  <rect x="314" y="65" width="72" height="170" fill="none" stroke="#FFFFFF" stroke-width="2" rx="1" opacity="0.7"/>
+
+  <!-- CLOTHING ITEMS — Top shelf: Purple/pink outfit on hanger -->
+  <g transform="translate(322, 72)">
+    <!-- Hanger wire -->
+    <path d="M8,0 Q28,0 48,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <path d="M28,0 Q28,-6 32,-8 Q36,-6 36,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <!-- Dress top/bodice -->
+    <rect x="6" y="0" width="44" height="20" fill="#9C27B0" rx="2"/>
+    <!-- Dress skirt flare -->
+    <polygon points="6,20 0,42 56,42 50,20" fill="#CE93D8"/>
+    <!-- Dress detail - belt -->
+    <rect x="6" y="18" width="44" height="4" fill="#7B1FA2"/>
+    <!-- Sparkle details -->
+    <circle cx="28" cy="10" r="2" fill="#FFD700"/>
+    <circle cx="20" cy="8" r="1.5" fill="#FFD700"/>
+    <circle cx="36" cy="8" r="1.5" fill="#FFD700"/>
+  </g>
+
+  <!-- Middle shelf: Red outfit -->
+  <g transform="translate(322, 130)">
+    <path d="M8,0 Q28,0 48,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <path d="M28,0 Q28,-6 32,-8 Q36,-6 36,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <!-- Top -->
+    <rect x="8" y="0" width="40" height="16" fill="#E53935" rx="2"/>
+    <!-- Skirt -->
+    <polygon points="8,16 2,38 54,38 48,16" fill="#EF9A9A"/>
+    <rect x="8" y="14" width="40" height="4" fill="#B71C1C"/>
+  </g>
+
+  <!-- Bottom shelf: Pink mini dress + accessories -->
+  <g transform="translate(322, 183)">
+    <path d="M8,0 Q24,0 40,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <path d="M24,0 Q24,-5 27,-7 Q30,-5 30,0" stroke="#C0C0C0" stroke-width="1.5" fill="none"/>
+    <!-- Mini dress -->
+    <rect x="8" y="0" width="32" height="12" fill="#FF69B4" rx="2"/>
+    <polygon points="8,12 4,28 44,28 40,12" fill="#FFB6C1"/>
+    <!-- Shoe box beside dress -->
+    <rect x="44" y="10" width="22" height="18" fill="#FF4081" rx="1"/>
+    <rect x="44" y="10" width="22" height="4" fill="#F50057" rx="1"/>
+  </g>
+
+  <!-- Cabinet left side panel (3D effect) -->
+  <polygon points="310,60 306,58 306,246 310,248" fill="#A01050" opacity="0.8"/>
+
+  <!-- ═══════════════════════════════════════
+       WALL DECORATIONS
+  ════════════════════════════════════════ -->
+
+  <!-- Star decorations on back wall -->
+  <!-- Top left star cluster -->
+  <g opacity="0.7">
+    <polygon points="30,35 33,28 36,35 43,35 37,40 39,47 33,43 27,47 29,40 23,35" fill="#FFD700" transform="scale(0.6) translate(12,25)"/>
+  </g>
+  <g opacity="0.5">
+    <polygon points="55,25 57,20 59,25 64,25 60,28 61,33 57,30 53,33 54,28 50,25" fill="#FFD700" transform="scale(0.5) translate(42,18)"/>
+  </g>
+
+  <!-- Top right star cluster -->
+  <g opacity="0.7">
+    <polygon points="345,35 348,28 351,35 358,35 352,40 354,47 348,43 342,47 344,40 338,35" fill="#FFD700" transform="scale(0.6) translate(182,25)"/>
+  </g>
+
+  <!-- Hanging star lights / chandelier suggestion -->
+  <g transform="translate(195, 0)">
+    <!-- Chandelier arm -->
+    <line x1="-60" y1="15" x2="60" y2="15" stroke="#FFD700" stroke-width="1.5" opacity="0.8"/>
+    <line x1="0" y1="0" x2="0" y2="15" stroke="#FFD700" stroke-width="1.5" opacity="0.8"/>
+    <!-- Hanging gems -->
+    <ellipse cx="-60" cy="20" rx="4" ry="6" fill="#FF69B4" opacity="0.9"/>
+    <ellipse cx="-30" cy="22" rx="3" ry="5" fill="#FF1493" opacity="0.8"/>
+    <ellipse cx="0" cy="24" rx="5" ry="7" fill="#FFD700" opacity="0.9"/>
+    <ellipse cx="30" cy="22" rx="3" ry="5" fill="#FF1493" opacity="0.8"/>
+    <ellipse cx="60" cy="20" rx="4" ry="6" fill="#FF69B4" opacity="0.9"/>
+    <!-- Sparkle glints -->
+    <line x1="0" y1="18" x2="0" y2="30" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7"/>
+    <line x1="-5" y1="24" x2="5" y2="24" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7"/>
+  </g>
+
+  <!-- Wall sign / boutique name banner -->
+  <rect x="130" y="68" width="130" height="30" rx="4" fill="#880E4F" opacity="0.85"/>
+  <rect x="132" y="70" width="126" height="26" rx="3" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.9"/>
+  <!-- Text hint (stylized) — kept as simple shapes for Y2K game feel -->
+  <text x="195" y="88" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="11" font-weight="900" fill="#FFD700" letter-spacing="1" opacity="0.95">BOUTIQUE</text>
+
+  <!-- Dotted border trim on back wall -->
+  <line x1="110" y1="5" x2="110" y2="220" stroke="#C2185B" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+  <line x1="280" y1="5" x2="280" y2="220" stroke="#C2185B" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+
+  <!-- ═══════════════════════════════════════
+       ADDITIONAL Y2K DETAILS
+  ════════════════════════════════════════ -->
+
+  <!-- Sparkle/glitter dots on floor near horizon (depth effect) -->
+  <circle cx="150" cy="235" r="1.5" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="200" cy="232" r="1" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="240" cy="236" r="1.5" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="170" cy="240" r="1" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="220" cy="238" r="1" fill="#FFFFFF" opacity="0.4"/>
+
+  <!-- Heart decorations on side walls -->
+  <!-- Left wall heart -->
+  <g transform="translate(55, 140)" opacity="0.6">
+    <path d="M0,-8 C-3,-12 -10,-12 -10,-5 C-10,2 0,10 0,10 C0,10 10,2 10,-5 C10,-12 3,-12 0,-8Z" fill="#FF69B4" transform="scale(0.6)"/>
+  </g>
+  <!-- Right wall heart -->
+  <g transform="translate(335, 140)" opacity="0.6">
+    <path d="M0,-8 C-3,-12 -10,-12 -10,-5 C-10,2 0,10 0,10 C0,10 10,2 10,-5 C10,-12 3,-12 0,-8Z" fill="#FF69B4" transform="scale(0.6)"/>
+  </g>
+
+  <!-- Small pink polka dots on walls (Y2K wallpaper pattern) -->
+  <circle cx="120" cy="40" r="3" fill="#FF69B4" opacity="0.3"/>
+  <circle cx="145" cy="55" r="2" fill="#FFD700" opacity="0.3"/>
+  <circle cx="165" cy="35" r="2.5" fill="#FF69B4" opacity="0.25"/>
+  <circle cx="255" cy="40" r="3" fill="#FF69B4" opacity="0.3"/>
+  <circle cx="235" cy="58" r="2" fill="#FFD700" opacity="0.3"/>
+  <circle cx="275" cy="32" r="2.5" fill="#FF69B4" opacity="0.25"/>
+  <circle cx="130" cy="170" r="2" fill="#FF1493" opacity="0.2"/>
+  <circle cx="260" cy="160" r="2" fill="#FF1493" opacity="0.2"/>
+
+  <!-- Subtle vignette overlay for depth/polish -->
+  <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+    <stop offset="60%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#6A0036" stop-opacity="0.25"/>
+  </radialGradient>
+  <rect x="0" y="0" width="390" height="500" fill="url(#vignette)"/>
+
+</svg>

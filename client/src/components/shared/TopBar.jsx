@@ -1,15 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-/* eslint-disable react/no-unknown-property */
 import useGameStore from '../../store/gameStore';
-
-const SCREEN_TITLES = {
-  dressup: 'Dress Up',
-  gacha: 'Gacha',
-  challenges: 'Challenges',
-  collection: 'Collection',
-  profile: 'Profile',
-  'character-select': 'Choose Your Bratz',
-};
 
 /* Animated number that counts up/down to the target value */
 function AnimatedCount({ value }) {
@@ -43,11 +33,11 @@ function AnimatedCount({ value }) {
 
   return (
     <span
-      className="transition-transform duration-150"
       style={{
-        fontFamily: "'Orbitron', sans-serif",
-        fontWeight: 700,
-        fontSize: 13,
+        fontFamily: "'Nunito', sans-serif",
+        fontWeight: 800,
+        fontSize: 12,
+        color: '#1a0010',
       }}
     >
       {display.toLocaleString()}
@@ -60,18 +50,35 @@ function CurrencyIcon({ src, fallback, color }) {
   const [useFallback, setUseFallback] = useState(false);
 
   if (useFallback) {
-    return <span style={{ fontSize: 14, color, lineHeight: 1 }}>{fallback}</span>;
+    return <span style={{ fontSize: 13, color, lineHeight: 1 }}>{fallback}</span>;
   }
 
   return (
     <img
       src={src}
       alt=""
-      width={16}
-      height={16}
+      width={15}
+      height={15}
       onError={() => setUseFallback(true)}
       style={{ display: 'block' }}
     />
+  );
+}
+
+/* Currency pill badge — white with pink border */
+function CurrencyPill({ icon, fallback, iconColor, value, src }) {
+  return (
+    <div
+      className="flex items-center gap-1 rounded-full px-2 py-1"
+      style={{
+        background: '#FFFFFF',
+        border: '2px solid #FF69B4',
+        boxShadow: '1px 1px 0 #FF1493',
+      }}
+    >
+      <CurrencyIcon src={src} fallback={fallback} color={iconColor} />
+      <AnimatedCount value={value} />
+    </div>
   );
 }
 
@@ -82,80 +89,73 @@ export default function TopBar() {
   const character = useGameStore((s) => s.outfit.character);
   const setScreen = useGameStore((s) => s.setScreen);
 
-  const title = SCREEN_TITLES[currentScreen] || 'Style Studio';
+  /* Portrait emoji by character */
+  const portraitEmoji = {
+    cloe:   '👱‍♀️',
+    yasmin: '👩',
+    sasha:  '👩‍🦱',
+    jade:   '👩‍🦳',
+  }[character] || '💃';
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3"
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 no-select"
       style={{
         height: 52,
-        background: 'rgba(13,0,16,0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,45,120,0.1)',
+        background: '#FFFFFF',
+        borderBottom: '2px solid #FF69B4',
+        boxShadow: '0 2px 0 rgba(255,20,147,0.1)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      {/* left: character portrait */}
+      {/* Left: character portrait circle */}
       <button
         onClick={() => setScreen('character-select')}
         className="touch-target flex items-center justify-center rounded-full overflow-hidden"
         style={{
           width: 36,
           height: 36,
-          background: 'linear-gradient(135deg, #ff2d78, #9c27b0)',
-          border: '2px solid rgba(255,255,255,0.2)',
+          background: '#FFF0F5',
+          border: '2px solid #FF1493',
+          boxShadow: '2px 2px 0 #C2185B',
           flexShrink: 0,
+          cursor: 'pointer',
         }}
         aria-label="Change character"
       >
-        <span style={{ fontSize: 18, lineHeight: 1 }}>
-          {character === 'cloe' && '\uD83D\uDC71\u200D\u2640\uFE0F'}
-          {character === 'yasmin' && '\uD83D\uDC69'}
-          {character === 'sasha' && '\uD83D\uDC69\u200D\uD83E\uDDB1'}
-          {character === 'jade' && '\uD83D\uDC69\u200D\uD83E\uDDB3'}
-          {!['cloe', 'yasmin', 'sasha', 'jade'].includes(character) && '\uD83D\uDC83'}
-        </span>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>{portraitEmoji}</span>
       </button>
 
-      {/* center: title */}
+      {/* Center: title in Press Start 2P */}
       <h1
-        className="text-legendary text-center truncate mx-2"
+        className="text-center truncate mx-2"
         style={{
-          fontFamily: "'Pacifico', cursive",
-          fontSize: 16,
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 7,
+          color: '#FF1493',
+          textShadow: '1px 1px 0 #1a0010',
           flex: 1,
-          lineHeight: 1.2,
+          lineHeight: 1.4,
+          letterSpacing: '0.02em',
         }}
       >
-        {currentScreen === 'dressup' ? '\u2728 BRATZ STYLE STUDIO \u2728' : title}
+        ✨ BRATZ STYLE STUDIO ✨
       </h1>
 
-      {/* right: currency display */}
-      <div className="flex items-center gap-2" style={{ flexShrink: 0 }}>
-        {/* coins */}
-        <div
-          className="flex items-center gap-1 rounded-full px-2 py-1"
-          style={{
-            background: 'rgba(255,215,0,0.12)',
-            border: '1px solid rgba(255,215,0,0.25)',
-          }}
-        >
-          <CurrencyIcon src="/assets/icons/coin.svg" fallback={'\uD83E\uDE99'} color="#ffd700" />
-          <AnimatedCount value={coins} />
-        </div>
-
-        {/* gems */}
-        <div
-          className="flex items-center gap-1 rounded-full px-2 py-1"
-          style={{
-            background: 'rgba(0,229,255,0.1)',
-            border: '1px solid rgba(0,229,255,0.2)',
-          }}
-        >
-          <CurrencyIcon src="/assets/icons/gem.svg" fallback={'\uD83D\uDC8E'} color="#00e5ff" />
-          <AnimatedCount value={gems} />
-        </div>
+      {/* Right: coin + gem displays */}
+      <div className="flex items-center gap-1.5" style={{ flexShrink: 0 }}>
+        <CurrencyPill
+          src="/assets/icons/coin.svg"
+          fallback="🪙"
+          iconColor="#DAA520"
+          value={coins}
+        />
+        <CurrencyPill
+          src="/assets/icons/gem.svg"
+          fallback="💎"
+          iconColor="#9c27b0"
+          value={gems}
+        />
       </div>
     </header>
   );

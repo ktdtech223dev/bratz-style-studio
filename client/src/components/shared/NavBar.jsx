@@ -2,11 +2,11 @@ import React from 'react';
 import useGameStore from '../../store/gameStore';
 
 const TABS = [
-  { id: 'dressup', label: 'Dress Up', icon: '\uD83D\uDC57', screen: 'dressup' },
-  { id: 'gacha', label: 'Gacha', icon: '\u2728', screen: 'gacha' },
-  { id: 'challenges', label: 'Challenges', icon: '\uD83C\uDFAF', screen: 'challenges' },
-  { id: 'collection', label: 'Collection', icon: '\uD83D\uDC51', screen: 'collection' },
-  { id: 'profile', label: 'Profile', icon: '\uD83D\uDC96', screen: 'profile' },
+  { id: 'dressup',    label: 'Dress Up',   icon: '👗', screen: 'dressup'    },
+  { id: 'gacha',      label: 'Gacha',       icon: '✨', screen: 'gacha'      },
+  { id: 'challenges', label: 'Challenges',  icon: '🎯', screen: 'challenges' },
+  { id: 'collection', label: 'Collection',  icon: '👑', screen: 'collection' },
+  { id: 'profile',    label: 'Profile',     icon: '💖', screen: 'profile'    },
 ];
 
 export default function NavBar() {
@@ -15,12 +15,11 @@ export default function NavBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around no-select"
       style={{
-        background: 'rgba(13,0,16,0.9)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderTop: '1px solid rgba(255,45,120,0.15)',
+        background: '#FFFFFF',
+        borderTop: '3px solid #FF1493',
+        boxShadow: '0 -2px 0 #FF69B4, 0 -6px 16px rgba(255,20,147,0.12)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
@@ -30,52 +29,78 @@ export default function NavBar() {
           <button
             key={tab.id}
             onClick={() => setScreen(tab.screen)}
-            className="touch-target relative flex flex-col items-center justify-center pt-2 pb-1 px-1 transition-all duration-200"
-            style={{ flex: 1, minHeight: 56, WebkitTapHighlightColor: 'transparent' }}
+            className="touch-target relative flex flex-col items-center justify-center pt-2 pb-2 px-1"
+            style={{
+              flex: 1,
+              minHeight: 56,
+              minWidth: 44,
+              WebkitTapHighlightColor: 'transparent',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
             aria-label={tab.label}
             aria-current={isActive ? 'page' : undefined}
           >
-            {/* active indicator bar */}
+            {/* Active top border highlight */}
             {isActive && (
               <span
-                className="absolute top-0 left-1/2 -translate-x-1/2 rounded-b-full"
+                className="absolute top-0 left-1/2 -translate-x-1/2"
                 style={{
-                  width: 28,
+                  width: 32,
                   height: 3,
-                  background: '#ff2d78',
-                  boxShadow: '0 0 8px rgba(255,45,120,0.6)',
+                  background: '#FF1493',
+                  boxShadow: '0 0 8px #FF1493',
+                  borderRadius: '0 0 4px 4px',
                 }}
               />
             )}
 
-            {/* icon */}
+            {/* Icon */}
             <span
-              className="transition-all duration-200"
               style={{
-                fontSize: isActive ? 24 : 22,
-                filter: isActive ? 'drop-shadow(0 0 6px rgba(255,45,120,0.5))' : 'none',
-                opacity: isActive ? 1 : 0.45,
+                fontSize: isActive ? 24 : 20,
+                lineHeight: 1,
+                filter: isActive
+                  ? 'drop-shadow(0 0 4px rgba(255,20,147,0.6))'
+                  : 'grayscale(0.3) opacity(0.55)',
+                transition: 'font-size 0.15s ease, filter 0.15s ease',
               }}
             >
               {tab.icon}
             </span>
 
-            {/* label — only shown when active */}
+            {/* Label — always visible, styled by active state */}
             <span
-              className="transition-all duration-200 overflow-hidden"
               style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: isActive ? '#ff2d78' : 'transparent',
-                maxHeight: isActive ? 16 : 0,
-                opacity: isActive ? 1 : 0,
                 fontFamily: "'Nunito', sans-serif",
-                letterSpacing: '0.02em',
-                marginTop: isActive ? 2 : 0,
+                fontSize: 9,
+                fontWeight: isActive ? 800 : 600,
+                color: isActive ? '#FF1493' : '#C2185B',
+                opacity: isActive ? 1 : 0.55,
+                marginTop: 2,
+                letterSpacing: '0.01em',
+                transition: 'color 0.15s ease, opacity 0.15s ease',
+                whiteSpace: 'nowrap',
               }}
             >
               {tab.label}
             </span>
+
+            {/* Active pink dot underline */}
+            {isActive && (
+              <span
+                style={{
+                  display: 'block',
+                  width: 5,
+                  height: 5,
+                  borderRadius: '50%',
+                  background: '#FF1493',
+                  boxShadow: '0 0 6px #FF1493',
+                  marginTop: 2,
+                }}
+              />
+            )}
           </button>
         );
       })}

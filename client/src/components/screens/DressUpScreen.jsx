@@ -4,21 +4,20 @@ import DressUpCanvas from '../canvas/DressUpCanvas';
 import WardrobePanel from '../wardrobe/WardrobePanel';
 
 /**
- * Main dress-up screen - core gameplay.
- * Layout (mobile): top 55% = character canvas, bottom 45% = wardrobe panel.
- * Action buttons between canvas and wardrobe: save look, export/share, undo.
+ * Main dress-up screen — Y2K boutique layout.
+ * Top ~48%: canvas (boutique bg + character) in white-framed pink-bordered box.
+ * Bottom ~52%: scrollable WardrobePanel (white bg).
  */
 export default function DressUpScreen() {
-  const outfit = useGameStore((s) => s.outfit);
+  const outfit    = useGameStore((s) => s.outfit);
   const equipItem = useGameStore((s) => s.equipItem);
-  const saveLook = useGameStore((s) => s.saveLook);
+  const saveLook  = useGameStore((s) => s.saveLook);
   const resetOutfit = useGameStore((s) => s.resetOutfit);
-  const setScreen = useGameStore((s) => s.setScreen);
   const showToast = useGameStore((s) => s.showToast);
 
   const [saving, setSaving] = useState(false);
 
-  // Undo = remove the last equipped item
+  /* Undo = toggle off the last equipped item */
   const handleUndo = useCallback(() => {
     const equipped = outfit.equipped || {};
     const slots = Object.keys(equipped);
@@ -27,10 +26,9 @@ export default function DressUpScreen() {
       return;
     }
     const lastSlot = slots[slots.length - 1];
-    equipItem({ slot: lastSlot, id: equipped[lastSlot] }); // Toggle off
+    equipItem({ slot: lastSlot, id: equipped[lastSlot] });
   }, [outfit.equipped, equipItem, showToast]);
 
-  // Save look
   const handleSave = useCallback(async () => {
     setSaving(true);
     const name = `Look ${Date.now().toString(36).slice(-4).toUpperCase()}`;
@@ -38,77 +36,91 @@ export default function DressUpScreen() {
     setSaving(false);
   }, [saveLook]);
 
-  // Export/Share placeholder
   const handleExport = useCallback(() => {
-    showToast('Export feature coming soon!', 'info');
+    showToast('Export coming soon! 💖', 'info');
   }, [showToast]);
 
   return (
-    <div className="h-screen flex flex-col bg-[#0d0010] overflow-hidden">
-      {/* Top Bar */}
-      <div className="flex-shrink-0 flex items-center justify-between px-3 py-2">
-        <button
-          onClick={() => setScreen('characterselect')}
-          className="text-white/40 hover:text-white/70 transition-colors text-sm"
-          style={{ fontFamily: 'Nunito, sans-serif' }}
-        >
-          {'\u2190'} Back
-        </button>
-        <h1
-          className="text-[#ff2d78] text-lg"
-          style={{ fontFamily: 'Pacifico, cursive' }}
-        >
-          Style Studio
-        </h1>
-        <button
-          onClick={resetOutfit}
-          className="text-white/40 hover:text-white/70 transition-colors text-xs"
-          style={{ fontFamily: 'Nunito, sans-serif' }}
-        >
-          Reset
-        </button>
-      </div>
-
-      {/* Canvas Area - 55% */}
-      <div className="flex-shrink-0 relative flex items-center justify-center"
-        style={{ height: '48%' }}
+    <div
+      className="flex flex-col overflow-hidden no-select"
+      style={{
+        height: '100%',
+        background: '#FFB6C1',
+      }}
+    >
+      {/* Canvas area — top 48% */}
+      <div
+        className="flex-shrink-0 flex items-center justify-center pixel-noise"
+        style={{
+          height: '48%',
+          background: 'linear-gradient(180deg, #FFB6C1 0%, #FFC8D3 100%)',
+          padding: '8px 16px 4px',
+        }}
       >
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0030] via-[#0d0010] to-transparent opacity-50" />
-
-        {/* Runway floor effect */}
+        {/* Framed canvas */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-8"
           style={{
-            background: 'linear-gradient(to top, rgba(255,45,120,0.08), transparent)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: 310,
+            height: '100%',
           }}
-        />
+        >
+          {/* Canvas with boutique bg + character */}
+          <div
+            style={{
+              flex: 1,
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 0,
+            }}
+          >
+            <DressUpCanvas />
+          </div>
 
-        <DressUpCanvas />
+          {/* Action pill buttons below canvas */}
+          <div
+            className="flex items-center justify-center gap-2"
+            style={{ paddingTop: 6, paddingBottom: 2 }}
+          >
+            <PillButton
+              icon="💾"
+              label="Save"
+              onClick={handleSave}
+              disabled={saving}
+            />
+            <PillButton
+              icon="📤"
+              label="Export"
+              onClick={handleExport}
+            />
+            <PillButton
+              icon="↩"
+              label="Undo"
+              onClick={handleUndo}
+            />
+            <PillButton
+              icon="🔄"
+              label="Reset"
+              onClick={resetOutfit}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex-shrink-0 flex items-center justify-center gap-3 py-1.5 px-4">
-        <ActionButton
-          icon={'\uD83D\uDCBE'}
-          label="Save"
-          onClick={handleSave}
-          disabled={saving}
-        />
-        <ActionButton
-          icon={'\uD83D\uDCE4'}
-          label="Export"
-          onClick={handleExport}
-        />
-        <ActionButton
-          icon={'\u21A9'}
-          label="Undo"
-          onClick={handleUndo}
-        />
-      </div>
-
-      {/* Wardrobe Panel - fills remaining space */}
-      <div className="flex-1 min-h-0">
+      {/* Wardrobe Panel — bottom 52%, white bg, scrollable */}
+      <div
+        className="flex-1 min-h-0"
+        style={{
+          background: '#FFFFFF',
+          borderTop: '3px solid #FF1493',
+          boxShadow: 'inset 0 3px 0 #FF69B4',
+        }}
+      >
         <WardrobePanel />
       </div>
     </div>
@@ -116,23 +128,40 @@ export default function DressUpScreen() {
 }
 
 /**
- * Small action button used between canvas and wardrobe.
+ * Small pink pill button used in the action row below the canvas.
  */
-function ActionButton({ icon, label, onClick, disabled = false }) {
+function PillButton({ icon, label, onClick, disabled = false }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full
-        text-xs font-semibold transition-all duration-200
-        ${disabled
-          ? 'bg-white/5 text-white/20 cursor-not-allowed'
-          : 'bg-white/8 text-white/60 hover:bg-white/15 hover:text-white/90 active:scale-95'
-        }
-        border border-white/10`}
-      style={{ fontFamily: 'Nunito, sans-serif' }}
+      className="flex items-center gap-1 rounded-full"
+      style={{
+        fontFamily: "'Nunito', sans-serif",
+        fontSize: 10,
+        fontWeight: 800,
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 5,
+        paddingBottom: 5,
+        background: disabled ? '#F5C6D0' : '#FFFFFF',
+        color: disabled ? '#C2185B88' : '#FF1493',
+        border: '2px solid #FF69B4',
+        boxShadow: disabled ? 'none' : '2px 2px 0 #C2185B',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'box-shadow 0.1s, transform 0.1s',
+        letterSpacing: '0.02em',
+        minHeight: 30,
+        minWidth: 44,
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) e.currentTarget.style.transform = 'translate(1px,1px)';
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) e.currentTarget.style.transform = '';
+      }}
     >
-      <span className="text-sm leading-none">{icon}</span>
+      <span style={{ fontSize: 12, lineHeight: 1 }}>{icon}</span>
       <span>{label}</span>
     </button>
   );
