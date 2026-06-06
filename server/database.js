@@ -153,6 +153,41 @@ db.exec(`
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── BUCKET LIST (shared) ── */
+  CREATE TABLE IF NOT EXISTS bucket_items (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    title        TEXT NOT NULL,
+    note         TEXT,
+    done         INTEGER DEFAULT 0,
+    filename     TEXT,
+    created_by   INTEGER REFERENCES users(id),
+    completed_by INTEGER REFERENCES users(id),
+    done_at      DATETIME,
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── ROOM DECOR ── */
+  CREATE TABLE IF NOT EXISTS owned_decor (
+    item_id    TEXT PRIMARY KEY,
+    bought_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS room_decor (
+    id         INTEGER PRIMARY KEY CHECK (id=1),
+    wallpaper  TEXT DEFAULT 'wall_dusk',
+    floor      TEXT DEFAULT 'floor_plum',
+    cat        TEXT DEFAULT 'cat_black',
+    pot        TEXT DEFAULT 'pot_pink'
+  );
+
+  /* ── PUSH SUBSCRIPTIONS ── */
+  CREATE TABLE IF NOT EXISTS push_subs (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER REFERENCES users(id),
+    endpoint   TEXT UNIQUE NOT NULL,
+    sub        TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── ACTIVITY LOG / NOTIFICATIONS ── */
   CREATE TABLE IF NOT EXISTS activity (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,6 +230,7 @@ function seed() {
   db.prepare(`INSERT OR IGNORE INTO couple (id,stars,our_streak) VALUES (1,0,0)`).run();
   db.prepare(`INSERT OR IGNORE INTO pet (id) VALUES (1)`).run();
   db.prepare(`INSERT OR IGNORE INTO plant (id) VALUES (1)`).run();
+  db.prepare(`INSERT OR IGNORE INTO room_decor (id) VALUES (1)`).run();
 
   // Seed a couple of sweet starter special dates if none exist
   const sd = db.prepare('SELECT COUNT(*) c FROM special_dates').get().c;

@@ -1,6 +1,7 @@
 // server/sockets.js
 const { db } = require('./database');
 const { markActive, awardStars } = require('./economy');
+const { notifyUser } = require('./push');
 
 // Track connected sockets by userId
 const online = {}; // userId -> Set(socketId)
@@ -45,6 +46,11 @@ function register(io) {
       io.emit('mood:update', { userId, mood, emoji, color, at: new Date().toISOString() });
       const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
       logActivity(io, userId, 'mood', `${u.display_name} updated their mood`, 'lightbulb');
+      notifyUser(partnerOf(userId), {
+        title: `${u.display_name} is feeling ${mood} ${emoji || ''}`.trim(),
+        body: 'tap to see their mood',
+        url: '/mood',
+      });
       markActive(io, userId);
     });
 
@@ -57,6 +63,11 @@ function register(io) {
         io.to(sid).emit('affection:receive', { type, from: u.display_name }),
       );
       logActivity(io, userId, 'affection', `${u.display_name} sent a ${prettyAffection(type)}`, 'heart');
+      notifyUser(pid, {
+        title: `${u.display_name} sent you a ${prettyAffection(type)} 💜`,
+        body: 'open Us to feel the love',
+        url: '/affection',
+      });
       markActive(io, userId);
     });
 
@@ -118,6 +129,11 @@ function register(io) {
       io.emit('note:new', note);
       const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
       logActivity(io, userId, 'note', `${u.display_name} wrote you a note`, 'heart');
+      notifyUser(partnerOf(userId), {
+        title: `${u.display_name} wrote you a note 💌`,
+        body: body.length > 80 ? body.slice(0, 80) + '…' : body,
+        url: '/notes',
+      });
       markActive(io, userId);
     });
 

@@ -13,11 +13,13 @@ import {
   Sparkles,
   Trash2,
   LogOut,
+  Bell,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
+import { enablePush, disablePush, pushSupported, pushPermission } from '../lib/push';
 
 const DATE_ICONS = { gift: Gift, heart: Heart, cake: Cake, star: Star };
 const SECTIONS = [
@@ -353,9 +355,28 @@ function AddItemSheet({ section, sectionLabel, userId, onClose, onSaved }) {
 }
 
 function SettingsSheet({ open, onClose, me, setMe, logout }) {
+  const pushKey = useStore((s) => s.pushKey);
   const [name, setName] = useState(me?.display_name || '');
   const [pin, setPin] = useState('');
   const [msg, setMsg] = useState('');
+  const [notif, setNotif] = useState(pushPermission());
+
+  async function toggleNotif() {
+    try {
+      if (notif === 'granted') {
+        await disablePush();
+        setNotif('default');
+        setMsg('Notifications off');
+      } else {
+        await enablePush(me.id, pushKey);
+        setNotif('granted');
+        setMsg('Notifications on ✓');
+      }
+    } catch (e) {
+      setMsg(e.message || 'Could not enable');
+    }
+    setTimeout(() => setMsg(''), 2500);
+  }
 
   async function saveName() {
     await api.post('/api/settings/name', { userId: me.id, display_name: name });
@@ -397,6 +418,26 @@ function SettingsSheet({ open, onClose, me, setMe, logout }) {
           Set
         </button>
       </div>
+
+      {pushSupported() && (
+        <button
+          onClick={toggleNotif}
+          className="mb-2 flex w-full items-center justify-between rounded-2xl bg-[var(--card)] p-4"
+        >
+          <span className="flex items-center gap-2 font-bold">
+            <Bell size={18} className="text-[var(--yellow)]" /> Notifications
+          </span>
+          <span
+            className="rounded-full px-3 py-1 text-xs font-extrabold"
+            style={{
+              background: notif === 'granted' ? 'var(--green)' : 'var(--card2)',
+              color: notif === 'granted' ? '#1a1f4a' : 'var(--text2)',
+            }}
+          >
+            {notif === 'granted' ? 'ON' : 'OFF'}
+          </span>
+        </button>
+      )}
 
       {msg && <p className="mb-2 text-center text-sm text-[var(--green)]">{msg}</p>}
 

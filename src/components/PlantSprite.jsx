@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 
 // SVG bonsai with 5 growth stages (0 sprout -> 4 full bonsai). Pink pot.
-export default function PlantSprite({ stage = 0, size = 200 }) {
+export default function PlantSprite({ stage = 0, size = 200, potColors }) {
   const s = Math.max(0, Math.min(4, stage));
+  const potTop = potColors?.[0] || '#ff9fc4';
+  const potBot = potColors?.[1] || '#e76aa0';
 
   return (
     <motion.svg
@@ -15,8 +17,8 @@ export default function PlantSprite({ stage = 0, size = 200 }) {
     >
       <defs>
         <linearGradient id="pot" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ff9fc4" />
-          <stop offset="100%" stopColor="#e76aa0" />
+          <stop offset="0%" stopColor={potTop} />
+          <stop offset="100%" stopColor={potBot} />
         </linearGradient>
         <radialGradient id="leaf" cx="50%" cy="40%" r="70%">
           <stop offset="0%" stopColor="#9be89b" />
@@ -84,7 +86,7 @@ export default function PlantSprite({ stage = 0, size = 200 }) {
 
       {/* pot */}
       <path d="M70 150 L130 150 L122 184 q-22 8 -44 0 Z" fill="url(#pot)" />
-      <rect x="66" y="144" width="68" height="10" rx="5" fill="#ff9fc4" />
+      <rect x="66" y="144" width="68" height="10" rx="5" fill={potTop} />
       <ellipse cx="100" cy="170" rx="22" ry="5" fill="#000" opacity="0.08" />
     </motion.svg>
   );

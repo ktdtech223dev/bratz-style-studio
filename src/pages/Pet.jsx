@@ -19,6 +19,7 @@ const MOOD_EMOJI = {
 export default function Pet() {
   const pet = useStore((s) => s.pet);
   const emit = useStore((s) => s.emit);
+  const decor = useStore((s) => s.decor);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(pet?.name || 'atlas');
 
@@ -39,7 +40,7 @@ export default function Pet() {
             boxShadow: 'inset 0 0 60px rgba(0,0,0,0.4), 0 0 50px rgba(184,169,232,0.2)',
           }}
         >
-          <PetSprite mood={pet.mood} size={210} />
+          <PetSprite mood={pet.mood} size={210} colors={decor?.cat} />
         </motion.div>
 
         <div className="mt-2 text-center text-lg font-extrabold capitalize">

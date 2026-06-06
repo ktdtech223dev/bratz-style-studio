@@ -13,6 +13,8 @@ const { ensureTodayPrompt, scheduleMidnight, todayStr } = require('./clock');
 const { awardStars, grantTreat, diaryGrants, markActive } = require('./economy');
 const RADIO = require('./radio');
 const GAMES = require('./games-data');
+const DECOR = require('./decor-data');
+const PUSH = require('./push');
 
 const app = express();
 const server = http.createServer(app);
@@ -56,6 +58,8 @@ app.get('/api/state', (req, res) => {
     radio: RADIO,
     games: GAMES,
     today: ensureTodayPrompt(),
+    decor: DECOR.resolve(db.prepare('SELECT * FROM room_decor WHERE id=1').get()),
+    pushKey: PUSH.publicKey(),
   });
 });
 
@@ -305,6 +309,130 @@ app.post('/api/about/item', (req, res) => {
 });
 app.delete('/api/about/item/:id', (req, res) => {
   db.prepare('DELETE FROM about_items WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+// ── BUCKET LIST ──
+app.get('/api/bucket', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT b.*, c.display_name created_name, c.color created_color, d.display_name completed_name
+         FROM bucket_items b
+         LEFT JOIN users c ON c.id=b.created_by
+         LEFT JOIN users d ON d.id=b.completed_by
+         ORDER BY b.done ASC, b.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/bucket', (req, res) => {
+  const { title, note, userId } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  const r = db
+    .prepare(`INSERT INTO bucket_items (title,note,created_by) VALUES (?,?,?)`)
+    .run(title, note || '', Number(userId));
+  const item = bucketItem(r.lastInsertRowid);
+  io.emit('bucket:new', item);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'bucket', `${u.display_name} added "${title}" to the bucket list`, 'list');
+  markActive(io, Number(userId));
+  res.json(item);
+});
+app.post('/api/bucket/:id/done', upload.single('photo'), (req, res) => {
+  const { userId, done } = req.body;
+  const isDone = done === '1' || done === 'true' || done === true;
+  const item0 = db.prepare('SELECT * FROM bucket_items WHERE id=?').get(req.params.id);
+  if (!item0) return res.status(404).json({ error: 'Not found' });
+  if (isDone) {
+    db.prepare(
+      `UPDATE bucket_items SET done=1, completed_by=?, done_at=datetime('now')${req.file ? ', filename=?' : ''} WHERE id=?`,
+    ).run(...(req.file ? [Number(userId), req.file.filename, req.params.id] : [Number(userId), req.params.id]));
+    awardStars(io, 10);
+    const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+    if (u) logActivity(io, Number(userId), 'bucket', `${u.display_name} completed "${item0.title}" 🎉`, 'list');
+  } else {
+    db.prepare(`UPDATE bucket_items SET done=0, completed_by=NULL, done_at=NULL WHERE id=?`).run(req.params.id);
+  }
+  const item = bucketItem(req.params.id);
+  io.emit('bucket:update', item);
+  markActive(io, Number(userId));
+  res.json(item);
+});
+app.delete('/api/bucket/:id', (req, res) => {
+  const item = db.prepare('SELECT * FROM bucket_items WHERE id=?').get(req.params.id);
+  if (item) {
+    if (item.filename) {
+      try {
+        fs.unlinkSync(path.join(DATA_DIR, 'photos', item.filename));
+      } catch (e) {}
+    }
+    db.prepare('DELETE FROM bucket_items WHERE id=?').run(item.id);
+    io.emit('bucket:deleted', { id: item.id });
+  }
+  res.json({ ok: true });
+});
+function bucketItem(id) {
+  return db
+    .prepare(
+      `SELECT b.*, c.display_name created_name, c.color created_color, d.display_name completed_name
+       FROM bucket_items b
+       LEFT JOIN users c ON c.id=b.created_by
+       LEFT JOIN users d ON d.id=b.completed_by WHERE b.id=?`,
+    )
+    .get(id);
+}
+
+// ── ROOM DECOR ──
+app.get('/api/decor', (req, res) => {
+  const equipped = db.prepare('SELECT * FROM room_decor WHERE id=1').get();
+  const owned = db.prepare('SELECT item_id FROM owned_decor').all().map((r) => r.item_id);
+  res.json({
+    slots: DECOR.SLOTS,
+    items: DECOR.ITEMS,
+    defaults: DECOR.DEFAULTS,
+    equipped,
+    owned,
+    stars: db.prepare('SELECT stars FROM couple WHERE id=1').get().stars,
+  });
+});
+app.post('/api/decor/buy', (req, res) => {
+  const { itemId } = req.body;
+  const item = DECOR.itemById(itemId);
+  if (!item) return res.status(404).json({ error: 'No such item' });
+  const owned = db.prepare('SELECT 1 FROM owned_decor WHERE item_id=?').get(itemId);
+  if (owned || item.price === 0) return res.json({ ok: true, alreadyOwned: true });
+  const couple = db.prepare('SELECT stars FROM couple WHERE id=1').get();
+  if (couple.stars < item.price) return res.status(400).json({ error: 'Not enough stars' });
+  db.prepare('UPDATE couple SET stars = stars - ? WHERE id=1').run(item.price);
+  db.prepare('INSERT OR IGNORE INTO owned_decor (item_id) VALUES (?)').run(itemId);
+  io.emit('couple:update', db.prepare('SELECT * FROM couple WHERE id=1').get());
+  res.json({ ok: true });
+});
+app.post('/api/decor/equip', (req, res) => {
+  const { slot, itemId } = req.body;
+  const item = DECOR.itemById(itemId);
+  if (!item || item.slot !== slot) return res.status(400).json({ error: 'Bad item' });
+  const isDefault = DECOR.DEFAULTS[slot] === itemId;
+  const owned = db.prepare('SELECT 1 FROM owned_decor WHERE item_id=?').get(itemId);
+  if (!owned && !isDefault) return res.status(400).json({ error: 'Not owned' });
+  const col = ['wallpaper', 'floor', 'cat', 'pot'].includes(slot) ? slot : null;
+  if (!col) return res.status(400).json({ error: 'Bad slot' });
+  db.prepare(`UPDATE room_decor SET ${col}=? WHERE id=1`).run(itemId);
+  const row = db.prepare('SELECT * FROM room_decor WHERE id=1').get();
+  io.emit('decor:update', DECOR.resolve(row));
+  res.json({ ok: true, equipped: row });
+});
+
+// ── PUSH ──
+app.get('/api/push/key', (req, res) => res.json({ key: PUSH.publicKey() }));
+app.post('/api/push/subscribe', (req, res) => {
+  const { userId, subscription } = req.body;
+  PUSH.saveSub(Number(userId), subscription);
+  res.json({ ok: true });
+});
+app.post('/api/push/unsubscribe', (req, res) => {
+  if (req.body.endpoint) PUSH.removeSub(req.body.endpoint);
   res.json({ ok: true });
 });
 

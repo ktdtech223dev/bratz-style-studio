@@ -24,6 +24,12 @@ export default function RoomScene() {
   const plant = useStore((s) => s.plant);
   const stage = plant?.stage ?? 2;
 
+  const decor = useStore((s) => s.decor) || {};
+  const wall = decor.wall || ['#2c2f63', '#232a5c'];
+  const floor = decor.floor || ['#3a2f5e', '#2a2348'];
+  const pot = decor.pot || ['#ff9fc4', '#e76aa0'];
+  const cat = decor.cat || { body: '#1c1830', face: '#231d38', eye: '#c084fc' };
+
   const stars = Array.from({ length: 22 }, (_, i) => ({
     x: 10 + ((i * 53) % 340),
     y: 8 + ((i * 37) % 120),
@@ -40,8 +46,8 @@ export default function RoomScene() {
           <stop offset="100%" stopColor="#1a1f4a" />
         </linearGradient>
         <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2c2f63" />
-          <stop offset="100%" stopColor="#232a5c" />
+          <stop offset="0%" stopColor={wall[0]} />
+          <stop offset="100%" stopColor={wall[1]} />
         </linearGradient>
         <radialGradient id="moonG" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fff7d6" />
@@ -52,8 +58,8 @@ export default function RoomScene() {
           <stop offset="100%" stopColor="#fde047" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3a2f5e" />
-          <stop offset="100%" stopColor="#2a2348" />
+          <stop offset="0%" stopColor={floor[0]} />
+          <stop offset="100%" stopColor={floor[1]} />
         </linearGradient>
       </defs>
 
@@ -100,7 +106,7 @@ export default function RoomScene() {
           <circle cx="17" cy="12" r="13" fill="#6bbf6b" />
           <circle cx="6" cy="22" r="8" fill="#7dd87d" />
           <circle cx="28" cy="20" r="8" fill="#7dd87d" />
-          <path d="M6 36 L28 36 L25 48 q-9 4 -16 0 Z" fill="#f5a3c7" />
+          <path d="M6 36 L28 36 L25 48 q-9 4 -16 0 Z" fill={pot[0]} />
         </g>
       </Spot>
 
@@ -165,12 +171,12 @@ export default function RoomScene() {
           <rect x="68" y="96" width="14" height="20" rx="4" fill="#3a2f5e" />
           {/* cat */}
           <g transform="translate(30,6) scale(0.42)">
-            <path d="M58 168 q-14 -70 42 -78 q56 8 42 78 z" fill="#1c1830" />
-            <path d="M64 78 L58 44 L88 66 Z" fill="#1c1830" />
-            <path d="M136 78 L142 44 L112 66 Z" fill="#1c1830" />
-            <ellipse cx="100" cy="92" rx="46" ry="40" fill="#231d38" />
-            <ellipse cx="82" cy="90" rx="6" ry="6" fill="#c084fc" />
-            <ellipse cx="118" cy="90" rx="6" ry="6" fill="#c084fc" />
+            <path d="M58 168 q-14 -70 42 -78 q56 8 42 78 z" fill={cat.body} />
+            <path d="M64 78 L58 44 L88 66 Z" fill={cat.body} />
+            <path d="M136 78 L142 44 L112 66 Z" fill={cat.body} />
+            <ellipse cx="100" cy="92" rx="46" ry="40" fill={cat.face} />
+            <ellipse cx="82" cy="90" rx="6" ry="6" fill={cat.eye} />
+            <ellipse cx="118" cy="90" rx="6" ry="6" fill={cat.eye} />
             <path d="M97 100 L103 100 L100 104 Z" fill="#f5a3c7" />
           </g>
         </g>

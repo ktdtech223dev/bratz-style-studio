@@ -24,6 +24,8 @@ import AboutUs from './pages/AboutUs';
 import Affection from './pages/Affection';
 import Activity from './pages/Activity';
 import MapPage from './pages/MapPage';
+import BucketList from './pages/BucketList';
+import Decorate from './pages/Decorate';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -71,6 +73,8 @@ export default function App() {
           <Route path="/mood" element={<Shell tabs={false}><Mood /></Shell>} />
           <Route path="/music" element={<Shell tabs={false}><Music /></Shell>} />
           <Route path="/map" element={<Shell tabs={false}><MapPage /></Shell>} />
+          <Route path="/bucket" element={<Shell tabs={false}><BucketList /></Shell>} />
+          <Route path="/decorate" element={<Shell tabs={false}><Decorate /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

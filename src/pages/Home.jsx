@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Image, Map, Music, Smile } from 'lucide-react';
+import { Image, Map, Music, Smile, ListChecks, Hammer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import RoomScene from '../components/RoomScene';
@@ -8,6 +8,8 @@ import StatPill from '../components/StatPill';
 const QUICK = [
   { to: '/photos', label: 'Photos', icon: Image, color: '#f5a3c7' },
   { to: '/map', label: 'Map', icon: Map, color: '#7dd3fc' },
+  { to: '/bucket', label: 'Bucket', icon: ListChecks, color: '#9be89b' },
+  { to: '/decorate', label: 'Decorate', icon: Hammer, color: '#fdba74' },
   { to: '/music', label: 'Music', icon: Music, color: '#67e8f9' },
   { to: '/mood', label: 'Mood', icon: Smile, color: '#b8a9e8' },
 ];
@@ -56,8 +58,15 @@ export default function Home() {
       </div>
 
       <div className="px-4 pt-1">
-        <div className="overflow-hidden rounded-3xl border border-[var(--border)] shadow-soft">
+        <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] shadow-soft">
           <RoomScene />
+          <button
+            onClick={() => nav('/decorate')}
+            className="glass absolute right-3 top-3 flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--orange)] shadow-soft"
+            aria-label="Decorate room"
+          >
+            <Hammer size={15} /> Decorate
+          </button>
         </div>
 
         <div className="mt-3 flex items-center justify-center gap-2 text-sm text-[var(--text2)]">
@@ -75,7 +84,7 @@ export default function Home() {
         </div>
 
         {/* quick access — clear entry points for the menu features */}
-        <div className="mt-4 grid grid-cols-4 gap-2.5">
+        <div className="no-scrollbar -mx-4 mt-4 flex gap-2.5 overflow-x-auto px-4 pb-1">
           {QUICK.map((q, i) => {
             const I = q.icon;
             return (
@@ -86,7 +95,7 @@ export default function Home() {
                 transition={{ delay: 0.05 + i * 0.05 }}
                 whileTap={{ scale: 0.93 }}
                 onClick={() => nav(q.to)}
-                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-3"
+                className="flex w-[74px] shrink-0 flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-3"
               >
                 <span
                   className="flex h-10 w-10 items-center justify-center rounded-xl"

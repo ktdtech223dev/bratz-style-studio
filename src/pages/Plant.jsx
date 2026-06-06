@@ -13,6 +13,7 @@ const STAGE_NAMES = ['Sprout', 'Seedling', 'Baby Bonsai', 'Young Bonsai', 'Full 
 export default function Plant() {
   const plant = useStore((s) => s.plant);
   const emit = useStore((s) => s.emit);
+  const decor = useStore((s) => s.decor);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(plant?.name || 'richard');
 
@@ -51,7 +52,7 @@ export default function Plant() {
             className="absolute inset-6 flex items-center justify-center rounded-full"
             style={{ background: 'radial-gradient(circle at 50% 35%, #313a73, #1a1f4a)' }}
           >
-            <PlantSprite stage={stage} size={190} />
+            <PlantSprite stage={stage} size={190} potColors={decor?.pot} />
           </div>
         </div>
 

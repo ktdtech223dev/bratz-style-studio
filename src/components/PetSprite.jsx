@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 
 // SVG black cat, sitting/curled. Eyes + posture shift by mood.
-export default function PetSprite({ mood = 'Content', size = 200 }) {
+export default function PetSprite({ mood = 'Content', size = 200, colors }) {
   const happy = mood === 'Happy';
   const sad = mood === 'Sad' || mood === 'Lonely';
   const pensive = mood === 'Pensive';
+
+  const body = colors?.body || '#1c1830';
+  const face = colors?.face || '#3a3550';
 
   // eye shape per mood
   const eyeRy = happy ? 7 : sad ? 2.5 : pensive ? 3.5 : 6;
@@ -21,8 +24,8 @@ export default function PetSprite({ mood = 'Content', size = 200 }) {
     >
       <defs>
         <radialGradient id="catBody" cx="50%" cy="35%" r="70%">
-          <stop offset="0%" stopColor="#3a3550" />
-          <stop offset="100%" stopColor="#1c1830" />
+          <stop offset="0%" stopColor={face} />
+          <stop offset="100%" stopColor={body} />
         </radialGradient>
       </defs>
 
@@ -30,7 +33,7 @@ export default function PetSprite({ mood = 'Content', size = 200 }) {
       <motion.path
         d="M150 150 q40 -10 28 -45 q-8 -22 -30 -16"
         fill="none"
-        stroke="#1c1830"
+        stroke={body}
         strokeWidth="16"
         strokeLinecap="round"
         animate={{ rotate: happy ? [0, 4, 0] : 0 }}
@@ -44,8 +47,8 @@ export default function PetSprite({ mood = 'Content', size = 200 }) {
       {/* head */}
       <g>
         {/* ears */}
-        <path d="M64 78 L58 44 L88 66 Z" fill="#1c1830" />
-        <path d="M136 78 L142 44 L112 66 Z" fill="#1c1830" />
+        <path d="M64 78 L58 44 L88 66 Z" fill={body} />
+        <path d="M136 78 L142 44 L112 66 Z" fill={body} />
         <path d="M68 70 L66 54 L80 66 Z" fill="#5b4a78" />
         <path d="M132 70 L134 54 L120 66 Z" fill="#5b4a78" />
         {/* face */}

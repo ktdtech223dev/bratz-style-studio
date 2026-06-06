@@ -29,6 +29,9 @@ export const useStore = create((set, get) => ({
   musicVolume: 0.7,
   musicMuted: false,
   places: [],
+  bucket: [],
+  decor: null,
+  pushKey: null,
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -79,6 +82,8 @@ export const useStore = create((set, get) => ({
         radio: st.radio,
         games: st.games,
         today: st.today,
+        decor: st.decor || null,
+        pushKey: st.pushKey || null,
         moods,
         ready: true,
       });
@@ -124,6 +129,10 @@ export const useStore = create((set, get) => ({
     );
     s.on('place:new', (p) => set((st) => ({ places: [p, ...st.places.filter((x) => x.id !== p.id)] })));
     s.on('place:deleted', ({ id }) => set((st) => ({ places: st.places.filter((p) => p.id !== id) })));
+    s.on('bucket:new', (b) => set((st) => ({ bucket: [b, ...st.bucket.filter((x) => x.id !== b.id)] })));
+    s.on('bucket:update', (b) => set((st) => ({ bucket: st.bucket.map((x) => (x.id === b.id ? b : x)) })));
+    s.on('bucket:deleted', ({ id }) => set((st) => ({ bucket: st.bucket.filter((b) => b.id !== id) })));
+    s.on('decor:update', (decor) => set({ decor }));
     s.on('diary:new_day', (d) => set({ today: d, diaryEntries: [] }));
     s.on('diary:update', ({ entries }) => set({ diaryEntries: entries }));
     s.on('presence', ({ userId, online }) =>
@@ -148,6 +157,10 @@ export const useStore = create((set, get) => ({
   refreshPlaces: async () => {
     const r = await api.get('/api/places');
     set({ places: r });
+  },
+  refreshBucket: async () => {
+    const r = await api.get('/api/bucket');
+    set({ bucket: r });
   },
   refreshNotes: async () => {
     const r = await api.get('/api/notes');

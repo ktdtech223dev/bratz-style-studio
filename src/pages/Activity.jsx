@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, Trophy, Heart, BookOpen, Image, Sprout, Music, Bell, MapPin } from 'lucide-react';
+import { Lightbulb, Trophy, Heart, BookOpen, Image, Sprout, Music, Bell, MapPin, ListChecks } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
 import { relTime } from '../lib/time';
@@ -14,6 +14,7 @@ const ICONS = {
   sprout: { I: Sprout, c: '#9be89b' },
   music: { I: Music, c: '#67e8f9' },
   map: { I: MapPin, c: '#ff6ba8' },
+  list: { I: ListChecks, c: '#9be89b' },
 };
 
 export default function Activity() {
