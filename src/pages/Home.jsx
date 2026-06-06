@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
-import { Moon, Smile } from 'lucide-react';
+import { Image, Map, Music, Smile } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import RoomScene from '../components/RoomScene';
 import StatPill from '../components/StatPill';
+
+const QUICK = [
+  { to: '/photos', label: 'Photos', icon: Image, color: '#f5a3c7' },
+  { to: '/map', label: 'Map', icon: Map, color: '#7dd3fc' },
+  { to: '/music', label: 'Music', icon: Music, color: '#67e8f9' },
+  { to: '/mood', label: 'Mood', icon: Smile, color: '#b8a9e8' },
+];
 
 export default function Home() {
   const couple = useStore((s) => s.couple);
@@ -42,7 +49,7 @@ export default function Home() {
               className="flex h-9 w-9 items-center justify-center rounded-full bg-black/20"
               aria-label="Photos"
             >
-              <Moon size={18} className="text-[var(--yellow)]" />
+              <Image size={18} className="text-[var(--pink)]" />
             </button>
           </div>
         </div>
@@ -66,7 +73,34 @@ export default function Home() {
             <span>welcome home</span>
           )}
         </div>
-        <p className="mt-1 text-center text-xs text-[var(--muted)]">tap around the room ✨</p>
+
+        {/* quick access — clear entry points for the menu features */}
+        <div className="mt-4 grid grid-cols-4 gap-2.5">
+          {QUICK.map((q, i) => {
+            const I = q.icon;
+            return (
+              <motion.button
+                key={q.to}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 + i * 0.05 }}
+                whileTap={{ scale: 0.93 }}
+                onClick={() => nav(q.to)}
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-3"
+              >
+                <span
+                  className="flex h-10 w-10 items-center justify-center rounded-xl"
+                  style={{ background: q.color + '22' }}
+                >
+                  <I size={20} style={{ color: q.color }} />
+                </span>
+                <span className="text-xs font-bold text-[var(--text)]">{q.label}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">or tap around the room ✨</p>
       </div>
     </motion.div>
   );
