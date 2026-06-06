@@ -187,17 +187,48 @@ export default function GamePlay() {
                 <h2 className="text-xl font-extrabold leading-snug">
                   {phase === 'self' ? q.q : `${pName}: ${lower(q.q)}`}
                 </h2>
-                <textarea
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder={phase === 'self' ? 'your honest answer…' : `what would ${pName} say?`}
-                  rows={4}
-                  autoFocus
-                  className="mt-4 w-full resize-none rounded-2xl bg-[var(--bg2)] p-4 text-[var(--text)] placeholder:text-[var(--muted)]"
-                />
+
+                {q.options ? (
+                  <div className="mt-4 space-y-2.5">
+                    {q.options.map((opt) => {
+                      const sel = answer === opt;
+                      const accent = phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)';
+                      return (
+                        <button
+                          key={opt}
+                          onClick={() => setAnswer(opt)}
+                          className="flex w-full items-center gap-3 rounded-2xl border bg-[var(--bg2)] p-3.5 text-left transition-all active:scale-[0.99]"
+                          style={{
+                            borderColor: sel ? accent : 'var(--border)',
+                            boxShadow: sel ? `0 0 16px ${accent}44` : 'none',
+                          }}
+                        >
+                          <span
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
+                            style={{ borderColor: sel ? accent : 'var(--muted)', background: sel ? accent : 'transparent' }}
+                          >
+                            {sel && <span className="h-2 w-2 rounded-full bg-[#1a1f4a]" />}
+                          </span>
+                          <span className="font-semibold">{opt}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <textarea
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    placeholder={phase === 'self' ? 'your honest answer…' : `what would ${pName} say?`}
+                    rows={4}
+                    autoFocus
+                    className="mt-4 w-full resize-none rounded-2xl bg-[var(--bg2)] p-4 text-[var(--text)] placeholder:text-[var(--muted)]"
+                  />
+                )}
+
                 <button
                   onClick={submit}
-                  className="mt-4 w-full rounded-2xl py-3.5 font-extrabold text-white active:scale-95"
+                  disabled={!answer.trim()}
+                  className="mt-4 w-full rounded-2xl py-3.5 font-extrabold text-white active:scale-95 disabled:opacity-40"
                   style={{ background: phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)' }}
                 >
                   {idx + 1 < N ? 'Next' : phase === 'self' ? `Now guess ${pName} →` : 'Finish'}

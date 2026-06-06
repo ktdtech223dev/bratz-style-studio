@@ -1,8 +1,8 @@
 // server/games-data.js
-// Unified "how well do you know each other" format:
-// each question is a personal TOPIC. In a game you (1) answer each topic about
+// "How well do you know each other" format:
+// each question is a personal TOPIC. In a game you (1) answer each about
 // YOURSELF, then (2) guess what your partner answered about THEMSELVES.
-// The reveal compares your guesses against their real self-answers.
+// Questions are multiple-choice (options[]) with the occasional open-ended one (open:true).
 module.exports = {
   categories: [
     { id: 'romance', label: 'Romance' },
@@ -19,11 +19,11 @@ module.exports = {
       icon: '😊',
       cost: 150,
       questions: [
-        { id: 'fi1', q: 'Your favorite memory of us' },
-        { id: 'fi2', q: 'The moment you knew you liked me' },
-        { id: 'fi3', q: 'Your favorite thing about our relationship' },
-        { id: 'fi4', q: 'A dream date you’d take me on' },
-        { id: 'fi5', q: 'What makes you feel most loved' },
+        { id: 'fi1', q: 'Your favorite memory of us', open: true },
+        { id: 'fi2', q: 'The moment you knew you liked me', open: true },
+        { id: 'fi3', q: 'Your favorite thing about our relationship', options: ['How we laugh together', 'Feeling totally comfortable', 'Our deep talks', 'The adventures', 'How we support each other'] },
+        { id: 'fi4', q: 'A dream date you’d take me on', options: ['Cozy night in', 'Fancy dinner', 'Weekend getaway', 'Outdoor adventure', 'Concert or show'] },
+        { id: 'fi5', q: 'What makes you feel most loved', options: ['Words of affirmation', 'Quality time', 'Physical touch', 'Acts of service', 'Gifts'] },
       ],
     },
     {
@@ -33,11 +33,11 @@ module.exports = {
       icon: '💕',
       cost: 150,
       questions: [
-        { id: 'll1', q: 'Your main love language' },
-        { id: 'll2', q: 'How you most like to receive affection' },
-        { id: 'll3', q: 'A small gesture that melts you' },
-        { id: 'll4', q: 'What makes you feel appreciated' },
-        { id: 'll5', q: 'Your idea of quality time' },
+        { id: 'll1', q: 'Your main love language', options: ['Words of affirmation', 'Quality time', 'Physical touch', 'Acts of service', 'Receiving gifts'] },
+        { id: 'll2', q: 'How you most like to receive affection', options: ['Hugs & cuddles', 'Sweet words', 'Little surprises', 'Undivided attention', 'Helpful gestures'] },
+        { id: 'll3', q: 'A small gesture that melts you', options: ['A forehead kiss', 'A handwritten note', 'Holding hands', 'A good-morning text', 'Bringing me food'] },
+        { id: 'll4', q: 'What makes you feel appreciated', options: ['A genuine thank you', 'Being listened to', 'A thoughtful surprise', 'Help without asking', 'Being bragged about'] },
+        { id: 'll5', q: 'Your idea of quality time', options: ['Cuddling & talking', 'A shared hobby', 'A night out', 'Traveling somewhere', 'Just being together'] },
       ],
     },
     {
@@ -47,11 +47,11 @@ module.exports = {
       icon: '🍷',
       cost: 125,
       questions: [
-        { id: 'dn1', q: 'Your ideal date night' },
-        { id: 'dn2', q: 'A dream vacation for the two of us' },
-        { id: 'dn3', q: 'A restaurant you always crave' },
-        { id: 'dn4', q: 'Movie genre for a cozy night in' },
-        { id: 'dn5', q: 'Your perfect lazy Sunday with me' },
+        { id: 'dn1', q: 'Your ideal date night', options: ['Movie & takeout', 'Dinner out', 'Game night', 'Stargazing', 'Dancing'] },
+        { id: 'dn2', q: 'A dream vacation for the two of us', options: ['Tropical beach', 'European cities', 'Mountain cabin', 'Road trip', 'Theme park'] },
+        { id: 'dn3', q: 'A restaurant you always crave', open: true },
+        { id: 'dn4', q: 'Movie genre for a cozy night in', options: ['Rom-com', 'Horror', 'Action', 'Animated', 'Documentary'] },
+        { id: 'dn5', q: 'Your perfect lazy Sunday with me', options: ['Sleeping in', 'Brunch out', 'Netflix marathon', 'A long walk', 'Cooking together'] },
       ],
     },
     {
@@ -62,11 +62,11 @@ module.exports = {
       cost: 175,
       premium: true,
       questions: [
-        { id: 'of1', q: 'Where you want us to live someday' },
-        { id: 'of2', q: 'Something you really want us to do together' },
-        { id: 'of3', q: 'Your dream for us in five years' },
-        { id: 'of4', q: 'A tradition you want us to start' },
-        { id: 'of5', q: 'How you picture our perfect home' },
+        { id: 'of1', q: 'Where you want us to live someday', options: ['Cozy city apartment', 'Suburban house', 'Cabin in nature', 'By the beach', 'Somewhere abroad'] },
+        { id: 'of2', q: 'Something you really want us to do together', open: true },
+        { id: 'of3', q: 'Your dream for us in five years', open: true },
+        { id: 'of4', q: 'A tradition you want us to start', options: ['Weekly date night', 'A yearly trip', 'Sunday breakfasts', 'Movie nights', 'Holiday rituals'] },
+        { id: 'of5', q: 'How you picture our perfect home', options: ['Cozy & warm', 'Modern & sleek', 'Full of plants', 'Lots of art', 'Big & open'] },
       ],
     },
 
@@ -78,11 +78,11 @@ module.exports = {
       icon: '🧩',
       cost: 100,
       questions: [
-        { id: 'ft1', q: 'Your comfort food' },
-        { id: 'ft2', q: 'Your favorite season' },
-        { id: 'ft3', q: 'Your go-to drink order' },
-        { id: 'ft4', q: 'Your favorite way to relax' },
-        { id: 'ft5', q: 'Your happy place' },
+        { id: 'ft1', q: 'Your comfort food', options: ['Pizza', 'Mac & cheese', 'Ramen', 'Ice cream', 'Burgers'] },
+        { id: 'ft2', q: 'Your favorite season', options: ['Spring', 'Summer', 'Fall', 'Winter'] },
+        { id: 'ft3', q: 'Your go-to drink order', options: ['Coffee', 'Tea', 'Soda', 'Smoothie', 'Just water'] },
+        { id: 'ft4', q: 'Your favorite way to relax', options: ['Watching TV', 'Reading', 'Napping', 'A hot bath', 'Going outside'] },
+        { id: 'ft5', q: 'Your happy place', open: true },
       ],
     },
     {
@@ -92,11 +92,11 @@ module.exports = {
       icon: '🌊',
       cost: 150,
       questions: [
-        { id: 'dd1', q: 'Your biggest fear' },
-        { id: 'dd2', q: 'Something you’re really proud of' },
-        { id: 'dd3', q: 'A goal you’re chasing right now' },
-        { id: 'dd4', q: 'What stresses you out most' },
-        { id: 'dd5', q: 'What you do to recharge' },
+        { id: 'dd1', q: 'Your biggest fear', options: ['Heights', 'Bugs/spiders', 'Being alone', 'Failure', 'The dark'] },
+        { id: 'dd2', q: 'Something you’re really proud of', open: true },
+        { id: 'dd3', q: 'A goal you’re chasing right now', open: true },
+        { id: 'dd4', q: 'What stresses you out most', options: ['Work / school', 'Money', 'Being late', 'Conflict', 'Clutter'] },
+        { id: 'dd5', q: 'What you do to recharge', options: ['Alone time', 'Time with me', 'Sleep', 'Exercise', 'A hobby'] },
       ],
     },
     {
@@ -106,11 +106,11 @@ module.exports = {
       icon: '🤪',
       cost: 100,
       questions: [
-        { id: 'qk1', q: 'Your most used emoji' },
-        { id: 'qk2', q: 'A weird little habit you have' },
-        { id: 'qk3', q: 'Your guilty pleasure' },
-        { id: 'qk4', q: 'Something that instantly annoys you' },
-        { id: 'qk5', q: 'Your hidden talent' },
+        { id: 'qk1', q: 'Your most used emoji', options: ['😂', '❤️', '😭', '🙄', '😎'] },
+        { id: 'qk2', q: 'A weird little habit you have', open: true },
+        { id: 'qk3', q: 'Your guilty pleasure', options: ['Reality TV', 'Junk food', 'Online shopping', 'Long naps', 'Doomscrolling'] },
+        { id: 'qk4', q: 'Something that instantly annoys you', options: ['Loud chewing', 'Slow walkers', 'Being interrupted', 'Messiness', 'Being ignored'] },
+        { id: 'qk5', q: 'Your hidden talent', open: true },
       ],
     },
     {
@@ -120,11 +120,11 @@ module.exports = {
       icon: '🎬',
       cost: 125,
       questions: [
-        { id: 'ss1', q: 'Your favorite movie' },
-        { id: 'ss2', q: 'An artist you love right now' },
-        { id: 'ss3', q: 'A show you could rewatch forever' },
-        { id: 'ss4', q: 'Your karaoke go-to song' },
-        { id: 'ss5', q: 'A book or story you love' },
+        { id: 'ss1', q: 'Your favorite movie genre', options: ['Comedy', 'Action', 'Romance', 'Horror', 'Sci-fi / Fantasy'] },
+        { id: 'ss2', q: 'A music genre you love most', options: ['Pop', 'Hip-hop', 'R&B', 'Rock', 'Indie / Alt'] },
+        { id: 'ss3', q: 'A show you could rewatch forever', open: true },
+        { id: 'ss4', q: 'Your karaoke go-to song', open: true },
+        { id: 'ss5', q: 'Ideal way to enjoy a story', options: ['Movies', 'TV series', 'Books', 'Podcasts', 'Video games'] },
       ],
     },
 
@@ -136,11 +136,11 @@ module.exports = {
       icon: '🎲',
       cost: 100,
       questions: [
-        { id: 'tt1', q: 'Beach or mountains' },
-        { id: 'tt2', q: 'Sweet or savory' },
-        { id: 'tt3', q: 'Night owl or early bird' },
-        { id: 'tt4', q: 'Coffee or tea' },
-        { id: 'tt5', q: 'Cats or dogs' },
+        { id: 'tt1', q: 'Beach or mountains', options: ['Beach', 'Mountains'] },
+        { id: 'tt2', q: 'Sweet or savory', options: ['Sweet', 'Savory'] },
+        { id: 'tt3', q: 'Night owl or early bird', options: ['Night owl', 'Early bird'] },
+        { id: 'tt4', q: 'Coffee or tea', options: ['Coffee', 'Tea'] },
+        { id: 'tt5', q: 'Cats or dogs', options: ['Cats', 'Dogs'] },
       ],
     },
     {
@@ -150,11 +150,11 @@ module.exports = {
       icon: '🤡',
       cost: 100,
       questions: [
-        { id: 'sq1', q: 'A superpower you’d choose' },
-        { id: 'sq2', q: 'Three things for a desert island' },
-        { id: 'sq3', q: 'Your spirit animal' },
-        { id: 'sq4', q: 'A dream dinner guest, dead or alive' },
-        { id: 'sq5', q: 'Your role in a zombie apocalypse' },
+        { id: 'sq1', q: 'A superpower you’d choose', options: ['Flying', 'Invisibility', 'Time travel', 'Mind reading', 'Teleportation'] },
+        { id: 'sq2', q: 'Three things for a desert island', open: true },
+        { id: 'sq3', q: 'Your spirit animal', options: ['Cat', 'Dog', 'Owl', 'Wolf', 'Dolphin'] },
+        { id: 'sq4', q: 'A dream dinner guest, dead or alive', open: true },
+        { id: 'sq5', q: 'Your role in a zombie apocalypse', options: ['The leader', 'The fighter', 'The medic', 'The strategist', 'First to go 😅'] },
       ],
     },
     {
@@ -164,11 +164,11 @@ module.exports = {
       icon: '🍜',
       cost: 125,
       questions: [
-        { id: 'fd1', q: 'Your last meal on earth' },
-        { id: 'fd2', q: 'A food you secretly can’t stand' },
-        { id: 'fd3', q: 'Your best midnight snack' },
-        { id: 'fd4', q: 'A restaurant you could eat at weekly' },
-        { id: 'fd5', q: 'Your signature dish' },
+        { id: 'fd1', q: 'Your favorite cuisine', options: ['Italian', 'Mexican', 'Asian', 'Comfort / American', 'Mediterranean'] },
+        { id: 'fd2', q: 'A food you secretly can’t stand', open: true },
+        { id: 'fd3', q: 'Your best midnight snack', options: ['Chips', 'Ice cream', 'Cereal', 'Leftovers', 'Cookies'] },
+        { id: 'fd4', q: 'Sweet tooth or salty cravings', options: ['Sweet tooth', 'Salty snacks', 'Both equally'] },
+        { id: 'fd5', q: 'Your signature dish', open: true },
       ],
     },
     {
@@ -178,11 +178,11 @@ module.exports = {
       icon: '✈️',
       cost: 150,
       questions: [
-        { id: 'wl1', q: 'Top of your travel bucket list' },
-        { id: 'wl2', q: 'The best trip you’ve ever taken' },
-        { id: 'wl3', q: 'Window or aisle seat' },
-        { id: 'wl4', q: 'A city abroad you’d live in' },
-        { id: 'wl5', q: 'Road trip or resort' },
+        { id: 'wl1', q: 'Top of your travel bucket list', open: true },
+        { id: 'wl2', q: 'The best trip you’ve ever taken', open: true },
+        { id: 'wl3', q: 'Window or aisle seat', options: ['Window', 'Aisle'] },
+        { id: 'wl4', q: 'Dream destination type', options: ['Big city', 'Tropical beach', 'Historic Europe', 'Nature & wildlife', 'Mountains'] },
+        { id: 'wl5', q: 'Road trip or resort', options: ['Road trip', 'Resort'] },
       ],
     },
 
@@ -194,11 +194,11 @@ module.exports = {
       icon: '🎁',
       cost: 150,
       questions: [
-        { id: 'bw1', q: 'Your dream birthday' },
-        { id: 'bw2', q: 'A gift you secretly want' },
-        { id: 'bw3', q: 'Your favorite cake flavor' },
-        { id: 'bw4', q: 'How you like to celebrate' },
-        { id: 'bw5', q: 'A surprise you’d absolutely love' },
+        { id: 'bw1', q: 'Your dream birthday', options: ['Big party', 'Intimate dinner', 'A trip away', 'Quiet day in', 'A fun activity'] },
+        { id: 'bw2', q: 'A gift you secretly want', open: true },
+        { id: 'bw3', q: 'Your favorite cake flavor', options: ['Chocolate', 'Vanilla', 'Red velvet', 'Funfetti', 'Cheesecake'] },
+        { id: 'bw4', q: 'How you like to celebrate', options: ['With everyone', 'Just us two', 'Family only', 'Low-key', 'Go all out'] },
+        { id: 'bw5', q: 'A surprise you’d absolutely love', open: true },
       ],
     },
     {
@@ -208,11 +208,11 @@ module.exports = {
       icon: '🎄',
       cost: 125,
       questions: [
-        { id: 'hd1', q: 'Your favorite holiday' },
-        { id: 'hd2', q: 'Best holiday food' },
-        { id: 'hd3', q: 'A holiday tradition you love' },
-        { id: 'hd4', q: 'Dream holiday destination' },
-        { id: 'hd5', q: 'A favorite holiday memory' },
+        { id: 'hd1', q: 'Your favorite holiday', options: ['Christmas', 'Halloween', 'Thanksgiving', 'New Year', 'Valentine’s'] },
+        { id: 'hd2', q: 'Best holiday food', open: true },
+        { id: 'hd3', q: 'A holiday tradition you love', open: true },
+        { id: 'hd4', q: 'Dream holiday destination', options: ['Snowy cabin', 'Tropical escape', 'Big city lights', 'Home & cozy', 'Visiting family'] },
+        { id: 'hd5', q: 'Gift giving or receiving', options: ['Giving', 'Receiving', 'Both!'] },
       ],
     },
     {
@@ -223,11 +223,11 @@ module.exports = {
       cost: 175,
       premium: true,
       questions: [
-        { id: 'ms1', q: 'How you’d want to celebrate an anniversary' },
-        { id: 'ms2', q: 'A milestone you’re looking forward to' },
-        { id: 'ms3', q: 'Your ideal way to mark good news' },
-        { id: 'ms4', q: 'How you like to be congratulated' },
-        { id: 'ms5', q: 'Your dream celebration' },
+        { id: 'ms1', q: 'How you’d celebrate an anniversary', options: ['Romantic dinner', 'A getaway', 'Recreate our first date', 'Gifts & cards', 'Quiet day together'] },
+        { id: 'ms2', q: 'A milestone you’re looking forward to', open: true },
+        { id: 'ms3', q: 'Your ideal way to mark good news', options: ['Go out to celebrate', 'Tell everyone', 'Treat ourselves', 'A quiet toast', 'A special meal'] },
+        { id: 'ms4', q: 'How you like to be congratulated', options: ['A big hug', 'Kind words', 'A gift', 'A celebration', 'A sweet message'] },
+        { id: 'ms5', q: 'Your dream celebration', open: true },
       ],
     },
     {
@@ -237,11 +237,11 @@ module.exports = {
       icon: '🍂',
       cost: 100,
       questions: [
-        { id: 'se1', q: 'Your favorite season, and why' },
-        { id: 'se2', q: 'Best cozy winter activity' },
-        { id: 'se3', q: 'Your ideal summer day' },
-        { id: 'se4', q: 'A fall tradition you love' },
-        { id: 'se5', q: 'Spring or autumn' },
+        { id: 'se1', q: 'Your favorite season', options: ['Spring', 'Summer', 'Fall', 'Winter'] },
+        { id: 'se2', q: 'Best cozy winter activity', options: ['Movies under blankets', 'Hot cocoa', 'Building a snowman', 'Baking', 'Reading by the fire'] },
+        { id: 'se3', q: 'Your ideal summer day', options: ['Beach day', 'Pool & BBQ', 'Road trip', 'Festival / concert', 'Lazy in the AC'] },
+        { id: 'se4', q: 'A fall tradition you love', options: ['Pumpkin patch', 'Cozy sweaters', 'Halloween', 'Apple picking', 'Warm drinks'] },
+        { id: 'se5', q: 'Spring or autumn', options: ['Spring', 'Autumn'] },
       ],
     },
   ],

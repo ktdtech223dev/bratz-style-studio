@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, X, MapPin, Trash2, Camera, Check } from 'lucide-react';
+import { X, Plus, MapPin, Trash2, Camera, Check, Search, Loader2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useStore } from '../store/useStore';
@@ -40,6 +40,10 @@ export default function MapPage() {
   const [photo, setPhoto] = useState(null); // { file, url }
   const [saving, setSaving] = useState(false);
   const fileRef = useRef(null);
+
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     addingRef.current = adding;
@@ -95,6 +99,41 @@ export default function MapPage() {
     }
   }, [places]);
 
+  // debounced address/name search via OpenStreetMap Nominatim
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&q=${encodeURIComponent(query)}`,
+          { headers: { 'Accept-Language': 'en' } },
+        );
+        setResults(await r.json());
+      } catch (e) {
+        setResults([]);
+      }
+      setSearching(false);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  function chooseResult(res) {
+    const lat = parseFloat(res.lat);
+    const lng = parseFloat(res.lon);
+    mapRef.current?.flyTo([lat, lng], 14, { duration: 1 });
+    const shortName = res.display_name.split(',').slice(0, 2).join(',').trim();
+    setResults([]);
+    setQuery('');
+    setAdding(false);
+    setPending({ lat, lng });
+    setForm({ name: shortName, note: '' });
+    setPhoto(null);
+  }
+
   function onPickPhoto(e) {
     const file = e.target.files?.[0];
     if (file) setPhoto({ file, url: URL.createObjectURL(file) });
@@ -131,16 +170,51 @@ export default function MapPage() {
       <div ref={mapEl} className="absolute inset-0 z-0" />
 
       {/* header overlay */}
-      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 z-[500] p-4">
-        <div className="pointer-events-auto flex items-center justify-between">
+      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 z-[1100] p-3">
+        <div className="pointer-events-auto flex items-center gap-2">
           <button
             onClick={() => nav('/')}
-            className="glass flex h-10 items-center gap-1 rounded-full px-3 text-[var(--lav-text)] shadow-soft"
+            className="glass flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--text)] shadow-soft active:scale-95"
+            aria-label="Close map"
           >
-            <ChevronLeft size={22} /> <span className="pr-1 font-bold">Our map</span>
+            <X size={24} />
           </button>
-          <div className="glass rounded-full px-3 py-2 text-xs font-bold text-[var(--text2)] shadow-soft">
-            {places.length} {places.length === 1 ? 'place' : 'places'} 💜
+          {/* search */}
+          <div className="relative flex-1">
+            <div className="glass flex items-center gap-2 rounded-full px-4 shadow-soft">
+              <Search size={18} className="shrink-0 text-[var(--lav-text)]" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="search a place or address"
+                className="h-11 w-full bg-transparent text-[var(--text)] placeholder:text-[var(--muted)]"
+              />
+              {searching && <Loader2 size={16} className="shrink-0 animate-spin text-[var(--muted)]" />}
+              {query && !searching && (
+                <button onClick={() => setQuery('')} className="shrink-0 text-[var(--muted)]">
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+            {results.length > 0 && (
+              <div className="absolute inset-x-0 top-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg2)] shadow-soft">
+                {results.map((r) => (
+                  <button
+                    key={r.place_id}
+                    onClick={() => chooseResult(r)}
+                    className="flex w-full items-center gap-2 border-b border-white/5 px-4 py-3 text-left last:border-0 active:bg-white/5"
+                  >
+                    <MapPin size={16} className="shrink-0 text-[var(--pink-hot)]" />
+                    <span className="line-clamp-2 text-sm">{r.display_name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="pointer-events-auto mt-2 flex justify-center">
+          <div className="glass rounded-full px-3 py-1 text-xs font-bold text-[var(--text2)] shadow-soft">
+            {places.length} {places.length === 1 ? 'place pinned' : 'places pinned'} 💜
           </div>
         </div>
       </div>
@@ -152,7 +226,7 @@ export default function MapPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="safe-top absolute inset-x-0 top-16 z-[500] flex justify-center px-4"
+            className="safe-top absolute inset-x-0 top-28 z-[1100] flex justify-center px-4"
           >
             <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold shadow-soft">
               <MapPin size={16} className="text-[var(--pink-hot)]" /> tap the map where you want a pin
@@ -167,7 +241,7 @@ export default function MapPage() {
       {/* add FAB */}
       <button
         onClick={() => setAdding((a) => !a)}
-        className="absolute bottom-7 right-5 z-[500] flex h-14 w-14 items-center justify-center rounded-full bg-[var(--pink-hot)] text-white shadow-soft active:scale-95 safe-bottom"
+        className="absolute bottom-7 right-5 z-[700] flex h-14 w-14 items-center justify-center rounded-full bg-[var(--pink-hot)] text-white shadow-soft active:scale-95 safe-bottom"
         style={{ boxShadow: '0 6px 24px rgba(255,107,168,0.5)' }}
       >
         {adding ? <X size={26} /> : <Plus size={28} />}
