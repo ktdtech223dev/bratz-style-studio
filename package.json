@@ -1,24 +1,39 @@
 {
-  "name": "bratz-style-studio",
+  "name": "us-couples-pwa",
   "version": "1.0.0",
-  "description": "Bratz Style Studio — The ultimate fashion dress-up game",
+  "description": "Us — a private cozy couples PWA for two",
   "private": true,
   "scripts": {
-    "start": "node server/index.js",
-    "build": "cd client && npm install && npm run build",
+    "dev:client": "vite",
     "dev:server": "node --watch server/index.js",
-    "dev:client": "cd client && npm run dev",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "vite build",
+    "postinstall": "node scripts/make-icons.js || true",
+    "start": "node server/index.js"
   },
   "dependencies": {
+    "better-sqlite3": "^11.3.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "pg": "^8.13.0",
-    "uuid": "^10.0.0"
+    "framer-motion": "^11.5.4",
+    "lucide-react": "^0.441.0",
+    "multer": "^2.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "concurrently": "^9.0.1"
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.0.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "vite": "^5.4.8",
+    "vite-plugin-pwa": "^0.20.5"
   },
   "engines": {
     "node": ">=18.0.0"

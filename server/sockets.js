@@ -1,0 +1,204 @@
+// server/sockets.js
+const { db } = require('./database');
+const { markActive, awardStars } = require('./economy');
+
+// Track connected sockets by userId
+const online = {}; // userId -> Set(socketId)
+
+function partnerOf(userId) {
+  return userId === 1 ? 2 : 1;
+}
+
+function logActivity(io, actorId, type, message, icon) {
+  const r = db
+    .prepare(`INSERT INTO activity (actor_id,type,message,icon) VALUES (?,?,?,?)`)
+    .run(actorId, type, message, icon);
+  const row = db
+    .prepare(
+      `SELECT a.*, u.display_name actor_name FROM activity a JOIN users u ON u.id=a.actor_id WHERE a.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('activity:new', row);
+  return row;
+}
+
+function register(io) {
+  io.on('connection', (socket) => {
+    const userId = Number(socket.handshake.auth?.userId);
+    if (userId) {
+      online[userId] = online[userId] || new Set();
+      online[userId].add(socket.id);
+      io.emit('presence', { userId, online: true });
+      // Tell the newcomer who is currently online
+      Object.keys(online).forEach((uid) => {
+        if (online[uid] && online[uid].size > 0) {
+          socket.emit('presence', { userId: Number(uid), online: true });
+        }
+      });
+    }
+
+    // ── MOOD (real-time) ──
+    socket.on('mood:set', ({ mood, emoji, color }) => {
+      db.prepare(
+        `UPDATE users SET current_mood=?, mood_emoji=?, mood_color=?, mood_at=datetime('now') WHERE id=?`,
+      ).run(mood, emoji, color, userId);
+      io.emit('mood:update', { userId, mood, emoji, color, at: new Date().toISOString() });
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      logActivity(io, userId, 'mood', `${u.display_name} updated their mood`, 'lightbulb');
+      markActive(io, userId);
+    });
+
+    // ── AFFECTION (real-time popup) ──
+    socket.on('affection:send', ({ type }) => {
+      db.prepare(`INSERT INTO affection (type,from_user) VALUES (?,?)`).run(type, userId);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const pid = partnerOf(userId);
+      (online[pid] || []).forEach((sid) =>
+        io.to(sid).emit('affection:receive', { type, from: u.display_name }),
+      );
+      logActivity(io, userId, 'affection', `${u.display_name} sent a ${prettyAffection(type)}`, 'heart');
+      markActive(io, userId);
+    });
+
+    // ── PET care (real-time) ──
+    socket.on('pet:care', ({ action }) => {
+      const col = { feed: 'fed_at', play: 'played_at', pet: 'petted_at' }[action];
+      if (col) {
+        db.prepare(`UPDATE pet SET ${col}=datetime('now') WHERE id=1`).run();
+      }
+      if (action === 'treat') {
+        db.prepare(
+          `UPDATE pet SET treats=MAX(0,treats-1), fed_at=datetime('now'), played_at=datetime('now') WHERE id=1`,
+        ).run();
+      }
+      const pet = recomputePetMood();
+      io.emit('pet:update', pet);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const verb = { feed: 'fed', play: 'played with', pet: 'petted', treat: 'gave a treat to' }[action] || 'cared for';
+      logActivity(io, userId, 'pet', `${u.display_name} ${verb} ${pet.name}`, 'heart');
+      awardStars(io, 2);
+      markActive(io, userId);
+    });
+
+    // ── PLANT care (real-time) ──
+    socket.on('plant:care', ({ action }) => {
+      if (action === 'water')
+        db.prepare(
+          `UPDATE plant SET watered_at=datetime('now'), growth=MIN(100,growth+12) WHERE id=1`,
+        ).run();
+      if (action === 'fertilize')
+        db.prepare(
+          `UPDATE plant SET fertilized_at=datetime('now'), fertilizer=MAX(0,fertilizer-1), growth=MIN(100,growth+25) WHERE id=1`,
+        ).run();
+      const plant = recomputePlantGrowth();
+      io.emit('plant:update', plant);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const verb = action === 'water' ? 'watered' : 'fertilized';
+      logActivity(io, userId, 'plant', `${u.display_name} ${verb} ${plant.name}`, 'sprout');
+      awardStars(io, 2);
+      markActive(io, userId);
+    });
+
+    // ── PET / PLANT rename ──
+    socket.on('pet:rename', ({ name }) => {
+      db.prepare('UPDATE pet SET name=? WHERE id=1').run(String(name).slice(0, 24));
+      io.emit('pet:update', recomputePetMood());
+    });
+    socket.on('plant:rename', ({ name }) => {
+      db.prepare('UPDATE plant SET name=? WHERE id=1').run(String(name).slice(0, 24));
+      io.emit('plant:update', db.prepare('SELECT * FROM plant WHERE id=1').get());
+    });
+
+    // ── NOTES ──
+    socket.on('note:send', ({ body }) => {
+      const r = db.prepare(`INSERT INTO notes (from_user,body) VALUES (?,?)`).run(userId, body);
+      const note = db
+        .prepare(`SELECT n.*, u.display_name from_name FROM notes n JOIN users u ON u.id=n.from_user WHERE n.id=?`)
+        .get(r.lastInsertRowid);
+      io.emit('note:new', note);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      logActivity(io, userId, 'note', `${u.display_name} wrote you a note`, 'heart');
+      markActive(io, userId);
+    });
+
+    // ── PHOTO like (real-time) ──
+    socket.on('photo:like', ({ photoId }) => {
+      const existing = db
+        .prepare('SELECT 1 FROM photo_likes WHERE photo_id=? AND user_id=?')
+        .get(photoId, userId);
+      if (existing) {
+        db.prepare('DELETE FROM photo_likes WHERE photo_id=? AND user_id=?').run(photoId, userId);
+      } else {
+        db.prepare(`INSERT OR IGNORE INTO photo_likes (photo_id,user_id) VALUES (?,?)`).run(
+          photoId,
+          userId,
+        );
+      }
+      const likes = db.prepare('SELECT COUNT(*) c FROM photo_likes WHERE photo_id=?').get(photoId).c;
+      io.emit('photo:liked', { photoId, userId, likes, liked: !existing });
+    });
+
+    // ── MUSIC station (shared) ──
+    socket.on('music:select', ({ stationId }) => {
+      io.emit('music:update', { stationId, by: userId, at: new Date().toISOString() });
+      if (stationId) {
+        const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+        logActivity(io, userId, 'music', `${u.display_name} put on some music`, 'music');
+      }
+    });
+
+    socket.on('disconnect', () => {
+      if (userId && online[userId]) {
+        online[userId].delete(socket.id);
+        if (online[userId].size === 0) io.emit('presence', { userId, online: false });
+      }
+    });
+  });
+}
+
+function prettyAffection(type) {
+  return (
+    {
+      hug: 'hug',
+      kiss: 'kiss',
+      wink: 'wink',
+      nudge: 'nudge',
+      high_five: 'high five',
+      gratitude: 'moment of gratitude',
+    }[type] || type
+  );
+}
+
+// ── PET MOOD DECAY ──
+function recomputePetMood() {
+  const pet = db.prepare('SELECT * FROM pet WHERE id=1').get();
+  const now = Date.now();
+  const hrs = (ts) => (ts ? (now - new Date(ts.replace(' ', 'T') + 'Z').getTime()) / 3.6e6 : 999);
+  const fedH = hrs(pet.fed_at);
+  const playH = hrs(pet.played_at);
+  const petH = hrs(pet.petted_at);
+  const neglect = (fedH + playH + petH) / 3;
+  let mood;
+  if (neglect < 4) mood = 'Happy';
+  else if (neglect < 10) mood = 'Content';
+  else if (neglect < 18) mood = 'Pensive';
+  else if (neglect < 28) mood = 'Lonely';
+  else mood = 'Sad';
+  db.prepare('UPDATE pet SET mood=? WHERE id=1').run(mood);
+  return { ...pet, mood, timers: { feed: fedH, play: playH, pet: petH } };
+}
+
+// ── PLANT GROWTH ──
+function recomputePlantGrowth() {
+  const p = db.prepare('SELECT * FROM plant WHERE id=1').get();
+  let { growth, stage } = p;
+  while (growth >= 100 && stage < 4) {
+    growth -= 100;
+    stage++;
+  }
+  if (stage >= 4) growth = 100;
+  db.prepare(`UPDATE plant SET growth=?, stage=? WHERE id=1`).run(growth, stage);
+  return db.prepare('SELECT * FROM plant WHERE id=1').get();
+}
+
+module.exports = { register, logActivity, recomputePetMood, recomputePlantGrowth, online };

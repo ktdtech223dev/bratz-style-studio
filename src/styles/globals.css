@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #1a1f4a;
+  --bg-deep: #151a3d;
+  --bg2: #232a5c;
+  --card: #2a3164;
+  --card2: #313a73;
+  --border: rgba(255, 255, 255, 0.06);
+  --lavender: #b8a9e8;
+  --lav-text: #a89fd4;
+  --pink: #f5a3c7;
+  --pink-hot: #ff6ba8;
+  --green: #9be89b;
+  --green2: #7dd87d;
+  --purple: #c084fc;
+  --blue: #7dd3fc;
+  --yellow: #fde047;
+  --cyan: #67e8f9;
+  --orange: #fdba74;
+  --text: #e8e6f5;
+  --text2: #9590b8;
+  --muted: #6b6896;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', system-ui, sans-serif;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+textarea,
+input {
+  outline: none;
+}
+
+/* Safe area helpers */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-shell {
+  min-height: 100dvh;
+  position: relative;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.glass {
+  background: rgba(42, 49, 100, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
