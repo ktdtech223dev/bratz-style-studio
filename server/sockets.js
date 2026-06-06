@@ -138,10 +138,15 @@ function register(io) {
       io.emit('photo:liked', { photoId, userId, likes, liked: !existing });
     });
 
-    // ── MUSIC station (shared) ──
-    socket.on('music:select', ({ stationId }) => {
-      io.emit('music:update', { stationId, by: userId, at: new Date().toISOString() });
-      if (stationId) {
+    // ── MUSIC station (shared, synced play state) ──
+    socket.on('music:select', ({ stationId, playing }) => {
+      io.emit('music:update', {
+        stationId,
+        playing: playing !== false,
+        by: userId,
+        at: new Date().toISOString(),
+      });
+      if (stationId && playing !== false) {
         const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
         logActivity(io, userId, 'music', `${u.display_name} put on some music`, 'music');
       }

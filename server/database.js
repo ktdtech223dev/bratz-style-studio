@@ -92,6 +92,18 @@ db.exec(`
     PRIMARY KEY (photo_id, user_id)
   );
 
+  /* ── PLACES (map of special locations) ── */
+  CREATE TABLE IF NOT EXISTS places (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    note        TEXT,
+    lat         REAL NOT NULL,
+    lng         REAL NOT NULL,
+    filename    TEXT,
+    added_by    INTEGER REFERENCES users(id),
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── DIARY (daily server-clock prompt) ── */
   CREATE TABLE IF NOT EXISTS diary_days (
     date        TEXT PRIMARY KEY,
@@ -152,6 +164,18 @@ db.exec(`
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// ── MIGRATIONS ──
+// Add game_answers.kind for the self/guess format. If the column is missing we're
+// upgrading from the old game format, so clear stale sessions for a clean reset.
+const gaCols = db.prepare('PRAGMA table_info(game_answers)').all();
+if (!gaCols.some((c) => c.name === 'kind')) {
+  db.exec(`
+    DELETE FROM game_answers;
+    DELETE FROM game_sessions;
+    ALTER TABLE game_answers ADD COLUMN kind TEXT DEFAULT 'self';
+  `);
+}
 
 // ── SEED ──
 const crypto = require('crypto');

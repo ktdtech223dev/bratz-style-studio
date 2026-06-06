@@ -1,12 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Headphones, CloudRain, Sunrise, TreePine, Moon, Volume2, VolumeX, Play, Pause, Square, Music as MusicIcon } from 'lucide-react';
+import {
+  Heart,
+  Headphones,
+  CloudRain,
+  Sunrise,
+  TreePine,
+  Moon,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Square,
+  Music as MusicIcon,
+} from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import { useStore } from '../store/useStore';
 import { shortRel } from '../lib/time';
 
-const ICONS = { heart: Heart, headphones: Headphones, 'cloud-rain': CloudRain, sunrise: Sunrise, 'tree-pine': TreePine, moon: Moon };
+const ICONS = {
+  heart: Heart,
+  headphones: Headphones,
+  'cloud-rain': CloudRain,
+  sunrise: Sunrise,
+  'tree-pine': TreePine,
+  moon: Moon,
+};
 
 function Equalizer({ color, playing }) {
   return (
@@ -32,68 +51,37 @@ export default function Music() {
   const radio = useStore((s) => s.radio);
   const emit = useStore((s) => s.emit);
   const currentStation = useStore((s) => s.currentStation);
+  const musicPlaying = useStore((s) => s.musicPlaying);
   const stationMeta = useStore((s) => s.stationMeta);
   const users = useStore((s) => s.users);
   const me = useStore((s) => s.me);
-
-  const audioRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.7);
-  const [muted, setMuted] = useState(false);
+  const volume = useStore((s) => s.musicVolume);
+  const muted = useStore((s) => s.musicMuted);
+  const setMusicVolume = useStore((s) => s.setMusicVolume);
+  const setMusicMuted = useStore((s) => s.setMusicMuted);
 
   const current = radio.find((r) => r.id === currentStation);
   const updater = stationMeta ? users.find((u) => u.id === stationMeta.by) : null;
 
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = muted ? 0 : volume;
-  }, [volume, muted]);
-
-  // When the synced station changes from the partner, stop local playback (needs a tap to start on iOS)
-  useEffect(() => {
-    if (!current) {
-      if (audioRef.current) audioRef.current.pause();
-      setPlaying(false);
-    }
-  }, [currentStation]);
-
-  async function selectStation(st) {
-    emit('music:select', { stationId: st.id });
-    if (audioRef.current) {
-      audioRef.current.src = st.url;
-      try {
-        await audioRef.current.play();
-        setPlaying(true);
-      } catch {
-        setPlaying(false);
-      }
-    }
+  // Selecting / toggling broadcasts to both devices (synced + auto-play).
+  function selectStation(st) {
+    emit('music:select', { stationId: st.id, playing: true });
   }
-
   function togglePlay() {
-    if (!audioRef.current || !current) return;
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
-    } else {
-      if (!audioRef.current.src) audioRef.current.src = current.url;
-      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
-    }
+    if (!current) return;
+    emit('music:select', { stationId: current.id, playing: !musicPlaying });
   }
-
   function stop() {
-    emit('music:select', { stationId: null });
-    if (audioRef.current) audioRef.current.pause();
-    setPlaying(false);
+    emit('music:select', { stationId: null, playing: false });
   }
 
   return (
     <div>
-      <audio ref={audioRef} preload="none" />
       <PageHeader
         title="Music"
         right={
           <button
-            onClick={() => setMuted((m) => !m)}
+            onClick={() => setMusicMuted(!muted)}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-[var(--cyan)]"
           >
             {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
@@ -124,7 +112,7 @@ export default function Music() {
                   </div>
                 )}
               </div>
-              <Equalizer color={current.color} playing={playing} />
+              <Equalizer color={current.color} playing={musicPlaying} />
             </div>
           ) : (
             <div className="mt-3 text-[var(--text2)]">nothing playing right now 🌙</div>
@@ -137,8 +125,8 @@ export default function Music() {
                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl font-extrabold text-[#1a1f4a]"
                 style={{ background: current.color }}
               >
-                {playing ? <Pause size={18} fill="#1a1f4a" /> : <Play size={18} fill="#1a1f4a" />}
-                {playing ? 'Pause' : 'Play'}
+                {musicPlaying ? <Pause size={18} fill="#1a1f4a" /> : <Play size={18} fill="#1a1f4a" />}
+                {musicPlaying ? 'Pause' : 'Play'}
               </button>
               <input
                 type="range"
@@ -146,7 +134,7 @@ export default function Music() {
                 max="1"
                 step="0.01"
                 value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
                 className="flex-1 accent-[var(--cyan)]"
               />
             </div>
@@ -172,12 +160,16 @@ export default function Music() {
                   <I size={22} style={{ color: st.color }} />
                 </div>
                 <span className="flex-1 text-left font-bold">{st.label}</span>
-                <span
-                  className="flex h-9 w-9 items-center justify-center rounded-full"
-                  style={{ background: active ? st.color : st.color + '22' }}
-                >
-                  <Play size={16} fill={active ? '#1a1f4a' : st.color} color={active ? '#1a1f4a' : st.color} />
-                </span>
+                {active && musicPlaying ? (
+                  <Equalizer color={st.color} playing />
+                ) : (
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full"
+                    style={{ background: active ? st.color : st.color + '22' }}
+                  >
+                    <Play size={16} fill={active ? '#1a1f4a' : st.color} color={active ? '#1a1f4a' : st.color} />
+                  </span>
+                )}
               </motion.button>
             );
           })}
@@ -193,7 +185,7 @@ export default function Music() {
           </button>
         </div>
         <p className="mt-4 text-center text-xs text-[var(--muted)]">
-          station choice is shared · audio plays on each device (tap play)
+          picking a station plays it for both of you · keeps playing as you move around the app
         </p>
       </div>
     </div>

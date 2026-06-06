@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from './store/useStore';
 import AffectionPopup from './components/AffectionPopup';
+import GlobalAudio from './components/GlobalAudio';
 import TabBar from './components/TabBar';
 
 import Login from './pages/Login';
@@ -22,6 +23,7 @@ import NoteEditor from './pages/NoteEditor';
 import AboutUs from './pages/AboutUs';
 import Affection from './pages/Affection';
 import Activity from './pages/Activity';
+import MapPage from './pages/MapPage';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -54,6 +56,7 @@ export default function App() {
   return (
     <>
       <AffectionPopup />
+      <GlobalAudio />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/login" element={<Navigate to="/" replace />} />
@@ -67,6 +70,7 @@ export default function App() {
           <Route path="/plant" element={<Shell tabs={false}><Plant /></Shell>} />
           <Route path="/mood" element={<Shell tabs={false}><Mood /></Shell>} />
           <Route path="/music" element={<Shell tabs={false}><Music /></Shell>} />
+          <Route path="/map" element={<Shell tabs={false}><MapPage /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

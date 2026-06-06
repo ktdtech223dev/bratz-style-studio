@@ -115,12 +115,15 @@ export default function RoomScene() {
           <path d="M20 26 l-3 -4 a2 2 0 1 1 3 -1 a2 2 0 1 1 3 1 z" fill="#ff6ba8" />
         </g>
       </Spot>
-      {/* world map (decorative) */}
-      <g transform="translate(292,198)">
-        <rect x="0" y="0" width="30" height="24" rx="2" fill="#2a3a5c" stroke="#4a3f70" strokeWidth="2" />
-        <path d="M5 8 q6 -3 10 2 q5 4 11 1" stroke="#7dd3fc" strokeWidth="2" fill="none" />
-        <circle cx="12" cy="14" r="1.5" fill="#ff6ba8" />
-      </g>
+      {/* world map -> /map */}
+      <Spot to="/map" label="Our map">
+        <g transform="translate(292,198)">
+          <rect x="0" y="0" width="30" height="24" rx="2" fill="#2a3a5c" stroke="#4a3f70" strokeWidth="2" />
+          <path d="M5 8 q6 -3 10 2 q5 4 11 1" stroke="#7dd3fc" strokeWidth="2" fill="none" />
+          <circle cx="12" cy="14" r="1.5" fill="#ff6ba8" />
+          <circle cx="22" cy="10" r="1.5" fill="#fde047" />
+        </g>
+      </Spot>
 
       {/* ── TV (decorative -> games) ── */}
       <Spot to="/games" label="Games">

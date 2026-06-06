@@ -1,21 +1,46 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Lightbulb, ChevronLeft } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import MoodBeam from '../components/MoodBeam';
 import { useStore } from '../store/useStore';
 import { shortRel } from '../lib/time';
 
+// Big mood library, grouped for a nice scroll order (positive → calm → affectionate → low).
 export const MOODS = [
-  { mood: 'Silly', emoji: '😜', color: '#9be89b' },
-  { mood: 'Grateful', emoji: '🥹', color: '#c084fc' },
+  { mood: 'Relaxed', emoji: '😌', color: '#7dd3fc' },
+  { mood: 'Calm', emoji: '😇', color: '#7dd3fc' },
+  { mood: 'Amazing', emoji: '🤩', color: '#67e8f9' },
   { mood: 'Happy', emoji: '😊', color: '#fde047' },
-  { mood: 'Calm', emoji: '😌', color: '#7dd3fc' },
-  { mood: 'Pensive', emoji: '🤔', color: '#b8a9e8' },
-  { mood: 'Loved', emoji: '🥰', color: '#f5a3c7' },
-  { mood: 'Tired', emoji: '😴', color: '#8e8ad6' },
-  { mood: 'Excited', emoji: '🤩', color: '#fdba74' },
-  { mood: 'Anxious', emoji: '😰', color: '#67e8f9' },
-  { mood: 'Content', emoji: '🙂', color: '#7dd87d' },
+  { mood: 'Excited', emoji: '🤗', color: '#9be89b' },
+  { mood: 'Energetic', emoji: '⚡', color: '#67e8f9' },
+  { mood: 'Silly', emoji: '😜', color: '#9be89b' },
+  { mood: 'Focused', emoji: '🧐', color: '#67e8f9' },
+  { mood: 'Confident', emoji: '😎', color: '#818cf8' },
+  { mood: 'Hopeful', emoji: '🌱', color: '#b8a9e8' },
+  { mood: 'Grateful', emoji: '🥹', color: '#c084fc' },
+  { mood: 'Content', emoji: '🙂', color: '#c084fc' },
+  { mood: 'Romantic', emoji: '🌹', color: '#ff6ba8' },
+  { mood: 'Flirtatious', emoji: '😘', color: '#ff6ba8' },
+  { mood: 'Loving', emoji: '🥰', color: '#f472b6' },
+  { mood: 'Cuddly', emoji: '🤗', color: '#f5a3c7' },
+  { mood: 'Cute', emoji: '🥺', color: '#f5a3c7' },
+  { mood: 'Sleepy', emoji: '😴', color: '#b8a9e8' },
+  { mood: 'Okay', emoji: '🙂', color: '#9be89b' },
+  { mood: 'Bored', emoji: '😑', color: '#9ca3af' },
+  { mood: 'Lazy', emoji: '😪', color: '#cdc7a0' },
+  { mood: 'Tired', emoji: '🥱', color: '#8ea3c9' },
+  { mood: 'Hungry', emoji: '😋', color: '#fdba74' },
+  { mood: 'Grumpy', emoji: '😒', color: '#c2a878' },
+  { mood: 'Unsure', emoji: '😕', color: '#c084fc' },
+  { mood: 'Worried', emoji: '😟', color: '#b8a9e8' },
+  { mood: 'Anxious', emoji: '😰', color: '#cf8fb0' },
+  { mood: 'Stressed', emoji: '😣', color: '#fdba74' },
+  { mood: 'Frustrated', emoji: '😤', color: '#fbbf24' },
+  { mood: 'Angry', emoji: '😠', color: '#f87171' },
+  { mood: 'Sad', emoji: '😢', color: '#8e8ad6' },
+  { mood: 'Lonely', emoji: '🥺', color: '#818cf8' },
+  { mood: 'Sick', emoji: '🤒', color: '#9bae6a' },
 ];
 
 function MoodColumn({ name, mood, side, onTap, clickable }) {
@@ -80,41 +105,51 @@ export default function Mood() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setPicker(false)}
-            className="fixed inset-0 z-50 flex items-end justify-center"
-            style={{ background: 'rgba(10,12,30,0.6)', backdropFilter: 'blur(6px)' }}
+            className="fixed inset-0 z-50 flex flex-col bg-[var(--bg)]"
           >
-            <motion.div
-              initial={{ y: 300 }}
-              animate={{ y: 0 }}
-              exit={{ y: 300 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[520px] rounded-t-3xl border-t border-[var(--border)] bg-[var(--bg2)] p-5 pb-8 safe-bottom"
-            >
-              <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/15" />
-              <h3 className="mb-4 text-center text-lg font-extrabold">How are you feeling?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {MOODS.map((m) => (
-                  <button
-                    key={m.mood}
-                    onClick={() => pick(m)}
-                    className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 active:scale-95"
-                    style={{ boxShadow: `inset 0 0 0 1px ${m.color}22` }}
-                  >
-                    <span
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-xl"
-                      style={{ background: m.color + '22' }}
+            {/* header */}
+            <div className="safe-top sticky top-0 z-10 flex items-center justify-center border-b border-white/5 bg-[var(--bg)]/90 px-4 py-3 backdrop-blur">
+              <button
+                onClick={() => setPicker(false)}
+                className="absolute left-3 flex items-center gap-1 text-[var(--lav-text)]"
+              >
+                <ChevronLeft size={24} /> Mood
+              </button>
+              <h2 className="text-lg font-extrabold">Update mood</h2>
+            </div>
+            {/* scrollable grid */}
+            <div className="no-scrollbar flex-1 overflow-y-auto px-4 py-5 safe-bottom">
+              <div className="grid grid-cols-3 gap-3">
+                {MOODS.map((m, i) => {
+                  const active = myMood?.mood === m.mood;
+                  return (
+                    <motion.button
+                      key={m.mood}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.012, 0.25) }}
+                      whileTap={{ scale: 0.93 }}
+                      onClick={() => pick(m)}
+                      className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border bg-[var(--card)]"
+                      style={{
+                        borderColor: active ? m.color : 'var(--border)',
+                        boxShadow: active ? `0 0 20px ${m.color}55` : 'none',
+                      }}
                     >
-                      {m.emoji}
-                    </span>
-                    <span className="font-bold" style={{ color: m.color }}>
-                      {m.mood}
-                    </span>
-                  </button>
-                ))}
+                      <Lightbulb
+                        size={30}
+                        fill={m.color}
+                        color={m.color}
+                        style={{ filter: `drop-shadow(0 0 8px ${m.color}aa)` }}
+                      />
+                      <span className="text-sm font-extrabold" style={{ color: m.color }}>
+                        {m.mood}
+                      </span>
+                    </motion.button>
+                  );
+                })}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

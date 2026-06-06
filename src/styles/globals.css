@@ -109,3 +109,26 @@ input {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
+/* Leaflet theming */
+.us-pin {
+  background: transparent;
+  border: none;
+}
+.leaflet-container {
+  background: #151a3d;
+  font-family: 'Nunito', sans-serif;
+}
+.leaflet-control-attribution {
+  background: rgba(21, 26, 61, 0.7) !important;
+  color: #6b6896 !important;
+  font-size: 9px;
+}
+.leaflet-control-attribution a {
+  color: #9590b8 !important;
+}
+.leaflet-bar a {
+  background: #2a3164 !important;
+  color: #e8e6f5 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}

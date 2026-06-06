@@ -121,6 +121,50 @@ app.delete('/api/photos/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── PLACES (map) ──
+app.get('/api/places', (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT p.*, u.display_name added_name, u.color added_color
+       FROM places p LEFT JOIN users u ON u.id=p.added_by
+       ORDER BY p.created_at DESC`,
+    )
+    .all();
+  res.json(rows);
+});
+app.post('/api/places', upload.single('photo'), (req, res) => {
+  const { name, note, lat, lng, userId } = req.body;
+  if (!name || lat === undefined || lng === undefined)
+    return res.status(400).json({ error: 'Missing fields' });
+  const r = db
+    .prepare(`INSERT INTO places (name,note,lat,lng,filename,added_by) VALUES (?,?,?,?,?,?)`)
+    .run(name, note || '', Number(lat), Number(lng), req.file ? req.file.filename : null, Number(userId));
+  const place = db
+    .prepare(
+      `SELECT p.*, u.display_name added_name, u.color added_color
+       FROM places p LEFT JOIN users u ON u.id=p.added_by WHERE p.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('place:new', place);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'place', `${u.display_name} pinned ${name}`, 'map');
+  markActive(io, Number(userId));
+  res.json(place);
+});
+app.delete('/api/places/:id', (req, res) => {
+  const place = db.prepare('SELECT * FROM places WHERE id=?').get(req.params.id);
+  if (place) {
+    if (place.filename) {
+      try {
+        fs.unlinkSync(path.join(DATA_DIR, 'photos', place.filename));
+      } catch (e) {}
+    }
+    db.prepare('DELETE FROM places WHERE id=?').run(place.id);
+    io.emit('place:deleted', { id: place.id });
+  }
+  res.json({ ok: true });
+});
+
 // ── DIARY ──
 app.get('/api/diary/today', (req, res) => {
   const day = ensureTodayPrompt();
@@ -188,17 +232,22 @@ app.post('/api/games/start', (req, res) => {
   res.json({ sessionId: r.lastInsertRowid });
 });
 app.post('/api/games/answer', (req, res) => {
-  const { sessionId, questionId, userId, answer } = req.body;
+  const { sessionId, questionId, userId, answer, kind } = req.body;
+  const k = kind === 'guess' ? 'guess' : 'self';
+  // Upsert-ish: replace any prior answer for this question+kind+user in the session.
   db.prepare(
-    `INSERT INTO game_answers (session_id,question_id,user_id,answer) VALUES (?,?,?,?)`,
-  ).run(sessionId, questionId, Number(userId), answer);
+    `DELETE FROM game_answers WHERE session_id=? AND question_id=? AND user_id=? AND kind=?`,
+  ).run(sessionId, questionId, Number(userId), k);
+  db.prepare(
+    `INSERT INTO game_answers (session_id,question_id,user_id,answer,kind) VALUES (?,?,?,?,?)`,
+  ).run(sessionId, questionId, Number(userId), answer, k);
   io.emit('game:answer_progress', { sessionId: Number(sessionId), userId: Number(userId) });
 
-  // Check completion: both users answered all questions?
+  // Complete when BOTH users have answered all questions for BOTH self and guess (2N each).
   const session = db.prepare('SELECT * FROM game_sessions WHERE id=?').get(sessionId);
   const game = session && gameById(session.game_id);
   if (game && !session.completed) {
-    const need = game.questions.length;
+    const need = game.questions.length * 2;
     const counts = db
       .prepare('SELECT user_id, COUNT(*) c FROM game_answers WHERE session_id=? GROUP BY user_id')
       .all(sessionId);

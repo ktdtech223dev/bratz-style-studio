@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Clock, Play } from 'lucide-react';
+import { Star, Clock, Play, User, Search } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import { useStore } from '../store/useStore';
@@ -18,16 +18,18 @@ export default function GamePlay() {
   const game = games?.games.find((g) => g.id === gameId);
 
   const [history, setHistory] = useState([]);
-  const [phase, setPhase] = useState('intro'); // intro | play | waiting
+  const [phase, setPhase] = useState('intro'); // intro | self | guess | waiting
   const [sessionId, setSessionId] = useState(null);
   const [idx, setIdx] = useState(0);
   const [answer, setAnswer] = useState('');
+
+  const N = game?.questions.length || 0;
+  const pName = partner?.display_name || 'them';
 
   useEffect(() => {
     if (gameId) api.get(`/api/games/history/${gameId}`).then(setHistory).catch(() => {});
   }, [gameId]);
 
-  // While waiting, listen for completion
   useEffect(() => {
     if (phase !== 'waiting' || !sessionId) return;
     const s = getSocket();
@@ -35,56 +37,74 @@ export default function GamePlay() {
       if (Number(sid) === Number(sessionId)) nav(`/games/${gameId}/results/${sessionId}`);
     };
     s.on('game:complete', onComplete);
-    // also poll once in case it's already done
     api.get(`/api/games/session/${sessionId}`).then(({ session, answers }) => {
-      const need = game.questions.length;
       const byUser = {};
       answers.forEach((a) => (byUser[a.user_id] = (byUser[a.user_id] || 0) + 1));
-      const both = Object.values(byUser).filter((c) => c >= need).length >= 2;
+      const both = Object.values(byUser).filter((c) => c >= N * 2).length >= 2;
       if (both || session?.completed) nav(`/games/${gameId}/results/${sessionId}`);
     });
     return () => s.off('game:complete', onComplete);
-  }, [phase, sessionId, gameId, game, nav]);
+  }, [phase, sessionId, gameId, N, nav]);
 
   if (!game) return <PageHeader title="Game" />;
 
   async function start() {
     const { sessionId: sid } = await api.post('/api/games/start', { gameId, userId: me.id });
-    // resume: skip questions already answered by me in this session
     const { answers } = await api.get(`/api/games/session/${sid}`);
-    const mine = new Set(answers.filter((a) => a.user_id === me.id).map((a) => a.question_id));
-    const firstUnanswered = game.questions.findIndex((q) => !mine.has(q.id));
+    const mineSelf = new Set(answers.filter((a) => a.user_id === me.id && a.kind === 'self').map((a) => a.question_id));
+    const mineGuess = new Set(answers.filter((a) => a.user_id === me.id && a.kind === 'guess').map((a) => a.question_id));
     setSessionId(sid);
-    if (firstUnanswered === -1) {
-      setPhase('waiting');
-    } else {
-      setIdx(firstUnanswered);
-      setPhase('play');
-      setAnswer('');
+    setAnswer('');
+    const firstSelf = game.questions.findIndex((q) => !mineSelf.has(q.id));
+    if (firstSelf !== -1) {
+      setPhase('self');
+      setIdx(firstSelf);
+      return;
     }
+    const firstGuess = game.questions.findIndex((q) => !mineGuess.has(q.id));
+    if (firstGuess !== -1) {
+      setPhase('guess');
+      setIdx(firstGuess);
+      return;
+    }
+    setPhase('waiting');
   }
 
-  async function submitAnswer() {
+  async function submit() {
     const q = game.questions[idx];
     await api.post('/api/games/answer', {
       sessionId,
       questionId: q.id,
       userId: me.id,
       answer: answer.trim() || '—',
+      kind: phase, // 'self' or 'guess'
     });
     setAnswer('');
-    if (idx + 1 < game.questions.length) {
+    if (idx + 1 < N) {
       setIdx(idx + 1);
+    } else if (phase === 'self') {
+      setPhase('guess');
+      setIdx(0);
     } else {
       setPhase('waiting');
     }
   }
 
-  const isGuess = game.type === 'guess';
+  const inPlay = phase === 'self' || phase === 'guess';
+  const q = game.questions[idx];
 
   return (
     <div>
-      <PageHeader title={game.title} sub={isGuess ? `Guess what ${partner?.display_name || 'they'}'d say` : 'Answer together, then compare'} />
+      <PageHeader
+        title={game.title}
+        sub={
+          phase === 'self'
+            ? 'Step 1 of 2 · About you'
+            : phase === 'guess'
+              ? `Step 2 of 2 · Guess ${pName}`
+              : 'How well do you know each other?'
+        }
+      />
 
       <div className="px-5">
         <AnimatePresence mode="wait">
@@ -94,8 +114,8 @@ export default function GamePlay() {
                 <div className="text-6xl">{game.icon}</div>
                 <h2 className="mt-3 text-xl font-extrabold">{game.title}</h2>
                 <p className="mt-2 text-sm text-[var(--text2)]">
-                  {game.questions.length} questions ·{' '}
-                  {game.type === 'compare' ? 'compare your answers' : 'guess each other'}
+                  First answer {N} about <b>you</b>, then guess what {pName} said about <b>themselves</b>. See how
+                  well you really know each other.
                 </p>
                 <div className="mt-2 flex items-center gap-1 text-sm font-bold text-[var(--yellow)]">
                   <Star size={14} fill="#fde047" /> +15 stars · 🦴 +1 treat
@@ -138,8 +158,8 @@ export default function GamePlay() {
             </motion.div>
           )}
 
-          {phase === 'play' && (
-            <motion.div key={`q${idx}`} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
+          {inPlay && (
+            <motion.div key={`${phase}${idx}`} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
               <div className="mb-4 flex justify-center gap-2">
                 {game.questions.map((_, i) => (
                   <div
@@ -147,31 +167,45 @@ export default function GamePlay() {
                     className="h-2 rounded-full transition-all"
                     style={{
                       width: i === idx ? 24 : 8,
-                      background: i <= idx ? 'var(--pink-hot)' : 'rgba(255,255,255,0.12)',
+                      background:
+                        i <= idx ? (phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)') : 'rgba(255,255,255,0.12)',
                     }}
                   />
                 ))}
               </div>
               <Card className="p-6">
-                <div className="text-xs font-bold text-[var(--lav-text)]">
-                  Question {idx + 1} of {game.questions.length}
+                <div
+                  className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold"
+                  style={{
+                    background: phase === 'self' ? 'var(--lavender)22' : 'var(--pink-hot)22',
+                    color: phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)',
+                  }}
+                >
+                  {phase === 'self' ? <User size={13} /> : <Search size={13} />}
+                  {phase === 'self' ? 'About you' : `Guess ${pName}`}
                 </div>
-                <h2 className="mt-2 text-xl font-extrabold leading-snug">{game.questions[idx].q}</h2>
+                <h2 className="text-xl font-extrabold leading-snug">
+                  {phase === 'self' ? q.q : `${pName}: ${lower(q.q)}`}
+                </h2>
                 <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="type your answer…"
+                  placeholder={phase === 'self' ? 'your honest answer…' : `what would ${pName} say?`}
                   rows={4}
                   autoFocus
                   className="mt-4 w-full resize-none rounded-2xl bg-[var(--bg2)] p-4 text-[var(--text)] placeholder:text-[var(--muted)]"
                 />
                 <button
-                  onClick={submitAnswer}
-                  className="mt-4 w-full rounded-2xl bg-[var(--pink-hot)] py-3.5 font-extrabold text-white active:scale-95"
+                  onClick={submit}
+                  className="mt-4 w-full rounded-2xl py-3.5 font-extrabold text-white active:scale-95"
+                  style={{ background: phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)' }}
                 >
-                  {idx + 1 < game.questions.length ? 'Next' : 'Finish'}
+                  {idx + 1 < N ? 'Next' : phase === 'self' ? `Now guess ${pName} →` : 'Finish'}
                 </button>
               </Card>
+              <p className="mt-3 text-center text-xs text-[var(--muted)]">
+                question {idx + 1} of {N}
+              </p>
             </motion.div>
           )}
 
@@ -187,8 +221,7 @@ export default function GamePlay() {
                 </motion.div>
                 <h2 className="mt-5 text-lg font-extrabold">All done on your end! 💜</h2>
                 <p className="mt-2 text-sm text-[var(--text2)]">
-                  Waiting for {partner?.display_name || 'your partner'} to finish… results unlock when you both
-                  answer.
+                  Waiting for {pName} to answer & guess too — the reveal unlocks when you’re both finished.
                 </p>
                 <button onClick={() => nav('/games')} className="mt-6 text-sm font-bold text-[var(--lav-text)]">
                   back to games
@@ -200,4 +233,8 @@ export default function GamePlay() {
       </div>
     </div>
   );
+}
+
+function lower(s) {
+  return s.charAt(0).toLowerCase() + s.slice(1);
 }

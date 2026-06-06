@@ -25,6 +25,10 @@ export const useStore = create((set, get) => ({
   presence: {}, // userId -> bool
   currentStation: null,
   stationMeta: null, // { stationId, by, at }
+  musicPlaying: false,
+  musicVolume: 0.7,
+  musicMuted: false,
+  places: [],
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -115,7 +119,11 @@ export const useStore = create((set, get) => ({
       })),
     );
     s.on('activity:new', (a) => set((st) => ({ activity: [a, ...st.activity] })));
-    s.on('music:update', (m) => set({ currentStation: m.stationId, stationMeta: m }));
+    s.on('music:update', (m) =>
+      set({ currentStation: m.stationId, musicPlaying: !!m.stationId && m.playing !== false, stationMeta: m }),
+    );
+    s.on('place:new', (p) => set((st) => ({ places: [p, ...st.places.filter((x) => x.id !== p.id)] })));
+    s.on('place:deleted', ({ id }) => set((st) => ({ places: st.places.filter((p) => p.id !== id) })));
     s.on('diary:new_day', (d) => set({ today: d, diaryEntries: [] }));
     s.on('diary:update', ({ entries }) => set({ diaryEntries: entries }));
     s.on('presence', ({ userId, online }) =>
@@ -130,9 +138,16 @@ export const useStore = create((set, get) => ({
 
   popAffection: () => set((st) => ({ affectionQueue: st.affectionQueue.slice(1) })),
 
+  setMusicVolume: (v) => set({ musicVolume: v }),
+  setMusicMuted: (m) => set({ musicMuted: m }),
+
   refreshPhotos: async () => {
     const r = await api.get('/api/photos');
     set({ photos: r });
+  },
+  refreshPlaces: async () => {
+    const r = await api.get('/api/places');
+    set({ places: r });
   },
   refreshNotes: async () => {
     const r = await api.get('/api/notes');
