@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings,
@@ -65,6 +66,7 @@ export default function AboutUs() {
   const logout = useStore((s) => s.logout);
   const couple = useStore((s) => s.couple);
   const storeUsers = useStore((s) => s.users);
+  const nav = useNavigate();
 
   const [about, setAbout] = useState({ dates: [], items: [], users: [] });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -138,6 +140,20 @@ export default function AboutUs() {
             <Stat emoji="⭐" value={couple?.stars ?? 0} label="OUR STARS" color="#fde047" />
             <Stat emoji="🔥" value={myUser?.streak ?? 0} label="MY STREAK" color="#fdba74" />
             <Stat emoji="⚡" value={couple?.our_streak ?? 0} label="OUR STREAK" color="#67e8f9" />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => nav('/stats')}
+              className="rounded-xl bg-[var(--bg2)] py-2.5 text-sm font-bold text-[var(--cyan)]"
+            >
+              Full stats
+            </button>
+            <button
+              onClick={() => nav('/timeline')}
+              className="rounded-xl bg-[var(--bg2)] py-2.5 text-sm font-bold text-[var(--pink)]"
+            >
+              Our timeline
+            </button>
           </div>
         </Card>
 

@@ -47,15 +47,19 @@ export default function GameResults() {
   const pick = (qid, uid, kind) =>
     answers.find((a) => a.question_id === qid && a.user_id === uid && a.kind === kind)?.answer;
 
+  const party = game.format === 'party';
+  const N = game.questions.length;
+
   // scores
   let myScore = 0;
   let pScore = 0;
+  let matches = 0;
   game.questions.forEach((q) => {
     if (isMatch(pick(q.id, me?.id, 'guess'), pick(q.id, partnerId, 'self'))) myScore++;
     if (isMatch(pick(q.id, partnerId, 'guess'), pick(q.id, me?.id, 'self'))) pScore++;
+    if (isMatch(pick(q.id, me?.id, 'self'), pick(q.id, partnerId, 'self'))) matches++;
   });
-  const N = game.questions.length;
-  const ready = answers.length >= N * 4;
+  const ready = answers.length >= N * (party ? 2 : 4);
 
   return (
     <div>
@@ -68,24 +72,66 @@ export default function GameResults() {
         )}
 
         {/* scoreboard */}
-        <Card className="p-5">
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <div className="rounded-2xl bg-[var(--bg2)] p-4" style={{ boxShadow: `inset 0 0 0 1px ${myColor}33` }}>
-              <div className="text-3xl font-extrabold" style={{ color: myColor }}>
-                {myScore}/{N}
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[var(--text2)]">you knew {pName}</div>
+        {party ? (
+          <Card className="p-5 text-center">
+            <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--lav-text)]">You matched</div>
+            <div className="mt-1 text-4xl font-extrabold text-[var(--pink-hot)]">
+              {matches}/{N}
             </div>
-            <div className="rounded-2xl bg-[var(--bg2)] p-4" style={{ boxShadow: `inset 0 0 0 1px ${pColor}33` }}>
-              <div className="text-3xl font-extrabold" style={{ color: pColor }}>
-                {pScore}/{N}
+            <div className="text-xs text-[var(--text2)]">times you picked the same</div>
+          </Card>
+        ) : (
+          <Card className="p-5">
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="rounded-2xl bg-[var(--bg2)] p-4" style={{ boxShadow: `inset 0 0 0 1px ${myColor}33` }}>
+                <div className="text-3xl font-extrabold" style={{ color: myColor }}>
+                  {myScore}/{N}
+                </div>
+                <div className="mt-1 text-xs font-semibold text-[var(--text2)]">you knew {pName}</div>
               </div>
-              <div className="mt-1 text-xs font-semibold text-[var(--text2)]">{pName} knew you</div>
+              <div className="rounded-2xl bg-[var(--bg2)] p-4" style={{ boxShadow: `inset 0 0 0 1px ${pColor}33` }}>
+                <div className="text-3xl font-extrabold" style={{ color: pColor }}>
+                  {pScore}/{N}
+                </div>
+                <div className="mt-1 text-xs font-semibold text-[var(--text2)]">{pName} knew you</div>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
-        {game.questions.map((q, i) => {
+        {party &&
+          game.questions.map((q, i) => {
+            const mine = pick(q.id, me?.id, 'self');
+            const theirs = pick(q.id, partnerId, 'self');
+            const same = isMatch(mine, theirs);
+            return (
+              <motion.div key={q.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <Card className="p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-extrabold leading-snug">{q.q}</h3>
+                    <span
+                      className="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold"
+                      style={{ background: same ? '#9be89b22' : '#ffffff10', color: same ? '#9be89b' : '#9590b8' }}
+                    >
+                      {same ? 'matched' : 'differed'}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-[var(--bg2)] p-3" style={{ boxShadow: `inset 0 0 0 1px ${myColor}33` }}>
+                      <div className="mb-1 text-xs font-extrabold" style={{ color: myColor }}>You</div>
+                      <div className="text-sm">{mine || <span className="text-[var(--muted)]">—</span>}</div>
+                    </div>
+                    <div className="rounded-2xl bg-[var(--bg2)] p-3" style={{ boxShadow: `inset 0 0 0 1px ${pColor}33` }}>
+                      <div className="mb-1 text-xs font-extrabold" style={{ color: pColor }}>{pName}</div>
+                      <div className="text-sm">{theirs || <span className="text-[var(--muted)]">waiting…</span>}</div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            );
+          })}
+
+        {!party && game.questions.map((q, i) => {
           const myReal = pick(q.id, me?.id, 'self');
           const myGuess = pick(q.id, me?.id, 'guess');
           const pReal = pick(q.id, partnerId, 'self');

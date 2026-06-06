@@ -70,6 +70,11 @@ function scheduleMidnight(io) {
     } catch (e) {
       console.error('streak rollover error', e);
     }
+    try {
+      eventReminders();
+    } catch (e) {
+      console.error('event reminder error', e);
+    }
     scheduleMidnight(io); // reschedule
   }, ms + 1000);
 }
@@ -92,4 +97,31 @@ function rolloverStreaks() {
   }
 }
 
-module.exports = { todayStr, ensureTodayPrompt, scheduleMidnight, msUntilMidnight, rolloverStreaks, TZ };
+// Notify both partners about events happening today.
+function eventReminders() {
+  const today = todayStr();
+  const events = db.prepare('SELECT * FROM events WHERE date=?').all(today);
+  if (!events.length) return;
+  // require lazily to avoid load-order surprises
+  const { notifyUser } = require('./push');
+  const users = db.prepare('SELECT id FROM users').all();
+  for (const ev of events) {
+    for (const u of users) {
+      notifyUser(u.id, {
+        title: `📅 Today: ${ev.title}`,
+        body: ev.time ? `at ${ev.time}` : 'on your shared calendar',
+        url: '/calendar',
+      });
+    }
+  }
+}
+
+module.exports = {
+  todayStr,
+  ensureTodayPrompt,
+  scheduleMidnight,
+  msUntilMidnight,
+  rolloverStreaks,
+  eventReminders,
+  TZ,
+};

@@ -24,6 +24,7 @@ export default function GamePlay() {
   const [answer, setAnswer] = useState('');
 
   const N = game?.questions.length || 0;
+  const party = game?.format === 'party';
   const pName = partner?.display_name || 'them';
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function GamePlay() {
     api.get(`/api/games/session/${sessionId}`).then(({ session, answers }) => {
       const byUser = {};
       answers.forEach((a) => (byUser[a.user_id] = (byUser[a.user_id] || 0) + 1));
-      const both = Object.values(byUser).filter((c) => c >= N * 2).length >= 2;
+      const both = Object.values(byUser).filter((c) => c >= N * (party ? 1 : 2)).length >= 2;
       if (both || session?.completed) nav(`/games/${gameId}/results/${sessionId}`);
     });
     return () => s.off('game:complete', onComplete);
@@ -61,11 +62,13 @@ export default function GamePlay() {
       setIdx(firstSelf);
       return;
     }
-    const firstGuess = game.questions.findIndex((q) => !mineGuess.has(q.id));
-    if (firstGuess !== -1) {
-      setPhase('guess');
-      setIdx(firstGuess);
-      return;
+    if (!party) {
+      const firstGuess = game.questions.findIndex((q) => !mineGuess.has(q.id));
+      if (firstGuess !== -1) {
+        setPhase('guess');
+        setIdx(firstGuess);
+        return;
+      }
     }
     setPhase('waiting');
   }
@@ -82,7 +85,7 @@ export default function GamePlay() {
     setAnswer('');
     if (idx + 1 < N) {
       setIdx(idx + 1);
-    } else if (phase === 'self') {
+    } else if (phase === 'self' && !party) {
       setPhase('guess');
       setIdx(0);
     } else {
@@ -98,11 +101,13 @@ export default function GamePlay() {
       <PageHeader
         title={game.title}
         sub={
-          phase === 'self'
-            ? 'Step 1 of 2 · About you'
-            : phase === 'guess'
-              ? `Step 2 of 2 · Guess ${pName}`
-              : 'How well do you know each other?'
+          party
+            ? 'pick yours, then compare'
+            : phase === 'self'
+              ? 'Step 1 of 2 · About you'
+              : phase === 'guess'
+                ? `Step 2 of 2 · Guess ${pName}`
+                : 'How well do you know each other?'
         }
       />
 
@@ -114,8 +119,14 @@ export default function GamePlay() {
                 <div className="text-6xl">{game.icon}</div>
                 <h2 className="mt-3 text-xl font-extrabold">{game.title}</h2>
                 <p className="mt-2 text-sm text-[var(--text2)]">
-                  First answer {N} about <b>you</b>, then guess what {pName} said about <b>themselves</b>. See how
-                  well you really know each other.
+                  {party ? (
+                    <>You both make {N} picks, then see how often you matched.</>
+                  ) : (
+                    <>
+                      First answer {N} about <b>you</b>, then guess what {pName} said about <b>themselves</b>. See how
+                      well you really know each other.
+                    </>
+                  )}
                 </p>
                 <div className="mt-2 flex items-center gap-1 text-sm font-bold text-[var(--yellow)]">
                   <Star size={14} fill="#fde047" /> +15 stars · 🦴 +1 treat
@@ -182,7 +193,7 @@ export default function GamePlay() {
                   }}
                 >
                   {phase === 'self' ? <User size={13} /> : <Search size={13} />}
-                  {phase === 'self' ? 'About you' : `Guess ${pName}`}
+                  {party ? 'Your pick' : phase === 'self' ? 'About you' : `Guess ${pName}`}
                 </div>
                 <h2 className="text-xl font-extrabold leading-snug">
                   {phase === 'self' ? q.q : `${pName}: ${lower(q.q)}`}
@@ -231,7 +242,7 @@ export default function GamePlay() {
                   className="mt-4 w-full rounded-2xl py-3.5 font-extrabold text-white active:scale-95 disabled:opacity-40"
                   style={{ background: phase === 'self' ? 'var(--lavender)' : 'var(--pink-hot)' }}
                 >
-                  {idx + 1 < N ? 'Next' : phase === 'self' ? `Now guess ${pName} →` : 'Finish'}
+                  {idx + 1 < N ? 'Next' : !party && phase === 'self' ? `Now guess ${pName} →` : 'Finish'}
                 </button>
               </Card>
               <p className="mt-3 text-center text-xs text-[var(--muted)]">
@@ -252,7 +263,9 @@ export default function GamePlay() {
                 </motion.div>
                 <h2 className="mt-5 text-lg font-extrabold">All done on your end! 💜</h2>
                 <p className="mt-2 text-sm text-[var(--text2)]">
-                  Waiting for {pName} to answer & guess too — the reveal unlocks when you’re both finished.
+                  {party
+                    ? `Waiting for ${pName} to pick too — the reveal unlocks when you’re both done.`
+                    : `Waiting for ${pName} to answer & guess too — the reveal unlocks when you’re both finished.`}
                 </p>
                 <button onClick={() => nav('/games')} className="mt-6 text-sm font-bold text-[var(--lav-text)]">
                   back to games

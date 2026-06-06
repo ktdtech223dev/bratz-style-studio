@@ -49,3 +49,35 @@ export function dateLabel(d) {
   const dt = new Date((d.length === 10 ? d + 'T00:00:00' : d));
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
+
+// Next occurrence of a date string (MM-DD recurring, or YYYY-MM-DD one-off).
+export function nextOccurrence(dateStr) {
+  const now = new Date();
+  let target;
+  if (dateStr.length === 5) {
+    const [m, d] = dateStr.split('-').map(Number);
+    target = new Date(now.getFullYear(), m - 1, d);
+    if (target < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      target = new Date(now.getFullYear() + 1, m - 1, d);
+  } else {
+    target = new Date(dateStr + 'T00:00:00');
+  }
+  return target;
+}
+
+// Relative countdown pill text for a date string.
+export function relPill(dateStr) {
+  const target = nextOccurrence(dateStr);
+  const today = new Date();
+  const days = Math.round(
+    (new Date(target.getFullYear(), target.getMonth(), target.getDate()) -
+      new Date(today.getFullYear(), today.getMonth(), today.getDate())) /
+      86400000,
+  );
+  if (days < 0) return 'PASSED';
+  if (days === 0) return 'TODAY';
+  if (days === 1) return 'TOMORROW';
+  if (days < 14) return `IN ${days} DAYS`;
+  if (days < 60) return `IN ${Math.round(days / 7)} WEEKS`;
+  return `IN ${Math.round(days / 30)} MONTHS`;
+}

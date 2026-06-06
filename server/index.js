@@ -15,6 +15,7 @@ const RADIO = require('./radio');
 const GAMES = require('./games-data');
 const DECOR = require('./decor-data');
 const PUSH = require('./push');
+const PARTY = require('./party-data');
 
 const app = express();
 const server = http.createServer(app);
@@ -49,7 +50,7 @@ app.get('/api/state', (req, res) => {
   res.json({
     users: db
       .prepare(
-        'SELECT id,username,display_name,color,current_mood,mood_emoji,mood_color,mood_at,streak,last_active_day FROM users',
+        'SELECT id,username,display_name,color,current_mood,mood_emoji,mood_color,mood_at,streak,last_active_day,status,status_at FROM users',
       )
       .all(),
     couple: db.prepare('SELECT * FROM couple WHERE id=1').get(),
@@ -60,6 +61,7 @@ app.get('/api/state', (req, res) => {
     today: ensureTodayPrompt(),
     decor: DECOR.resolve(db.prepare('SELECT * FROM room_decor WHERE id=1').get()),
     pushKey: PUSH.publicKey(),
+    truthordare: PARTY,
   });
 });
 
@@ -251,7 +253,7 @@ app.post('/api/games/answer', (req, res) => {
   const session = db.prepare('SELECT * FROM game_sessions WHERE id=?').get(sessionId);
   const game = session && gameById(session.game_id);
   if (game && !session.completed) {
-    const need = game.questions.length * 2;
+    const need = game.questions.length * (game.format === 'party' ? 1 : 2);
     const counts = db
       .prepare('SELECT user_id, COUNT(*) c FROM game_answers WHERE session_id=? GROUP BY user_id')
       .all(sessionId);
@@ -433,6 +435,255 @@ app.post('/api/push/subscribe', (req, res) => {
 });
 app.post('/api/push/unsubscribe', (req, res) => {
   if (req.body.endpoint) PUSH.removeSub(req.body.endpoint);
+  res.json({ ok: true });
+});
+
+// ── MILESTONES (timeline) ──
+app.get('/api/milestones', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT m.*, u.display_name created_name, u.color created_color
+         FROM milestones m LEFT JOIN users u ON u.id=m.created_by
+         ORDER BY m.date DESC, m.id DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/milestones', upload.single('photo'), (req, res) => {
+  const { title, note, date, userId } = req.body;
+  if (!title || !date) return res.status(400).json({ error: 'Missing fields' });
+  const r = db
+    .prepare(`INSERT INTO milestones (title,note,date,filename,created_by) VALUES (?,?,?,?,?)`)
+    .run(title, note || '', date, req.file ? req.file.filename : null, Number(userId));
+  const m = db
+    .prepare(
+      `SELECT m.*, u.display_name created_name, u.color created_color
+       FROM milestones m LEFT JOIN users u ON u.id=m.created_by WHERE m.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('milestone:new', m);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'milestone', `${u.display_name} added a memory: ${title}`, 'star');
+  markActive(io, Number(userId));
+  res.json(m);
+});
+app.delete('/api/milestones/:id', (req, res) => {
+  const m = db.prepare('SELECT * FROM milestones WHERE id=?').get(req.params.id);
+  if (m) {
+    if (m.filename) {
+      try {
+        fs.unlinkSync(path.join(DATA_DIR, 'photos', m.filename));
+      } catch (e) {}
+    }
+    db.prepare('DELETE FROM milestones WHERE id=?').run(m.id);
+    io.emit('milestone:deleted', { id: m.id });
+  }
+  res.json({ ok: true });
+});
+
+// ── ON THIS DAY ──
+app.get('/api/onthisday', (req, res) => {
+  const today = todayStr();
+  const md = today.slice(5); // MM-DD
+  const photos = db
+    .prepare(
+      `SELECT id, filename, caption, posted_at FROM photos
+       WHERE strftime('%m-%d', posted_at)=? AND date(posted_at) < ? ORDER BY posted_at DESC`,
+    )
+    .all(md, today);
+  const milestones = db
+    .prepare(`SELECT id, title, note, date FROM milestones WHERE substr(date,6)=? AND date < ? ORDER BY date DESC`)
+    .all(md, today);
+  const notes = db
+    .prepare(
+      `SELECT id, body, created_at FROM notes WHERE strftime('%m-%d', created_at)=? AND date(created_at) < ? ORDER BY created_at DESC`,
+    )
+    .all(md, today);
+  res.json({ photos, milestones, notes });
+});
+
+// ── STATS ──
+app.get('/api/stats', (req, res) => {
+  const couple = db.prepare('SELECT * FROM couple WHERE id=1').get();
+  const count = (sql) => db.prepare(sql).get().c;
+  const daysTogether = Math.max(
+    0,
+    Math.floor((Date.now() - new Date((couple.created_at || '').replace(' ', 'T') + 'Z').getTime()) / 86400000),
+  );
+  // simple mood compatibility: how often recent moods matched on the same day
+  let compat = null;
+  try {
+    const rows = db
+      .prepare(
+        `SELECT date(created_at) d, user_id, mood FROM mood_log
+         WHERE created_at > datetime('now','-30 days')`,
+      )
+      .all();
+    const byDay = {};
+    rows.forEach((r) => {
+      byDay[r.d] = byDay[r.d] || {};
+      byDay[r.d][r.user_id] = r.mood;
+    });
+    const days = Object.values(byDay).filter((d) => Object.keys(d).length >= 2);
+    if (days.length) {
+      const same = days.filter((d) => {
+        const vals = Object.values(d);
+        return vals[0] === vals[1];
+      }).length;
+      compat = Math.round((same / days.length) * 100);
+    }
+  } catch (e) {}
+  res.json({
+    daysTogether,
+    stars: couple.stars,
+    ourStreak: couple.our_streak,
+    notes: count('SELECT COUNT(*) c FROM notes'),
+    affection: count('SELECT COUNT(*) c FROM affection'),
+    photos: count('SELECT COUNT(*) c FROM photos'),
+    gamesPlayed: count('SELECT COUNT(*) c FROM game_sessions WHERE completed=1'),
+    bucketDone: count('SELECT COUNT(*) c FROM bucket_items WHERE done=1'),
+    places: count('SELECT COUNT(*) c FROM places'),
+    milestones: count('SELECT COUNT(*) c FROM milestones'),
+    moodCompat: compat,
+  });
+});
+
+// ── DAILY CHECK-IN ──
+app.get('/api/checkin/today', (req, res) => {
+  const date = todayStr();
+  res.json({ date, entries: db.prepare('SELECT * FROM checkins WHERE date=?').all(date) });
+});
+app.post('/api/checkin', (req, res) => {
+  const { userId, rating, note } = req.body;
+  const date = todayStr();
+  const isNew = !db.prepare('SELECT 1 FROM checkins WHERE date=? AND user_id=?').get(date, Number(userId));
+  db.prepare(
+    `INSERT INTO checkins (date,user_id,rating,note) VALUES (?,?,?,?)
+     ON CONFLICT(date,user_id) DO UPDATE SET rating=excluded.rating, note=excluded.note, created_at=datetime('now')`,
+  ).run(date, Number(userId), Number(rating) || null, note || '');
+  const entries = db.prepare('SELECT * FROM checkins WHERE date=?').all(date);
+  io.emit('checkin:update', { date, entries });
+  if (isNew) {
+    awardStars(io, 5);
+    const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+    if (u) {
+      logActivity(io, Number(userId), 'checkin', `${u.display_name} checked in for today`, 'sun');
+      PUSH.notifyUser(Number(userId) === 1 ? 2 : 1, {
+        title: `${u.display_name} checked in ☀️`,
+        body: 'see how their day is going',
+        url: '/checkin',
+      });
+    }
+  }
+  markActive(io, Number(userId));
+  res.json({ ok: true });
+});
+app.get('/api/checkin/history', (req, res) => {
+  const days = db
+    .prepare(`SELECT DISTINCT date FROM checkins ORDER BY date DESC LIMIT 30`)
+    .all()
+    .map((r) => r.date);
+  res.json(
+    days.map((d) => ({ date: d, entries: db.prepare('SELECT * FROM checkins WHERE date=?').all(d) })),
+  );
+});
+
+// ── MOOD HISTORY ──
+app.get('/api/mood/history', (req, res) => {
+  const days = Math.min(90, Number(req.query.days) || 30);
+  res.json(
+    db
+      .prepare(
+        `SELECT user_id, mood, emoji, color, created_at FROM mood_log
+         WHERE created_at > datetime('now', ?) ORDER BY created_at DESC`,
+      )
+      .all(`-${days} days`),
+  );
+});
+
+// ── WATCHLIST ──
+app.get('/api/watchlist', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT w.*, u.display_name added_name, u.color added_color
+         FROM watchlist w LEFT JOIN users u ON u.id=w.added_by
+         ORDER BY w.watched ASC, w.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/watchlist', (req, res) => {
+  const { title, kind, note, userId } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  const r = db
+    .prepare(`INSERT INTO watchlist (title,kind,note,added_by) VALUES (?,?,?,?)`)
+    .run(title, kind || 'movie', note || '', Number(userId));
+  const item = watchItem(r.lastInsertRowid);
+  io.emit('watchlist:new', item);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'watch', `${u.display_name} added "${title}" to the watchlist`, 'tv');
+  markActive(io, Number(userId));
+  res.json(item);
+});
+app.post('/api/watchlist/:id/watched', (req, res) => {
+  const { watched, rating } = req.body;
+  const isWatched = watched === '1' || watched === true || watched === 1;
+  db.prepare(
+    `UPDATE watchlist SET watched=?, rating=?, watched_at=${isWatched ? "datetime('now')" : 'NULL'} WHERE id=?`,
+  ).run(isWatched ? 1 : 0, rating != null ? Number(rating) : null, req.params.id);
+  const item = watchItem(req.params.id);
+  io.emit('watchlist:update', item);
+  res.json(item);
+});
+app.delete('/api/watchlist/:id', (req, res) => {
+  db.prepare('DELETE FROM watchlist WHERE id=?').run(req.params.id);
+  io.emit('watchlist:deleted', { id: Number(req.params.id) });
+  res.json({ ok: true });
+});
+function watchItem(id) {
+  return db
+    .prepare(
+      `SELECT w.*, u.display_name added_name, u.color added_color
+       FROM watchlist w LEFT JOIN users u ON u.id=w.added_by WHERE w.id=?`,
+    )
+    .get(id);
+}
+
+// ── EVENTS (shared calendar) ──
+app.get('/api/events', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT e.*, u.display_name created_name, u.color created_color
+         FROM events e LEFT JOIN users u ON u.id=e.created_by
+         ORDER BY e.date ASC, e.time ASC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/events', (req, res) => {
+  const { title, date, time, note, userId } = req.body;
+  if (!title || !date) return res.status(400).json({ error: 'Missing fields' });
+  const r = db
+    .prepare(`INSERT INTO events (title,date,time,note,created_by) VALUES (?,?,?,?,?)`)
+    .run(title, date, time || '', note || '', Number(userId));
+  const ev = db
+    .prepare(
+      `SELECT e.*, u.display_name created_name, u.color created_color
+       FROM events e LEFT JOIN users u ON u.id=e.created_by WHERE e.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('event:new', ev);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'event', `${u.display_name} planned "${title}"`, 'calendar');
+  markActive(io, Number(userId));
+  res.json(ev);
+});
+app.delete('/api/events/:id', (req, res) => {
+  db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
+  io.emit('event:deleted', { id: Number(req.params.id) });
   res.json({ ok: true });
 });
 

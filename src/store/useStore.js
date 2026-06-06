@@ -32,6 +32,10 @@ export const useStore = create((set, get) => ({
   bucket: [],
   decor: null,
   pushKey: null,
+  milestones: [],
+  watchlist: [],
+  events: [],
+  truthordare: null,
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -84,6 +88,7 @@ export const useStore = create((set, get) => ({
         today: st.today,
         decor: st.decor || null,
         pushKey: st.pushKey || null,
+        truthordare: st.truthordare || null,
         moods,
         ready: true,
       });
@@ -133,6 +138,19 @@ export const useStore = create((set, get) => ({
     s.on('bucket:update', (b) => set((st) => ({ bucket: st.bucket.map((x) => (x.id === b.id ? b : x)) })));
     s.on('bucket:deleted', ({ id }) => set((st) => ({ bucket: st.bucket.filter((b) => b.id !== id) })));
     s.on('decor:update', (decor) => set({ decor }));
+    s.on('milestone:new', (m) => set((st) => ({ milestones: [m, ...st.milestones.filter((x) => x.id !== m.id)] })));
+    s.on('milestone:deleted', ({ id }) => set((st) => ({ milestones: st.milestones.filter((m) => m.id !== id) })));
+    s.on('watchlist:new', (w) => set((st) => ({ watchlist: [w, ...st.watchlist.filter((x) => x.id !== w.id)] })));
+    s.on('watchlist:update', (w) => set((st) => ({ watchlist: st.watchlist.map((x) => (x.id === w.id ? w : x)) })));
+    s.on('watchlist:deleted', ({ id }) => set((st) => ({ watchlist: st.watchlist.filter((w) => w.id !== id) })));
+    s.on('event:new', (e) => set((st) => ({ events: [...st.events.filter((x) => x.id !== e.id), e] })));
+    s.on('event:deleted', ({ id }) => set((st) => ({ events: st.events.filter((e) => e.id !== id) })));
+    s.on('status:update', ({ userId, status, at }) =>
+      set((st) => ({
+        users: st.users.map((u) => (u.id === userId ? { ...u, status, status_at: at } : u)),
+        partner: st.partner && st.partner.id === userId ? { ...st.partner, status, status_at: at } : st.partner,
+      })),
+    );
     s.on('diary:new_day', (d) => set({ today: d, diaryEntries: [] }));
     s.on('diary:update', ({ entries }) => set({ diaryEntries: entries }));
     s.on('presence', ({ userId, online }) =>
@@ -161,6 +179,15 @@ export const useStore = create((set, get) => ({
   refreshBucket: async () => {
     const r = await api.get('/api/bucket');
     set({ bucket: r });
+  },
+  refreshMilestones: async () => {
+    set({ milestones: await api.get('/api/milestones') });
+  },
+  refreshWatchlist: async () => {
+    set({ watchlist: await api.get('/api/watchlist') });
+  },
+  refreshEvents: async () => {
+    set({ events: await api.get('/api/events') });
   },
   refreshNotes: async () => {
     const r = await api.get('/api/notes');

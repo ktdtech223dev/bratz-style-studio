@@ -9,6 +9,7 @@ module.exports = {
     { id: 'personality', label: 'Personality' },
     { id: 'fun', label: 'Fun' },
     { id: 'occasions', label: 'Special Occasions' },
+    { id: 'party', label: 'Party' },
   ],
   games: [
     // ── ROMANCE ──
@@ -244,5 +245,60 @@ module.exports = {
         { id: 'se5', q: 'Spring or autumn', options: ['Spring', 'Autumn'] },
       ],
     },
+
+    // ── PARTY (single-round prompt packs: both answer, reveal & compare) ──
+    {
+      id: 'would_you_rather',
+      category: 'party',
+      title: 'Would you rather',
+      icon: '🤔',
+      cost: 100,
+      format: 'party',
+      questions: [
+        { id: 'wyr1', q: 'Would you rather…', options: ['Read minds', 'See the future'] },
+        { id: 'wyr2', q: 'Would you rather…', options: ['Beach holiday', 'Mountain cabin'] },
+        { id: 'wyr3', q: 'Would you rather…', options: ['Never be cold', 'Never be hot'] },
+        { id: 'wyr4', q: 'Would you rather…', options: ['Always early', 'Always late'] },
+        { id: 'wyr5', q: 'Would you rather…', options: ['Cook together', 'Order in'] },
+        { id: 'wyr6', q: 'Would you rather…', options: ['Stay in', 'Go out'] },
+        { id: 'wyr7', q: 'Would you rather…', options: ['Sunrise person', 'Sunset person'] },
+        { id: 'wyr8', q: 'Would you rather…', options: ['Live by the sea', 'Live in the city'] },
+      ],
+    },
+    {
+      id: 'would_you_rather_spicy',
+      category: 'party',
+      title: 'Would you rather: us',
+      icon: '💞',
+      cost: 125,
+      format: 'party',
+      questions: [
+        { id: 'wru1', q: 'Would you rather…', options: ['Forehead kisses', 'Hand holding'] },
+        { id: 'wru2', q: 'Would you rather…', options: ['Little spoon', 'Big spoon'] },
+        { id: 'wru3', q: 'Would you rather…', options: ['Surprise date', 'Planned date'] },
+        { id: 'wru4', q: 'Would you rather…', options: ['Love notes', 'Long hugs'] },
+        { id: 'wru5', q: 'Would you rather…', options: ['Slow dance', 'Movie cuddle'] },
+        { id: 'wru6', q: 'Would you rather…', options: ['Breakfast in bed', 'Late-night talks'] },
+      ],
+    },
+    {
+      id: 'never_have_i_ever',
+      category: 'party',
+      title: 'Never have I ever',
+      icon: '🙊',
+      cost: 100,
+      format: 'party',
+      questions: [
+        { id: 'nh1', q: 'Pulled an all-nighter', options: ['I have', 'I never'] },
+        { id: 'nh2', q: 'Been on a blind date', options: ['I have', 'I never'] },
+        { id: 'nh3', q: 'Sung karaoke in public', options: ['I have', 'I never'] },
+        { id: 'nh4', q: 'Traveled solo', options: ['I have', 'I never'] },
+        { id: 'nh5', q: 'Cried at a movie', options: ['I have', 'I never'] },
+        { id: 'nh6', q: 'Gone skinny dipping', options: ['I have', 'I never'] },
+        { id: 'nh7', q: 'Broken a bone', options: ['I have', 'I never'] },
+        { id: 'nh8', q: 'Stayed up to watch the sunrise', options: ['I have', 'I never'] },
+      ],
+    },
   ],
 };
+

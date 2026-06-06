@@ -26,6 +26,14 @@ import Activity from './pages/Activity';
 import MapPage from './pages/MapPage';
 import BucketList from './pages/BucketList';
 import Decorate from './pages/Decorate';
+import More from './pages/More';
+import Timeline from './pages/Timeline';
+import Stats from './pages/Stats';
+import CheckIn from './pages/CheckIn';
+import MoodTrends from './pages/MoodTrends';
+import Watchlist from './pages/Watchlist';
+import Calendar from './pages/Calendar';
+import TruthOrDare from './pages/TruthOrDare';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -75,6 +83,14 @@ export default function App() {
           <Route path="/map" element={<Shell tabs={false}><MapPage /></Shell>} />
           <Route path="/bucket" element={<Shell tabs={false}><BucketList /></Shell>} />
           <Route path="/decorate" element={<Shell tabs={false}><Decorate /></Shell>} />
+          <Route path="/more" element={<Shell tabs={false}><More /></Shell>} />
+          <Route path="/timeline" element={<Shell tabs={false}><Timeline /></Shell>} />
+          <Route path="/stats" element={<Shell tabs={false}><Stats /></Shell>} />
+          <Route path="/checkin" element={<Shell tabs={false}><CheckIn /></Shell>} />
+          <Route path="/moodtrends" element={<Shell tabs={false}><MoodTrends /></Shell>} />
+          <Route path="/watchlist" element={<Shell tabs={false}><Watchlist /></Shell>} />
+          <Route path="/calendar" element={<Shell tabs={false}><Calendar /></Shell>} />
+          <Route path="/truthordare" element={<Shell tabs={false}><TruthOrDare /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

@@ -43,6 +43,12 @@ function register(io) {
       db.prepare(
         `UPDATE users SET current_mood=?, mood_emoji=?, mood_color=?, mood_at=datetime('now') WHERE id=?`,
       ).run(mood, emoji, color, userId);
+      db.prepare(`INSERT INTO mood_log (user_id,mood,emoji,color) VALUES (?,?,?,?)`).run(
+        userId,
+        mood,
+        emoji,
+        color,
+      );
       io.emit('mood:update', { userId, mood, emoji, color, at: new Date().toISOString() });
       const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
       logActivity(io, userId, 'mood', `${u.display_name} updated their mood`, 'lightbulb');
@@ -152,6 +158,21 @@ function register(io) {
       }
       const likes = db.prepare('SELECT COUNT(*) c FROM photo_likes WHERE photo_id=?').get(photoId).c;
       io.emit('photo:liked', { photoId, userId, likes, liked: !existing });
+    });
+
+    // ── AWAKE / ASLEEP STATUS ──
+    socket.on('status:set', ({ status }) => {
+      const st = status === 'asleep' ? 'asleep' : 'awake';
+      db.prepare(`UPDATE users SET status=?, status_at=datetime('now') WHERE id=?`).run(st, userId);
+      io.emit('status:update', { userId, status: st, at: new Date().toISOString() });
+      if (st === 'asleep') {
+        const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+        notifyUser(partnerOf(userId), {
+          title: `${u.display_name} is heading to sleep 🌙`,
+          body: 'goodnight 💜',
+          url: '/',
+        });
+      }
     });
 
     // ── MUSIC station (shared, synced play state) ──

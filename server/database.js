@@ -188,6 +188,62 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── MILESTONES (relationship timeline) ── */
+  CREATE TABLE IF NOT EXISTS milestones (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    note       TEXT,
+    date       TEXT NOT NULL,
+    filename   TEXT,
+    created_by INTEGER REFERENCES users(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── DAILY CHECK-INS ── */
+  CREATE TABLE IF NOT EXISTS checkins (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    date       TEXT NOT NULL,
+    user_id    INTEGER REFERENCES users(id),
+    rating     INTEGER,
+    note       TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(date, user_id)
+  );
+
+  /* ── MOOD LOG (history for trends) ── */
+  CREATE TABLE IF NOT EXISTS mood_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER REFERENCES users(id),
+    mood       TEXT,
+    emoji      TEXT,
+    color      TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── WATCHLIST ── */
+  CREATE TABLE IF NOT EXISTS watchlist (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    kind       TEXT DEFAULT 'movie',
+    note       TEXT,
+    added_by   INTEGER REFERENCES users(id),
+    watched    INTEGER DEFAULT 0,
+    rating     INTEGER,
+    watched_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── SHARED CALENDAR EVENTS ── */
+  CREATE TABLE IF NOT EXISTS events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    date       TEXT NOT NULL,
+    time       TEXT,
+    note       TEXT,
+    created_by INTEGER REFERENCES users(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── ACTIVITY LOG / NOTIFICATIONS ── */
   CREATE TABLE IF NOT EXISTS activity (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -210,6 +266,13 @@ if (!gaCols.some((c) => c.name === 'kind')) {
     DELETE FROM game_sessions;
     ALTER TABLE game_answers ADD COLUMN kind TEXT DEFAULT 'self';
   `);
+}
+
+// Awake/asleep status on users.
+const userCols = db.prepare('PRAGMA table_info(users)').all();
+if (!userCols.some((c) => c.name === 'status')) {
+  db.exec(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'awake'`);
+  db.exec(`ALTER TABLE users ADD COLUMN status_at DATETIME`);
 }
 
 // ── SEED ──
@@ -239,6 +302,18 @@ function seed() {
     insd.run('Our anniversary', '02-14', 'heart', 1);
     insd.run("Keshawn's birthday", '07-12', 'cake', 1);
     insd.run("Mercury's birthday", '11-03', 'cake', 1);
+  }
+
+  // Seed the first milestone from when the couple row was created.
+  const ms = db.prepare('SELECT COUNT(*) c FROM milestones').get().c;
+  if (ms === 0) {
+    const created = db.prepare('SELECT created_at FROM couple WHERE id=1').get().created_at || '';
+    const date = created.slice(0, 10) || new Date().toISOString().slice(0, 10);
+    db.prepare(`INSERT INTO milestones (title,note,date) VALUES (?,?,?)`).run(
+      'We started Us 💜',
+      'the beginning of our little world',
+      date,
+    );
   }
 }
 seed();
