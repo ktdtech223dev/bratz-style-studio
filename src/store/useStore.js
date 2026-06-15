@@ -3,6 +3,7 @@ import { connectSocket, getSocket } from '../lib/socket';
 import { api } from '../lib/api';
 
 const LS_KEY = 'us_auth_v1';
+const THEME_KEY = 'us_theme_v1';
 
 function loadAuth() {
   try {
@@ -11,6 +12,22 @@ function loadAuth() {
     return null;
   }
 }
+
+function loadTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) || 'lavender';
+  } catch {
+    return 'lavender';
+  }
+}
+
+// Apply the theme as a data-attribute on <html> (default 'lavender' = :root, no attr).
+export function applyTheme(theme) {
+  if (typeof document === 'undefined') return;
+  if (!theme || theme === 'lavender') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', theme);
+}
+applyTheme(loadTheme());
 
 export const useStore = create((set, get) => ({
   me: loadAuth(), // { id, display_name, color, username }
@@ -42,7 +59,16 @@ export const useStore = create((set, get) => ({
   photos: [],
   today: null,
   diaryEntries: [],
+  theme: loadTheme(),
   ready: false,
+
+  setTheme: (theme) => {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {}
+    applyTheme(theme);
+    set({ theme });
+  },
 
   setMe: (me) => {
     if (me) localStorage.setItem(LS_KEY, JSON.stringify(me));

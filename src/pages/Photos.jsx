@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Heart, MoreHorizontal, Trash2, X } from 'lucide-react';
+import { Plus, Heart, MoreHorizontal, Trash2, Download, X } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
@@ -17,6 +17,25 @@ export default function Photos() {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
   const [menuFor, setMenuFor] = useState(null);
+
+  async function downloadPhoto(p) {
+    try {
+      const res = await fetch(`/photos/${p.filename}`);
+      const blob = await res.blob();
+      const ext = (p.filename.split('.').pop() || 'jpg').toLowerCase();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `us-photo-${p.id}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      // fallback: open in a new tab so the user can long-press to save
+      window.open(`/photos/${p.filename}`, '_blank');
+    }
+  }
 
   useEffect(() => {
     refreshPhotos();
@@ -102,11 +121,20 @@ export default function Photos() {
                     {menuFor === p.id && (
                       <div className="absolute right-3 top-12 overflow-hidden rounded-xl bg-[var(--bg2)] shadow-soft">
                         <button
+                          onClick={() => {
+                            downloadPhoto(p);
+                            setMenuFor(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[var(--text)]"
+                        >
+                          <Download size={15} /> Download
+                        </button>
+                        <button
                           onClick={async () => {
                             await api.del(`/api/photos/${p.id}`);
                             setMenuFor(null);
                           }}
-                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[var(--pink-hot)]"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[var(--pink-hot)]"
                         >
                           <Trash2 size={15} /> Delete
                         </button>

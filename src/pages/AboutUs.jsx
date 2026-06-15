@@ -23,6 +23,13 @@ import { api } from '../lib/api';
 import { enablePush, disablePush, pushSupported, pushPermission } from '../lib/push';
 
 const DATE_ICONS = { gift: Gift, heart: Heart, cake: Cake, star: Star };
+const THEMES = [
+  { id: 'lavender', label: 'Lavender', swatch: ['#b8a9e8', '#1a1f4a'] },
+  { id: 'sunset', label: 'Sunset', swatch: ['#ff7a6b', '#2b1c3f'] },
+  { id: 'midnight', label: 'Midnight', swatch: ['#38bdf8', '#0e1730'] },
+  { id: 'forest', label: 'Forest', swatch: ['#9be89b', '#14241c'] },
+  { id: 'cottoncandy', label: 'Candy', swatch: ['#ff7ab3', '#2a1f33'] },
+];
 const SECTIONS = [
   { id: 'favorite_spots', label: 'Favorite spots to eat', icon: Utensils, color: '#fdba74' },
   { id: 'memories', label: 'Favorite memories', icon: Camera, color: '#7dd3fc' },
@@ -66,6 +73,8 @@ export default function AboutUs() {
   const logout = useStore((s) => s.logout);
   const couple = useStore((s) => s.couple);
   const storeUsers = useStore((s) => s.users);
+  const theme = useStore((s) => s.theme);
+  const setTheme = useStore((s) => s.setTheme);
   const nav = useNavigate();
 
   const [about, setAbout] = useState({ dates: [], items: [], users: [] });
@@ -154,6 +163,32 @@ export default function AboutUs() {
             >
               Our timeline
             </button>
+          </div>
+        </Card>
+
+        {/* appearance / themes */}
+        <Card className="mt-4 p-5">
+          <div className="mb-3 text-xs font-extrabold uppercase tracking-widest text-[var(--lav-text)]">
+            Appearance
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className="flex flex-col items-center gap-1.5"
+                aria-label={t.label}
+              >
+                <span
+                  className="h-11 w-11 rounded-full"
+                  style={{
+                    background: `linear-gradient(135deg, ${t.swatch[0]} 0%, ${t.swatch[1]} 100%)`,
+                    boxShadow: theme === t.id ? '0 0 0 3px var(--pink-hot)' : 'inset 0 0 0 1px rgba(255,255,255,0.1)',
+                  }}
+                />
+                <span className="text-[10px] font-bold text-[var(--text2)]">{t.label}</span>
+              </button>
+            ))}
           </div>
         </Card>
 
