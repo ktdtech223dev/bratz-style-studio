@@ -13,6 +13,11 @@ import {
   Fish,
   Heart,
   Sparkles,
+  Mail,
+  Hourglass,
+  Ticket,
+  Gift,
+  Music,
   ChevronRight,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -23,6 +28,11 @@ const ITEMS = [
   { to: '/fishtank', label: 'Our fish tank', sub: 'feed the fish', icon: Fish, color: '#67e8f9' },
   { to: '/lovejar', label: 'Love jar', sub: 'fill it with little loves', icon: Heart, color: '#ff6ba8' },
   { to: '/starmap', label: 'Star map', sub: 'a star for each memory', icon: Sparkles, color: '#fde047' },
+  { to: '/letters', label: 'Open when…', sub: 'letters for the right moment', icon: Mail, color: '#f5a3c7' },
+  { to: '/capsules', label: 'Time capsules', sub: 'unlock on a future date', icon: Hourglass, color: '#c084fc' },
+  { to: '/coupons', label: 'Love coupons', sub: 'little promises to redeem', icon: Ticket, color: '#fdba74' },
+  { to: '/wishlist', label: 'Gift wishlist', sub: 'ideas to surprise each other', icon: Gift, color: '#9be89b' },
+  { to: '/dedications', label: 'Our songs', sub: 'dedicate a song', icon: Music, color: '#c084fc' },
   { to: '/checkin', label: 'Daily check-in', sub: 'how was your day?', icon: Sun, color: '#fde047' },
   { to: '/timeline', label: 'Timeline', sub: 'our story so far', icon: Clock, color: '#f5a3c7' },
   { to: '/stats', label: 'Our stats', sub: 'days together & more', icon: BarChart3, color: '#67e8f9' },

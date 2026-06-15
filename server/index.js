@@ -435,6 +435,233 @@ app.delete('/api/stars/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── REUNION COUNTDOWN ──
+app.post('/api/reunion', (req, res) => {
+  const { at, label } = req.body;
+  db.prepare('UPDATE couple SET reunion_at=?, reunion_label=? WHERE id=1').run(
+    at || null,
+    (label || '').slice(0, 60) || null,
+  );
+  const couple = db.prepare('SELECT * FROM couple WHERE id=1').get();
+  io.emit('couple:update', couple);
+  res.json(couple);
+});
+
+// ── "OPEN WHEN…" LETTERS ──
+app.get('/api/letters', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT l.*, u.display_name written_name FROM letters l LEFT JOIN users u ON u.id=l.written_by ORDER BY l.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/letters', (req, res) => {
+  const { occasion, body, userId } = req.body;
+  const r = db
+    .prepare(`INSERT INTO letters (occasion,body,written_by) VALUES (?,?,?)`)
+    .run((occasion || '').slice(0, 60), (body || '').slice(0, 2000), Number(userId));
+  io.emit('letters:changed');
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) {
+    logActivity(io, Number(userId), 'letter', `${u.display_name} sealed a letter 💌`, 'mail');
+    PUSH.notifyUser(partnerId(userId), {
+      title: '💌 A new letter for you',
+      body: `open when ${occasion}`,
+      url: '/letters',
+    });
+  }
+  res.json(db.prepare('SELECT * FROM letters WHERE id=?').get(r.lastInsertRowid));
+});
+app.post('/api/letters/:id/open', (req, res) => {
+  const { userId } = req.body;
+  db.prepare(`UPDATE letters SET opened_at=datetime('now') WHERE id=? AND opened_at IS NULL`).run(req.params.id);
+  const l = db.prepare('SELECT * FROM letters WHERE id=?').get(req.params.id);
+  io.emit('letters:changed');
+  if (l && l.written_by !== Number(userId)) {
+    const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+    PUSH.notifyUser(l.written_by, {
+      title: '💌 They opened your letter',
+      body: `${u?.display_name} read "${l.occasion}"`,
+      url: '/letters',
+    });
+  }
+  res.json(l);
+});
+app.delete('/api/letters/:id', (req, res) => {
+  db.prepare('DELETE FROM letters WHERE id=?').run(req.params.id);
+  io.emit('letters:changed');
+  res.json({ ok: true });
+});
+
+// ── TIME CAPSULES (body hidden until unlock date) ──
+app.get('/api/capsules', (req, res) => {
+  const now = Date.now();
+  const rows = db
+    .prepare(
+      `SELECT c.*, u.display_name written_name FROM capsules c LEFT JOIN users u ON u.id=c.written_by ORDER BY c.unlock_at ASC`,
+    )
+    .all();
+  res.json(
+    rows.map((c) => {
+      const unlocked = c.unlock_at && Date.parse(c.unlock_at) <= now;
+      return { ...c, unlocked, body: unlocked ? c.body : null };
+    }),
+  );
+});
+app.post('/api/capsules', (req, res) => {
+  const { title, body, unlock_at, userId } = req.body;
+  db.prepare(`INSERT INTO capsules (title,body,unlock_at,written_by) VALUES (?,?,?,?)`).run(
+    (title || '').slice(0, 80),
+    (body || '').slice(0, 2000),
+    unlock_at || null,
+    Number(userId),
+  );
+  io.emit('capsules:changed');
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) {
+    logActivity(io, Number(userId), 'capsule', `${u.display_name} buried a time capsule ⏳`, 'capsule');
+    PUSH.notifyUser(partnerId(userId), {
+      title: '⏳ A time capsule was sealed',
+      body: 'it unlocks on its special date',
+      url: '/capsules',
+    });
+  }
+  res.json({ ok: true });
+});
+app.post('/api/capsules/:id/open', (req, res) => {
+  db.prepare(`UPDATE capsules SET opened_at=datetime('now') WHERE id=? AND opened_at IS NULL`).run(req.params.id);
+  io.emit('capsules:changed');
+  res.json({ ok: true });
+});
+app.delete('/api/capsules/:id', (req, res) => {
+  db.prepare('DELETE FROM capsules WHERE id=?').run(req.params.id);
+  io.emit('capsules:changed');
+  res.json({ ok: true });
+});
+
+// ── LOVE COUPONS ──
+app.get('/api/coupons', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT c.*, u.display_name created_name FROM coupons c LEFT JOIN users u ON u.id=c.created_by ORDER BY c.redeemed ASC, c.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/coupons', (req, res) => {
+  const { title, note, userId } = req.body;
+  db.prepare(`INSERT INTO coupons (title,note,created_by) VALUES (?,?,?)`).run(
+    (title || '').slice(0, 80),
+    (note || '').slice(0, 300),
+    Number(userId),
+  );
+  io.emit('coupons:changed');
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) {
+    logActivity(io, Number(userId), 'coupon', `${u.display_name} gave a love coupon 🎟️`, 'ticket');
+    PUSH.notifyUser(partnerId(userId), { title: '🎟️ A new love coupon', body: title, url: '/coupons' });
+  }
+  res.json({ ok: true });
+});
+app.post('/api/coupons/:id/redeem', (req, res) => {
+  const { userId } = req.body;
+  db.prepare(`UPDATE coupons SET redeemed=1, redeemed_at=datetime('now') WHERE id=?`).run(req.params.id);
+  const c = db.prepare('SELECT * FROM coupons WHERE id=?').get(req.params.id);
+  io.emit('coupons:changed');
+  if (c) {
+    const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+    PUSH.notifyUser(c.created_by, {
+      title: '🎟️ Coupon redeemed!',
+      body: `${u?.display_name} redeemed "${c.title}"`,
+      url: '/coupons',
+    });
+  }
+  res.json({ ok: true });
+});
+app.delete('/api/coupons/:id', (req, res) => {
+  db.prepare('DELETE FROM coupons WHERE id=?').run(req.params.id);
+  io.emit('coupons:changed');
+  res.json({ ok: true });
+});
+
+// ── GIFT WISHLIST (reserved/got hidden from the wish's owner) ──
+app.get('/api/giftwishes', (req, res) => {
+  const uid = Number(req.query.userId);
+  const rows = db
+    .prepare(
+      `SELECT g.*, u.display_name added_name FROM gift_wishes g LEFT JOIN users u ON u.id=g.added_by ORDER BY g.got ASC, g.created_at DESC`,
+    )
+    .all();
+  res.json(
+    rows.map((g) => {
+      const mine = g.added_by === uid;
+      // owner never sees whether the partner reserved/got it (keep the surprise)
+      return mine ? { ...g, reserved_by: null, got: 0, mine: true } : { ...g, mine: false };
+    }),
+  );
+});
+app.post('/api/giftwishes', (req, res) => {
+  const { title, note, link, userId } = req.body;
+  db.prepare(`INSERT INTO gift_wishes (title,note,link,added_by) VALUES (?,?,?,?)`).run(
+    (title || '').slice(0, 100),
+    (note || '').slice(0, 300),
+    (link || '').slice(0, 400),
+    Number(userId),
+  );
+  io.emit('giftwishes:changed');
+  res.json({ ok: true });
+});
+app.post('/api/giftwishes/:id/reserve', (req, res) => {
+  const { userId, got } = req.body;
+  db.prepare(`UPDATE gift_wishes SET reserved_by=?, got=? WHERE id=?`).run(
+    Number(userId),
+    got ? 1 : 0,
+    req.params.id,
+  );
+  io.emit('giftwishes:changed');
+  res.json({ ok: true });
+});
+app.delete('/api/giftwishes/:id', (req, res) => {
+  db.prepare('DELETE FROM gift_wishes WHERE id=?').run(req.params.id);
+  io.emit('giftwishes:changed');
+  res.json({ ok: true });
+});
+
+// ── SONG DEDICATIONS ──
+app.get('/api/dedications', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT d.*, u.display_name dedicated_name, u.color dedicated_color FROM dedications d LEFT JOIN users u ON u.id=d.dedicated_by ORDER BY d.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/dedications', (req, res) => {
+  const { song, artist, note, userId } = req.body;
+  db.prepare(`INSERT INTO dedications (song,artist,note,dedicated_by) VALUES (?,?,?,?)`).run(
+    (song || '').slice(0, 120),
+    (artist || '').slice(0, 120),
+    (note || '').slice(0, 300),
+    Number(userId),
+  );
+  io.emit('dedications:changed');
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) {
+    logActivity(io, Number(userId), 'dedication', `${u.display_name} dedicated "${song}" 🎶`, 'music');
+    PUSH.notifyUser(partnerId(userId), { title: '🎶 A song for you', body: `${song} — ${artist}`, url: '/dedications' });
+  }
+  res.json({ ok: true });
+});
+app.delete('/api/dedications/:id', (req, res) => {
+  db.prepare('DELETE FROM dedications WHERE id=?').run(req.params.id);
+  io.emit('dedications:changed');
+  res.json({ ok: true });
+});
+
 // ── ARCADE MATCHES ──
 app.get('/api/matches', (req, res) => {
   res.json(

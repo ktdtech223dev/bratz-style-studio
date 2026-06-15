@@ -285,6 +285,60 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── "OPEN WHEN…" LETTERS ── */
+  CREATE TABLE IF NOT EXISTS letters (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    occasion   TEXT,
+    body       TEXT,
+    written_by INTEGER REFERENCES users(id),
+    opened_at  DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── TIME CAPSULES (unlock on a date) ── */
+  CREATE TABLE IF NOT EXISTS capsules (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT,
+    body       TEXT,
+    written_by INTEGER REFERENCES users(id),
+    unlock_at  TEXT,
+    opened_at  DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── LOVE COUPONS ── */
+  CREATE TABLE IF NOT EXISTS coupons (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT,
+    note        TEXT,
+    created_by  INTEGER REFERENCES users(id),
+    redeemed    INTEGER DEFAULT 0,
+    redeemed_at DATETIME,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── GIFT WISHLIST ── */
+  CREATE TABLE IF NOT EXISTS gift_wishes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT,
+    note        TEXT,
+    link        TEXT,
+    added_by    INTEGER REFERENCES users(id),
+    reserved_by INTEGER,
+    got         INTEGER DEFAULT 0,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── SONG DEDICATIONS ── */
+  CREATE TABLE IF NOT EXISTS dedications (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    song         TEXT,
+    artist       TEXT,
+    note         TEXT,
+    dedicated_by INTEGER REFERENCES users(id),
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── REAL-TIME MATCHES (tic-tac-toe, connect 4, …) ── */
   CREATE TABLE IF NOT EXISTS matches (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -345,6 +399,13 @@ if (!userCols.some((c) => c.name === 'status')) {
 const gsCols = db.prepare('PRAGMA table_info(game_sessions)').all();
 if (!gsCols.some((c) => c.name === 'seen_by')) {
   db.exec(`ALTER TABLE game_sessions ADD COLUMN seen_by TEXT DEFAULT ''`);
+}
+
+// Reunion countdown fields on the couple row.
+const coupleCols = db.prepare('PRAGMA table_info(couple)').all();
+if (!coupleCols.some((c) => c.name === 'reunion_at')) {
+  db.exec(`ALTER TABLE couple ADD COLUMN reunion_at TEXT`);
+  db.exec(`ALTER TABLE couple ADD COLUMN reunion_label TEXT`);
 }
 
 // ── SEED ──

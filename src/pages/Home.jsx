@@ -6,6 +6,14 @@ import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
 import RoomScene from '../components/RoomScene';
 import StatPill from '../components/StatPill';
+import Sheet from '../components/Sheet';
+
+function daysUntil(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((d - now) / 86400000);
+}
 
 const QUICK = [
   { to: '/photos', label: 'Photos', icon: Image, color: '#f5a3c7' },
@@ -29,6 +37,23 @@ export default function Home() {
   const [onThisDay, setOnThisDay] = useState(null);
   const [otdDismissed, setOtdDismissed] = useState(false);
   const [checkedIn, setCheckedIn] = useState(true);
+  const [reunionOpen, setReunionOpen] = useState(false);
+  const [rDate, setRDate] = useState('');
+  const [rLabel, setRLabel] = useState('');
+
+  function openReunion() {
+    setRDate(couple?.reunion_at || '');
+    setRLabel(couple?.reunion_label || '');
+    setReunionOpen(true);
+  }
+  async function saveReunion() {
+    await api.post('/api/reunion', { at: rDate || null, label: rLabel });
+    setReunionOpen(false);
+  }
+  async function clearReunion() {
+    await api.post('/api/reunion', { at: null, label: '' });
+    setReunionOpen(false);
+  }
 
   useEffect(() => {
     api
@@ -109,6 +134,41 @@ export default function Home() {
             <span>welcome home</span>
           )}
         </div>
+
+        {/* reunion countdown */}
+        {(() => {
+          const days = couple?.reunion_at ? daysUntil(couple.reunion_at) : null;
+          const label = couple?.reunion_label || 'we’re together';
+          if (days !== null && days >= 0) {
+            return (
+              <button
+                onClick={openReunion}
+                className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-[var(--pink-hot)]/30 bg-gradient-to-r from-[var(--pink-hot)]/15 to-[var(--purple)]/10 p-4 text-left shadow-soft"
+              >
+                <span className="text-3xl">{days === 0 ? '🎉' : '💜'}</span>
+                <span className="flex-1">
+                  <span className="block text-2xl font-extrabold leading-none">
+                    {days === 0 ? 'Today!' : `${days} ${days === 1 ? 'day' : 'days'}`}
+                  </span>
+                  <span className="block text-sm text-[var(--text2)]">
+                    {days === 0 ? `until ${label} 💕` : `until ${label}`}
+                  </span>
+                </span>
+                <ChevronRight size={20} className="text-[var(--muted)]" />
+              </button>
+            );
+          }
+          return (
+            <button
+              onClick={openReunion}
+              className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-dashed border-[var(--border)] p-3 text-left text-[var(--text2)]"
+            >
+              <span className="text-2xl">💜</span>
+              <span className="flex-1 text-sm font-semibold">set a countdown to your next reunion</span>
+              <ChevronRight size={18} className="text-[var(--muted)]" />
+            </button>
+          );
+        })()}
 
         {/* on this day */}
         <AnimatePresence>
@@ -191,6 +251,34 @@ export default function Home() {
 
         <p className="mt-3 text-center text-xs text-[var(--muted)]">or tap around the room ✨</p>
       </div>
+
+      <Sheet open={reunionOpen} onClose={() => setReunionOpen(false)} title="Next reunion 💜">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--text2)]">Date</label>
+        <input
+          type="date"
+          value={rDate}
+          onChange={(e) => setRDate(e.target.value)}
+          className="mb-3 w-full rounded-2xl bg-[var(--card)] p-4"
+        />
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--text2)]">Label</label>
+        <input
+          value={rLabel}
+          onChange={(e) => setRLabel(e.target.value)}
+          placeholder="we’re together again"
+          className="mb-4 w-full rounded-2xl bg-[var(--card)] p-4"
+        />
+        <button
+          onClick={saveReunion}
+          className="w-full rounded-2xl bg-[var(--pink-hot)] py-3.5 font-extrabold text-white active:scale-95"
+        >
+          Save countdown
+        </button>
+        {couple?.reunion_at && (
+          <button onClick={clearReunion} className="mt-2 w-full py-2 text-sm font-bold text-[var(--muted)]">
+            clear
+          </button>
+        )}
+      </Sheet>
     </motion.div>
   );
 }

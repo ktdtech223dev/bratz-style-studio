@@ -61,6 +61,11 @@ export const useStore = create((set, get) => ({
   aquarium: null,
   loveJar: [],
   stars: [],
+  letters: [],
+  capsules: [],
+  coupons: [],
+  giftWishes: [],
+  dedications: [],
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -195,6 +200,11 @@ export const useStore = create((set, get) => ({
     s.on('lovejar:deleted', ({ id }) => set((st) => ({ loveJar: st.loveJar.filter((j) => j.id !== id) })));
     s.on('star:new', (s2) => set((st) => ({ stars: [...st.stars.filter((x) => x.id !== s2.id), s2] })));
     s.on('star:deleted', ({ id }) => set((st) => ({ stars: st.stars.filter((s2) => s2.id !== id) })));
+    s.on('letters:changed', () => get().refreshLetters());
+    s.on('capsules:changed', () => get().refreshCapsules());
+    s.on('coupons:changed', () => get().refreshCoupons());
+    s.on('giftwishes:changed', () => get().refreshGiftWishes());
+    s.on('dedications:changed', () => get().refreshDedications());
     s.on('game:started', () => get().refreshPending());
     s.on('game:seen', () => get().refreshPending());
     s.on('game:complete', () => get().refreshPending());
@@ -254,6 +264,23 @@ export const useStore = create((set, get) => ({
   },
   refreshStars: async () => {
     set({ stars: await api.get('/api/stars') });
+  },
+  refreshLetters: async () => {
+    set({ letters: await api.get('/api/letters') });
+  },
+  refreshCapsules: async () => {
+    set({ capsules: await api.get('/api/capsules') });
+  },
+  refreshCoupons: async () => {
+    set({ coupons: await api.get('/api/coupons') });
+  },
+  refreshGiftWishes: async () => {
+    const me = get().me;
+    if (!me) return;
+    set({ giftWishes: await api.get(`/api/giftwishes?userId=${me.id}`) });
+  },
+  refreshDedications: async () => {
+    set({ dedications: await api.get('/api/dedications') });
   },
   refreshPending: async () => {
     const me = get().me;

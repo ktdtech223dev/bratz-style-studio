@@ -18,6 +18,9 @@ import {
   Gamepad2,
   Flame,
   Fish,
+  Mail,
+  Hourglass,
+  Ticket,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
@@ -41,6 +44,12 @@ const ICONS = {
   fire: { I: Flame, c: '#fb923c' },
   fish: { I: Fish, c: '#67e8f9' },
   jar: { I: Heart, c: '#ff6ba8' },
+  mail: { I: Mail, c: '#f5a3c7' },
+  capsule: { I: Hourglass, c: '#c084fc' },
+  ticket: { I: Ticket, c: '#fdba74' },
+  music: { I: Music, c: '#c084fc' },
+  dedication: { I: Music, c: '#c084fc' },
+  coupon: { I: Ticket, c: '#fdba74' },
 };
 
 export default function Activity() {

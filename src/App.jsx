@@ -40,6 +40,11 @@ import Campfire from './pages/Campfire';
 import FishTank from './pages/FishTank';
 import LoveJar from './pages/LoveJar';
 import StarMap from './pages/StarMap';
+import Letters from './pages/Letters';
+import Capsules from './pages/Capsules';
+import Coupons from './pages/Coupons';
+import Wishlist from './pages/Wishlist';
+import Dedications from './pages/Dedications';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -103,6 +108,11 @@ export default function App() {
           <Route path="/fishtank" element={<Shell tabs={false}><FishTank /></Shell>} />
           <Route path="/lovejar" element={<Shell tabs={false}><LoveJar /></Shell>} />
           <Route path="/starmap" element={<Shell tabs={false}><StarMap /></Shell>} />
+          <Route path="/letters" element={<Shell tabs={false}><Letters /></Shell>} />
+          <Route path="/capsules" element={<Shell tabs={false}><Capsules /></Shell>} />
+          <Route path="/coupons" element={<Shell tabs={false}><Coupons /></Shell>} />
+          <Route path="/wishlist" element={<Shell tabs={false}><Wishlist /></Shell>} />
+          <Route path="/dedications" element={<Shell tabs={false}><Dedications /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />
