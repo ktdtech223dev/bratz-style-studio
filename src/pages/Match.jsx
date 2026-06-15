@@ -5,7 +5,12 @@ import { RotateCcw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
 
-const TITLES = { tictactoe: 'Tic-Tac-Toe', connect4: 'Connect 4' };
+const TITLES = {
+  tictactoe: 'Tic-Tac-Toe',
+  connect4: 'Connect 4',
+  gomoku: 'Five in a Row',
+  battleship: 'Battleship',
+};
 
 export default function Match() {
   const { id } = useParams();
@@ -78,6 +83,19 @@ export default function Match() {
         )}
         {match.game === 'connect4' && (
           <Connect4 state={match.state} colorOf={colorOf} myTurn={myTurn} onPlay={play} />
+        )}
+        {match.game === 'gomoku' && (
+          <Gomoku state={match.state} colorOf={colorOf} myTurn={myTurn} onPlay={play} />
+        )}
+        {match.game === 'battleship' && (
+          <Battleship
+            state={match.state}
+            me={me?.id}
+            colorOf={colorOf}
+            myTurn={myTurn}
+            done={match.status === 'done'}
+            onPlay={play}
+          />
         )}
 
         {/* players legend */}
@@ -186,6 +204,108 @@ function Connect4({ state, colorOf, myTurn, onPlay }) {
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function Gomoku({ state, colorOf, myTurn, onPlay }) {
+  const { size, board } = state;
+  const line = state.line || [];
+  return (
+    <div
+      className="mx-auto w-full max-w-[360px] rounded-2xl bg-[var(--bg2)] p-2"
+      style={{ display: 'grid', gridTemplateColumns: `repeat(${size}, 1fr)`, gap: 3 }}
+    >
+      {board.map((cell, i) => (
+        <button
+          key={i}
+          onClick={() => cell === 0 && myTurn && onPlay(i)}
+          disabled={cell !== 0 || !myTurn}
+          className="flex aspect-square items-center justify-center rounded-md"
+          style={{ background: line.includes(i) ? '#9be89b22' : 'var(--card)' }}
+        >
+          {cell !== 0 && (
+            <span
+              className="h-3/4 w-3/4 rounded-full"
+              style={{
+                background: colorOf(cell),
+                boxShadow: line.includes(i) ? '0 0 8px #9be89b' : `0 0 6px ${colorOf(cell)}66`,
+              }}
+            />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Battleship({ state, me, colorOf, myTurn, done, onPlay }) {
+  const { size, ships, shots } = state;
+  const opp = me === 1 ? 2 : 1;
+  const myShips = (ships[me] || []).flat();
+  const oppShips = (ships[opp] || []).flat();
+  const myShots = shots[me] || [];
+  const oppShots = shots[opp] || [];
+
+  const Cell = ({ bg, content, onClick, disabled }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex aspect-square items-center justify-center rounded-[5px] text-xs"
+      style={{ background: bg }}
+    >
+      {content}
+    </button>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <div className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-[var(--pink-hot)]">
+          Enemy waters {myTurn && !done ? '· fire!' : ''}
+        </div>
+        <div
+          className="rounded-2xl bg-[var(--bg2)] p-1.5"
+          style={{ display: 'grid', gridTemplateColumns: `repeat(${size}, 1fr)`, gap: 3 }}
+        >
+          {Array.from({ length: size * size }).map((_, i) => {
+            const fired = myShots.includes(i);
+            const hit = fired && oppShips.includes(i);
+            const revealShip = done && oppShips.includes(i);
+            return (
+              <Cell
+                key={i}
+                disabled={fired || !myTurn || done}
+                onClick={() => onPlay(i)}
+                bg={hit ? '#ff6ba8' : fired ? 'var(--card2)' : revealShip ? '#ffffff14' : 'var(--card)'}
+                content={hit ? '💥' : fired ? <span className="text-[var(--muted)]">•</span> : ''}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-[var(--blue)]">Your fleet</div>
+        <div
+          className="rounded-2xl bg-[var(--bg2)] p-1.5"
+          style={{ display: 'grid', gridTemplateColumns: `repeat(${size}, 1fr)`, gap: 3 }}
+        >
+          {Array.from({ length: size * size }).map((_, i) => {
+            const ship = myShips.includes(i);
+            const shot = oppShots.includes(i);
+            const hit = ship && shot;
+            return (
+              <Cell
+                key={i}
+                disabled
+                bg={hit ? '#ff6ba8' : ship ? colorOf(me) + '88' : shot ? 'var(--card2)' : 'var(--card)'}
+                content={hit ? '🔥' : shot ? <span className="text-[var(--muted)]">•</span> : ''}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
