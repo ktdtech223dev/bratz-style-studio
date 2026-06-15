@@ -17,6 +17,7 @@ const DECOR = require('./decor-data');
 const PUSH = require('./push');
 const PARTY = require('./party-data');
 const ARCADE = require('./arcade');
+const INTER = require('./interactables');
 
 function partnerId(userId) {
   return Number(userId) === 1 ? 2 : 1;
@@ -66,6 +67,8 @@ app.get('/api/state', (req, res) => {
     pet: db.prepare('SELECT * FROM pet WHERE id=1').get(),
     plant: db.prepare('SELECT * FROM plant WHERE id=1').get(),
     garden: db.prepare('SELECT * FROM garden ORDER BY planted_at').all(),
+    campfire: INTER.campfireState(),
+    aquarium: INTER.aquariumState(),
     radio: RADIO,
     games: GAMES,
     today: ensureTodayPrompt(),

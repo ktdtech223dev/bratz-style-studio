@@ -16,6 +16,8 @@ import {
   Tv,
   CalendarDays,
   Gamepad2,
+  Flame,
+  Fish,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
@@ -36,6 +38,8 @@ const ICONS = {
   tv: { I: Tv, c: '#c084fc' },
   calendar: { I: CalendarDays, c: '#9be89b' },
   gamepad: { I: Gamepad2, c: '#fbbf24' },
+  fire: { I: Flame, c: '#fb923c' },
+  fish: { I: Fish, c: '#67e8f9' },
 };
 
 export default function Activity() {

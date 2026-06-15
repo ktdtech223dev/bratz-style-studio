@@ -57,6 +57,8 @@ export const useStore = create((set, get) => ({
   matches: [],
   gamePending: {}, // gameId -> { status:'turn'|'ready', sessionId }
   garden: [],
+  campfire: null,
+  aquarium: null,
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -122,6 +124,8 @@ export const useStore = create((set, get) => ({
         arcade: st.arcade || [],
         matches: st.matches || [],
         garden: st.garden || [],
+        campfire: st.campfire || null,
+        aquarium: st.aquarium || null,
         moods,
         ready: true,
       });
@@ -183,6 +187,8 @@ export const useStore = create((set, get) => ({
       set((st) => ({ matches: [m, ...st.matches.filter((x) => x.id !== m.id)] })),
     );
     s.on('garden:update', (garden) => set({ garden }));
+    s.on('campfire:update', (campfire) => set({ campfire }));
+    s.on('aquarium:update', (aquarium) => set({ aquarium }));
     s.on('game:started', () => get().refreshPending());
     s.on('game:seen', () => get().refreshPending());
     s.on('game:complete', () => get().refreshPending());

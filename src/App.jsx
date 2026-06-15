@@ -36,6 +36,8 @@ import Calendar from './pages/Calendar';
 import TruthOrDare from './pages/TruthOrDare';
 import Match from './pages/Match';
 import Garden from './pages/Garden';
+import Campfire from './pages/Campfire';
+import FishTank from './pages/FishTank';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -95,6 +97,8 @@ export default function App() {
           <Route path="/truthordare" element={<Shell tabs={false}><TruthOrDare /></Shell>} />
           <Route path="/match/:id" element={<Shell tabs={false}><Match /></Shell>} />
           <Route path="/garden" element={<Shell tabs={false}><Garden /></Shell>} />
+          <Route path="/campfire" element={<Shell tabs={false}><Campfire /></Shell>} />
+          <Route path="/fishtank" element={<Shell tabs={false}><FishTank /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

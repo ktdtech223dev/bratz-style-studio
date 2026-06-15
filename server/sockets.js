@@ -3,6 +3,7 @@ const { db } = require('./database');
 const { markActive, awardStars } = require('./economy');
 const { notifyUser } = require('./push');
 const ARCADE = require('./arcade');
+const INTER = require('./interactables');
 
 function matchRow(id) {
   const m = db.prepare('SELECT * FROM matches WHERE id=?').get(id);
@@ -214,6 +215,31 @@ function register(io) {
     socket.on('garden:remove', ({ plantId }) => {
       db.prepare('DELETE FROM garden WHERE id=?').run(plantId);
       io.emit('garden:update', gardenList());
+    });
+
+    // ── CAMPFIRE ──
+    socket.on('campfire:care', ({ action }) => {
+      const next = INTER.applyCampfire(action);
+      if (!next) return;
+      io.emit('campfire:update', next);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const verb = action === 'addlog' ? 'added a log to' : 'stoked';
+      logActivity(io, userId, 'campfire', `${u.display_name} ${verb} the fire 🔥`, 'fire');
+      awardStars(io, 2);
+      markActive(io, userId);
+    });
+
+    // ── FISH TANK ──
+    socket.on('aquarium:care', ({ action }) => {
+      const res = INTER.applyAquarium(action);
+      if (!res) return;
+      io.emit('aquarium:update', res.state);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const verb = action === 'clean' ? 'cleaned the tank' : 'fed the fish';
+      logActivity(io, userId, 'aquarium', `${u.display_name} ${verb} 🐠`, 'fish');
+      if (res.gained) logActivity(io, userId, 'aquarium', 'a new fish hatched! 🐟', 'fish');
+      awardStars(io, 2);
+      markActive(io, userId);
     });
 
     // ── ARCADE: real-time turn-based matches ──
