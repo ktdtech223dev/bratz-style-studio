@@ -183,6 +183,26 @@ function register(io) {
       }
     });
 
+    // ── TIMEZONE (for "their time") ──
+    socket.on('tz:set', ({ tz }) => {
+      if (!tz || typeof tz !== 'string') return;
+      db.prepare('UPDATE users SET tz=? WHERE id=?').run(tz.slice(0, 60), userId);
+      io.emit('tz:update', { userId, tz });
+    });
+
+    // ── GOODNIGHT KISS ──
+    socket.on('kiss:send', () => {
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      io.emit('kiss:incoming', { from: userId });
+      notifyUser(partnerOf(userId), { title: `😘 ${u.display_name} sent you a kiss`, body: 'mwah 💋', url: '/' });
+      markActive(io, userId);
+    });
+
+    // ── HOLD HANDS LIVE (ephemeral presence relay) ──
+    socket.on('hands:press', ({ pressing }) => {
+      socket.broadcast.emit('hands:press', { userId, pressing: !!pressing });
+    });
+
     // ── GARDEN (collection of plants) ──
     socket.on('garden:plant', ({ species, name }) => {
       if (!GARDEN_SPECIES.includes(species)) return;

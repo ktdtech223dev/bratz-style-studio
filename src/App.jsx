@@ -45,6 +45,10 @@ import Capsules from './pages/Capsules';
 import Coupons from './pages/Coupons';
 import Wishlist from './pages/Wishlist';
 import Dedications from './pages/Dedications';
+import HoldHands from './pages/HoldHands';
+import Spinner from './pages/Spinner';
+import Habits from './pages/Habits';
+import KissOverlay from './components/KissOverlay';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -78,6 +82,7 @@ export default function App() {
     <>
       <AffectionPopup />
       <GlobalAudio />
+      <KissOverlay />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/login" element={<Navigate to="/" replace />} />
@@ -113,6 +118,9 @@ export default function App() {
           <Route path="/coupons" element={<Shell tabs={false}><Coupons /></Shell>} />
           <Route path="/wishlist" element={<Shell tabs={false}><Wishlist /></Shell>} />
           <Route path="/dedications" element={<Shell tabs={false}><Dedications /></Shell>} />
+          <Route path="/holdhands" element={<Shell tabs={false}><HoldHands /></Shell>} />
+          <Route path="/spinner" element={<Shell tabs={false}><Spinner /></Shell>} />
+          <Route path="/habits" element={<Shell tabs={false}><Habits /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

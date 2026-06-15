@@ -66,6 +66,9 @@ export const useStore = create((set, get) => ({
   coupons: [],
   giftWishes: [],
   dedications: [],
+  spinner: [],
+  habits: { habits: [], logs: [], today: '' },
+  kissAt: 0,
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -205,6 +208,23 @@ export const useStore = create((set, get) => ({
     s.on('coupons:changed', () => get().refreshCoupons());
     s.on('giftwishes:changed', () => get().refreshGiftWishes());
     s.on('dedications:changed', () => get().refreshDedications());
+    s.on('spinner:changed', () => get().refreshSpinner());
+    s.on('habits:changed', () => get().refreshHabits());
+    s.on('kiss:incoming', () => set({ kissAt: Date.now() }));
+    s.on('tz:update', ({ userId, tz }) =>
+      set((st) => ({
+        users: st.users.map((u) => (u.id === userId ? { ...u, tz } : u)),
+        partner: st.partner && st.partner.id === userId ? { ...st.partner, tz } : st.partner,
+      })),
+    );
+    // report our timezone for the "their time" feature (re-sends on reconnect)
+    const sendTz = () => {
+      try {
+        s.emit('tz:set', { tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      } catch {}
+    };
+    s.on('connect', sendTz);
+    sendTz();
     s.on('game:started', () => get().refreshPending());
     s.on('game:seen', () => get().refreshPending());
     s.on('game:complete', () => get().refreshPending());
@@ -281,6 +301,12 @@ export const useStore = create((set, get) => ({
   },
   refreshDedications: async () => {
     set({ dedications: await api.get('/api/dedications') });
+  },
+  refreshSpinner: async () => {
+    set({ spinner: await api.get('/api/spinner') });
+  },
+  refreshHabits: async () => {
+    set({ habits: await api.get('/api/habits') });
   },
   refreshPending: async () => {
     const me = get().me;

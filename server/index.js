@@ -60,7 +60,7 @@ app.get('/api/state', (req, res) => {
   res.json({
     users: db
       .prepare(
-        'SELECT id,username,display_name,color,current_mood,mood_emoji,mood_color,mood_at,streak,last_active_day,status,status_at FROM users',
+        'SELECT id,username,display_name,color,current_mood,mood_emoji,mood_color,mood_at,streak,last_active_day,status,status_at,tz FROM users',
       )
       .all(),
     couple: db.prepare('SELECT * FROM couple WHERE id=1').get(),
@@ -659,6 +659,71 @@ app.post('/api/dedications', (req, res) => {
 app.delete('/api/dedications/:id', (req, res) => {
   db.prepare('DELETE FROM dedications WHERE id=?').run(req.params.id);
   io.emit('dedications:changed');
+  res.json({ ok: true });
+});
+
+// ── DATE-NIGHT SPINNER ──
+app.get('/api/spinner', (req, res) => {
+  res.json(db.prepare('SELECT * FROM spinner_options ORDER BY id').all());
+});
+app.post('/api/spinner', (req, res) => {
+  const { label, kind, userId } = req.body;
+  db.prepare('INSERT INTO spinner_options (label,kind,created_by) VALUES (?,?,?)').run(
+    (label || '').slice(0, 80),
+    kind === 'irl' ? 'irl' : 'virtual',
+    Number(userId),
+  );
+  io.emit('spinner:changed');
+  res.json({ ok: true });
+});
+app.delete('/api/spinner/:id', (req, res) => {
+  db.prepare('DELETE FROM spinner_options WHERE id=?').run(req.params.id);
+  io.emit('spinner:changed');
+  res.json({ ok: true });
+});
+
+// ── SHARED HABITS ──
+function habitsPayload() {
+  const habits = db
+    .prepare(`SELECT h.*, u.display_name created_name FROM habits h LEFT JOIN users u ON u.id=h.created_by ORDER BY h.created_at`)
+    .all();
+  const logs = db.prepare('SELECT habit_id, user_id, date FROM habit_log').all();
+  return { habits, logs, today: todayStr() };
+}
+app.get('/api/habits', (req, res) => res.json(habitsPayload()));
+app.post('/api/habits', (req, res) => {
+  const { title, icon, userId } = req.body;
+  db.prepare('INSERT INTO habits (title,icon,created_by) VALUES (?,?,?)').run(
+    (title || '').slice(0, 60),
+    (icon || '✅').slice(0, 4),
+    Number(userId),
+  );
+  io.emit('habits:changed');
+  res.json({ ok: true });
+});
+app.post('/api/habits/:id/toggle', (req, res) => {
+  const { userId, date } = req.body;
+  const d = date || todayStr();
+  const existing = db
+    .prepare('SELECT id FROM habit_log WHERE habit_id=? AND user_id=? AND date=?')
+    .get(req.params.id, Number(userId), d);
+  if (existing) {
+    db.prepare('DELETE FROM habit_log WHERE id=?').run(existing.id);
+  } else {
+    db.prepare('INSERT OR IGNORE INTO habit_log (habit_id,user_id,date) VALUES (?,?,?)').run(
+      req.params.id,
+      Number(userId),
+      d,
+    );
+    awardStars(io, 1);
+  }
+  io.emit('habits:changed');
+  res.json({ ok: true });
+});
+app.delete('/api/habits/:id', (req, res) => {
+  db.prepare('DELETE FROM habit_log WHERE habit_id=?').run(req.params.id);
+  db.prepare('DELETE FROM habits WHERE id=?').run(req.params.id);
+  io.emit('habits:changed');
   res.json({ ok: true });
 });
 

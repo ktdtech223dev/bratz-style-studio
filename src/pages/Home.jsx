@@ -40,6 +40,12 @@ export default function Home() {
   const [reunionOpen, setReunionOpen] = useState(false);
   const [rDate, setRDate] = useState('');
   const [rLabel, setRLabel] = useState('');
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 30000);
+    return () => clearInterval(t);
+  }, []);
 
   function openReunion() {
     setRDate(couple?.reunion_at || '');
@@ -77,6 +83,16 @@ export default function Home() {
   const asleep = myUser?.status === 'asleep';
   const partnerAsleep = partner?.status === 'asleep';
 
+  let partnerTime = null;
+  let partnerNight = false;
+  if (partner?.tz) {
+    try {
+      partnerTime = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: partner.tz });
+      const h = Number(new Date().toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: partner.tz }));
+      partnerNight = h >= 21 || h < 6;
+    } catch {}
+  }
+
   const otdImg = onThisDay?.photos?.[0];
 
   return (
@@ -90,6 +106,13 @@ export default function Home() {
             <StatPill emoji="⚡" value={ourStreak} color="#67e8f9" />
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => emit('kiss:send')}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/20 text-lg active:scale-90"
+              aria-label="Send a kiss"
+            >
+              😘
+            </button>
             <button
               onClick={() => emit('status:set', { status: asleep ? 'awake' : 'asleep' })}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-black/20"
@@ -129,6 +152,12 @@ export default function Home() {
             <span>
               {partner.display_name} is{' '}
               {partnerAsleep ? 'asleep 🌙' : partnerOnline ? 'here with you' : 'away right now'}
+              {partnerTime && (
+                <span className="text-[var(--muted)]">
+                  {' '}
+                  · {partnerNight ? '🌙' : '☀️'} {partnerTime} their time
+                </span>
+              )}
             </span>
           ) : (
             <span>welcome home</span>

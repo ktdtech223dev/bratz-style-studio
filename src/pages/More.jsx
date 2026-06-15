@@ -18,6 +18,9 @@ import {
   Ticket,
   Gift,
   Music,
+  Hand,
+  Disc3,
+  CheckCheck,
   ChevronRight,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -33,6 +36,9 @@ const ITEMS = [
   { to: '/coupons', label: 'Love coupons', sub: 'little promises to redeem', icon: Ticket, color: '#fdba74' },
   { to: '/wishlist', label: 'Gift wishlist', sub: 'ideas to surprise each other', icon: Gift, color: '#9be89b' },
   { to: '/dedications', label: 'Our songs', sub: 'dedicate a song', icon: Music, color: '#c084fc' },
+  { to: '/holdhands', label: 'Hold hands', sub: 'press together, live', icon: Hand, color: '#ff6ba8' },
+  { to: '/spinner', label: 'Date spinner', sub: 'pick your next date', icon: Disc3, color: '#7dd3fc' },
+  { to: '/habits', label: 'Shared habits', sub: 'build streaks together', icon: CheckCheck, color: '#9be89b' },
   { to: '/checkin', label: 'Daily check-in', sub: 'how was your day?', icon: Sun, color: '#fde047' },
   { to: '/timeline', label: 'Timeline', sub: 'our story so far', icon: Clock, color: '#f5a3c7' },
   { to: '/stats', label: 'Our stats', sub: 'days together & more', icon: BarChart3, color: '#67e8f9' },

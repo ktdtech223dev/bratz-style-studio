@@ -285,6 +285,30 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── DATE-NIGHT SPINNER OPTIONS ── */
+  CREATE TABLE IF NOT EXISTS spinner_options (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    label      TEXT,
+    kind       TEXT DEFAULT 'virtual',
+    created_by INTEGER REFERENCES users(id)
+  );
+
+  /* ── SHARED HABITS ── */
+  CREATE TABLE IF NOT EXISTS habits (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT,
+    icon       TEXT DEFAULT '✅',
+    created_by INTEGER REFERENCES users(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS habit_log (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    habit_id INTEGER REFERENCES habits(id),
+    user_id  INTEGER REFERENCES users(id),
+    date     TEXT,
+    UNIQUE(habit_id, user_id, date)
+  );
+
   /* ── "OPEN WHEN…" LETTERS ── */
   CREATE TABLE IF NOT EXISTS letters (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -394,6 +418,9 @@ if (!userCols.some((c) => c.name === 'status')) {
   db.exec(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'awake'`);
   db.exec(`ALTER TABLE users ADD COLUMN status_at DATETIME`);
 }
+if (!userCols.some((c) => c.name === 'tz')) {
+  db.exec(`ALTER TABLE users ADD COLUMN tz TEXT`);
+}
 
 // "Seen" tracking on game sessions so completed-game badges clear after viewing.
 const gsCols = db.prepare('PRAGMA table_info(game_sessions)').all();
@@ -429,6 +456,24 @@ function seed() {
   db.prepare(`INSERT OR IGNORE INTO room_decor (id) VALUES (1)`).run();
   db.prepare(`INSERT OR IGNORE INTO campfire (id) VALUES (1)`).run();
   db.prepare(`INSERT OR IGNORE INTO aquarium (id) VALUES (1)`).run();
+
+  // Seed default date-night spinner options
+  const sc = db.prepare('SELECT COUNT(*) c FROM spinner_options').get().c;
+  if (sc === 0) {
+    const seed = db.prepare('INSERT INTO spinner_options (label,kind) VALUES (?,?)');
+    [
+      ['Movie night (synced)', 'virtual'],
+      ['Cook the same meal', 'virtual'],
+      ['Play an online game', 'virtual'],
+      ['Stargaze on a call', 'virtual'],
+      ['Read to each other', 'virtual'],
+      ['Fall asleep on call', 'virtual'],
+      ['Try a new restaurant', 'irl'],
+      ['Go for a walk', 'irl'],
+      ['Picnic in the park', 'irl'],
+      ['Board game night', 'irl'],
+    ].forEach(([l, k]) => seed.run(l, k));
+  }
 
   // Seed the garden with Mercury's monstera 🌿
   const gn = db.prepare('SELECT COUNT(*) c FROM garden').get().c;
