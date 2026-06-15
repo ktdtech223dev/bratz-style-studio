@@ -246,9 +246,11 @@ function register(io) {
     socket.on('match:new', ({ game }) => {
       if (!ARCADE.CATALOG.some((g) => g.id === game)) return;
       const state = ARCADE.newState(game);
+      if (game === 'pictionary') state.drawer = userId;
+      const firstTurn = game === 'pictionary' ? partnerOf(userId) : userId;
       const r = db
         .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
-        .run(game, JSON.stringify(state), userId, 'active', userId);
+        .run(game, JSON.stringify(state), firstTurn, 'active', userId);
       const m = matchRow(r.lastInsertRowid);
       io.emit('match:update', m);
       const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
@@ -314,9 +316,11 @@ function register(io) {
       const old = db.prepare('SELECT game FROM matches WHERE id=?').get(matchId);
       if (!old) return;
       const state = ARCADE.newState(old.game);
+      if (old.game === 'pictionary') state.drawer = userId;
+      const firstTurn = old.game === 'pictionary' ? partnerOf(userId) : userId;
       const r = db
         .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
-        .run(old.game, JSON.stringify(state), userId, 'active', userId);
+        .run(old.game, JSON.stringify(state), firstTurn, 'active', userId);
       const m = matchRow(r.lastInsertRowid);
       io.emit('match:update', m);
       const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
@@ -325,6 +329,55 @@ function register(io) {
         body: `${u.display_name} wants to play again`,
         url: `/match/${m.id}`,
       });
+    });
+
+    // ── PICTIONARY (draw & guess) ──
+    socket.on('pictionary:stroke', ({ matchId, stroke }) => {
+      const m = matchRow(matchId);
+      if (!m || m.game !== 'pictionary' || m.status !== 'active') return;
+      if (m.state.drawer !== userId || m.state.solved) return;
+      const strokes = [...(m.state.strokes || []), stroke].slice(-500);
+      db.prepare("UPDATE matches SET state=?, updated_at=datetime('now') WHERE id=?").run(
+        JSON.stringify({ ...m.state, strokes }),
+        matchId,
+      );
+      socket.broadcast.emit('pictionary:stroke', { matchId: Number(matchId), stroke });
+    });
+    socket.on('pictionary:clear', ({ matchId }) => {
+      const m = matchRow(matchId);
+      if (!m || m.game !== 'pictionary' || m.state.drawer !== userId) return;
+      db.prepare("UPDATE matches SET state=? WHERE id=?").run(JSON.stringify({ ...m.state, strokes: [] }), matchId);
+      socket.broadcast.emit('pictionary:clear', { matchId: Number(matchId) });
+    });
+    socket.on('pictionary:guess', ({ matchId, text }) => {
+      const m = matchRow(matchId);
+      if (!m || m.game !== 'pictionary' || m.status !== 'active' || m.state.solved) return;
+      if (m.state.drawer === userId) return; // the drawer can't guess
+      const correct = ARCADE.normGuess(text) === ARCADE.normGuess(m.state.word);
+      const guess = { by: userId, text: String(text).slice(0, 40), correct };
+      const guesses = [...(m.state.guesses || []), guess].slice(-40);
+      const solved = correct;
+      db.prepare(
+        "UPDATE matches SET state=?, status=?, winner=?, turn=?, updated_at=datetime('now') WHERE id=?",
+      ).run(
+        JSON.stringify({ ...m.state, guesses, solved }),
+        correct ? 'done' : 'active',
+        correct ? userId : null,
+        correct ? null : m.turn,
+        matchId,
+      );
+      io.emit('pictionary:guess', { matchId: Number(matchId), guess });
+      io.emit('match:update', matchRow(matchId));
+      if (correct) {
+        awardStars(io, 5);
+        const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+        logActivity(io, userId, 'game', `${u.display_name} guessed it in Pictionary 🎨`, 'gamepad');
+        notifyUser(m.state.drawer, {
+          title: '🎨 They guessed it!',
+          body: `${u.display_name} guessed "${m.state.word}"`,
+          url: `/match/${matchId}`,
+        });
+      }
     });
 
     // ── MUSIC station (shared, synced play state) ──

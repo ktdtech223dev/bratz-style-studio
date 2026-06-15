@@ -448,9 +448,12 @@ app.post('/api/matches', (req, res) => {
   const { game, userId } = req.body;
   if (!ARCADE.CATALOG.some((g) => g.id === game)) return res.status(400).json({ error: 'unknown game' });
   const state = ARCADE.newState(game);
+  if (game === 'pictionary') state.drawer = Number(userId);
+  // For pictionary the "turn" (who must act) is the guesser; otherwise the creator moves first.
+  const turn = game === 'pictionary' ? partnerId(userId) : Number(userId);
   const r = db
     .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
-    .run(game, JSON.stringify(state), Number(userId), 'active', Number(userId));
+    .run(game, JSON.stringify(state), turn, 'active', Number(userId));
   const m = matchRow(r.lastInsertRowid);
   io.emit('match:update', m);
   const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));

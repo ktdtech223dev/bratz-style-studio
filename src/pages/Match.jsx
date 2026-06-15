@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { RotateCcw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import PictionaryBoard from '../components/PictionaryBoard';
 import { useStore } from '../store/useStore';
 
 const TITLES = {
@@ -10,6 +11,7 @@ const TITLES = {
   connect4: 'Connect 4',
   gomoku: 'Five in a Row',
   battleship: 'Battleship',
+  pictionary: 'Pictionary',
 };
 
 export default function Match() {
@@ -41,19 +43,23 @@ export default function Match() {
   const colorOf = (uid) => users.find((u) => u.id === uid)?.color || '#b8a9e8';
   const nameOf = (uid) => users.find((u) => u.id === uid)?.display_name || 'Them';
   const myTurn = match.status === 'active' && match.turn === me?.id;
-  const partner = match.turn && match.turn !== me?.id ? match.turn : null;
+  const isPictionary = match.game === 'pictionary';
+  const amDrawer = isPictionary && match.state?.drawer === me?.id;
 
   let statusText;
   let statusColor = 'var(--lav-text)';
   if (match.status === 'done') {
     if (match.winner === 0) statusText = "It's a draw 🤝";
     else if (match.winner === me?.id) {
-      statusText = 'You won! 🎉';
+      statusText = isPictionary ? 'You guessed it! 🎉' : 'You won! 🎉';
       statusColor = 'var(--green)';
     } else {
-      statusText = `${nameOf(match.winner)} won`;
+      statusText = isPictionary ? `${nameOf(match.winner)} guessed it` : `${nameOf(match.winner)} won`;
       statusColor = 'var(--pink-hot)';
     }
+  } else if (isPictionary) {
+    statusText = amDrawer ? "You're drawing 🎨" : 'Your turn to guess 👀';
+    statusColor = amDrawer ? 'var(--lav-text)' : 'var(--green)';
   } else {
     statusText = myTurn ? 'Your turn' : `${nameOf(match.turn)}'s turn…`;
     statusColor = myTurn ? 'var(--green)' : 'var(--text2)';
@@ -97,16 +103,19 @@ export default function Match() {
             onPlay={play}
           />
         )}
+        {isPictionary && <PictionaryBoard match={match} me={me} emit={emit} />}
 
         {/* players legend */}
-        <div className="mt-5 flex justify-center gap-5">
-          {[match.created_by, match.created_by === 1 ? 2 : 1].map((uid) => (
-            <div key={uid} className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded-full" style={{ background: colorOf(uid) }} />
-              <span className="text-sm font-bold">{uid === me?.id ? 'You' : nameOf(uid)}</span>
-            </div>
-          ))}
-        </div>
+        {!isPictionary && (
+          <div className="mt-5 flex justify-center gap-5">
+            {[match.created_by, match.created_by === 1 ? 2 : 1].map((uid) => (
+              <div key={uid} className="flex items-center gap-2">
+                <span className="h-4 w-4 rounded-full" style={{ background: colorOf(uid) }} />
+                <span className="text-sm font-bold">{uid === me?.id ? 'You' : nameOf(uid)}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {match.status === 'done' && (
           <div className="mt-6 space-y-2.5">

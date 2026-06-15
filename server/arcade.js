@@ -7,7 +7,21 @@ const CATALOG = [
   { id: 'connect4', title: 'Connect 4', icon: '🔴', blurb: 'four to win' },
   { id: 'gomoku', title: 'Five in a Row', icon: '⚫', blurb: 'get 5 in a line' },
   { id: 'battleship', title: 'Battleship', icon: '🚢', blurb: 'sink the fleet' },
+  { id: 'pictionary', title: 'Pictionary', icon: '🎨', blurb: 'draw & guess' },
 ];
+
+const WORDS = [
+  'pizza', 'sunflower', 'rainbow', 'guitar', 'airplane', 'cat', 'heart', 'beach', 'coffee',
+  'snowman', 'robot', 'butterfly', 'mountain', 'rocket', 'ice cream', 'umbrella', 'dragon',
+  'cactus', 'moon', 'star', 'flower', 'dog', 'tree', 'house', 'car', 'sun', 'fish', 'bird',
+  'boat', 'cake', 'crown', 'ghost', 'apple', 'banana', 'balloon', 'clock', 'ladder',
+  'lighthouse', 'octopus', 'penguin', 'volcano', 'windmill', 'anchor', 'campfire', 'telescope',
+  'hammock', 'jellyfish', 'unicorn', 'snail', 'mushroom', 'kite', 'donut', 'strawberry',
+  'cloud', 'snowflake', 'spider', 'turtle', 'castle', 'bridge', 'rose',
+];
+function randomWord() {
+  return WORDS[Math.floor(Math.random() * WORDS.length)];
+}
 
 function title(game) {
   return (CATALOG.find((g) => g.id === game) || {}).title || 'Game';
@@ -19,6 +33,8 @@ function newState(game) {
   if (game === 'gomoku') return { size: 9, board: Array(81).fill(0) };
   if (game === 'battleship')
     return { size: 8, ships: { 1: genFleet(8), 2: genFleet(8) }, shots: { 1: [], 2: [] } };
+  if (game === 'pictionary')
+    return { word: randomWord(), drawer: null, strokes: [], guesses: [], solved: false };
   throw new Error('unknown game');
 }
 
@@ -179,4 +195,8 @@ function c4Win(board, cols, rows, col, row, p) {
   return null;
 }
 
-module.exports = { CATALOG, title, newState, applyMove };
+function normGuess(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+module.exports = { CATALOG, title, newState, applyMove, normGuess };
