@@ -40,6 +40,7 @@ const ICONS = {
   gamepad: { I: Gamepad2, c: '#fbbf24' },
   fire: { I: Flame, c: '#fb923c' },
   fish: { I: Fish, c: '#67e8f9' },
+  jar: { I: Heart, c: '#ff6ba8' },
 };
 
 export default function Activity() {

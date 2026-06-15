@@ -38,6 +38,8 @@ import Match from './pages/Match';
 import Garden from './pages/Garden';
 import Campfire from './pages/Campfire';
 import FishTank from './pages/FishTank';
+import LoveJar from './pages/LoveJar';
+import StarMap from './pages/StarMap';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -99,6 +101,8 @@ export default function App() {
           <Route path="/garden" element={<Shell tabs={false}><Garden /></Shell>} />
           <Route path="/campfire" element={<Shell tabs={false}><Campfire /></Shell>} />
           <Route path="/fishtank" element={<Shell tabs={false}><FishTank /></Shell>} />
+          <Route path="/lovejar" element={<Shell tabs={false}><LoveJar /></Shell>} />
+          <Route path="/starmap" element={<Shell tabs={false}><StarMap /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />

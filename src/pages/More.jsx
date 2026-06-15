@@ -11,6 +11,8 @@ import {
   Sprout,
   Flame,
   Fish,
+  Heart,
+  Sparkles,
   ChevronRight,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -19,6 +21,8 @@ const ITEMS = [
   { to: '/garden', label: 'Our garden', sub: 'grow plants together', icon: Sprout, color: '#9be89b' },
   { to: '/campfire', label: 'Our campfire', sub: 'keep the flame alive', icon: Flame, color: '#fb923c' },
   { to: '/fishtank', label: 'Our fish tank', sub: 'feed the fish', icon: Fish, color: '#67e8f9' },
+  { to: '/lovejar', label: 'Love jar', sub: 'fill it with little loves', icon: Heart, color: '#ff6ba8' },
+  { to: '/starmap', label: 'Star map', sub: 'a star for each memory', icon: Sparkles, color: '#fde047' },
   { to: '/checkin', label: 'Daily check-in', sub: 'how was your day?', icon: Sun, color: '#fde047' },
   { to: '/timeline', label: 'Timeline', sub: 'our story so far', icon: Clock, color: '#f5a3c7' },
   { to: '/stats', label: 'Our stats', sub: 'days together & more', icon: BarChart3, color: '#67e8f9' },

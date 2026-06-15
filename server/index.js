@@ -366,6 +366,75 @@ app.get('/api/garden', (req, res) => {
   res.json(db.prepare('SELECT * FROM garden ORDER BY planted_at').all());
 });
 
+// ── LOVE JAR ──
+app.get('/api/lovejar', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT j.*, u.display_name added_name, u.color added_color
+         FROM love_jar j LEFT JOIN users u ON u.id=j.added_by ORDER BY j.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/lovejar', (req, res) => {
+  const { kind, body, userId } = req.body;
+  const k = kind === 'note' ? 'note' : 'heart';
+  const r = db
+    .prepare(`INSERT INTO love_jar (kind,body,added_by) VALUES (?,?,?)`)
+    .run(k, (body || '').slice(0, 280), Number(userId));
+  const item = db
+    .prepare(
+      `SELECT j.*, u.display_name added_name, u.color added_color
+       FROM love_jar j LEFT JOIN users u ON u.id=j.added_by WHERE j.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('lovejar:new', item);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'lovejar', `${u.display_name} added a ${k} to the love jar 🫙`, 'jar');
+  markActive(io, Number(userId));
+  res.json(item);
+});
+app.delete('/api/lovejar/:id', (req, res) => {
+  db.prepare('DELETE FROM love_jar WHERE id=?').run(req.params.id);
+  io.emit('lovejar:deleted', { id: Number(req.params.id) });
+  res.json({ ok: true });
+});
+
+// ── STAR MAP ──
+app.get('/api/stars', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT s.*, u.display_name added_name, u.color added_color
+         FROM stars s LEFT JOIN users u ON u.id=s.added_by ORDER BY s.created_at ASC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/stars', (req, res) => {
+  const { label, x, y, userId } = req.body;
+  const r = db
+    .prepare(`INSERT INTO stars (label,x,y,added_by) VALUES (?,?,?,?)`)
+    .run((label || '').slice(0, 80), Number(x), Number(y), Number(userId));
+  const item = db
+    .prepare(
+      `SELECT s.*, u.display_name added_name, u.color added_color
+       FROM stars s LEFT JOIN users u ON u.id=s.added_by WHERE s.id=?`,
+    )
+    .get(r.lastInsertRowid);
+  io.emit('star:new', item);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'star', `${u.display_name} added a star ✨`, 'star');
+  markActive(io, Number(userId));
+  res.json(item);
+});
+app.delete('/api/stars/:id', (req, res) => {
+  db.prepare('DELETE FROM stars WHERE id=?').run(req.params.id);
+  io.emit('star:deleted', { id: Number(req.params.id) });
+  res.json({ ok: true });
+});
+
 // ── ARCADE MATCHES ──
 app.get('/api/matches', (req, res) => {
   res.json(

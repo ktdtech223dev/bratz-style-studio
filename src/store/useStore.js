@@ -59,6 +59,8 @@ export const useStore = create((set, get) => ({
   garden: [],
   campfire: null,
   aquarium: null,
+  loveJar: [],
+  stars: [],
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -189,6 +191,10 @@ export const useStore = create((set, get) => ({
     s.on('garden:update', (garden) => set({ garden }));
     s.on('campfire:update', (campfire) => set({ campfire }));
     s.on('aquarium:update', (aquarium) => set({ aquarium }));
+    s.on('lovejar:new', (j) => set((st) => ({ loveJar: [j, ...st.loveJar.filter((x) => x.id !== j.id)] })));
+    s.on('lovejar:deleted', ({ id }) => set((st) => ({ loveJar: st.loveJar.filter((j) => j.id !== id) })));
+    s.on('star:new', (s2) => set((st) => ({ stars: [...st.stars.filter((x) => x.id !== s2.id), s2] })));
+    s.on('star:deleted', ({ id }) => set((st) => ({ stars: st.stars.filter((s2) => s2.id !== id) })));
     s.on('game:started', () => get().refreshPending());
     s.on('game:seen', () => get().refreshPending());
     s.on('game:complete', () => get().refreshPending());
@@ -242,6 +248,12 @@ export const useStore = create((set, get) => ({
   },
   refreshGarden: async () => {
     set({ garden: await api.get('/api/garden') });
+  },
+  refreshLoveJar: async () => {
+    set({ loveJar: await api.get('/api/lovejar') });
+  },
+  refreshStars: async () => {
+    set({ stars: await api.get('/api/stars') });
   },
   refreshPending: async () => {
     const me = get().me;
