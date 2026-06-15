@@ -182,6 +182,40 @@ function register(io) {
       }
     });
 
+    // ── GARDEN (collection of plants) ──
+    socket.on('garden:plant', ({ species, name }) => {
+      if (!GARDEN_SPECIES.includes(species)) return;
+      db.prepare('INSERT INTO garden (species,name,planted_by) VALUES (?,?,?)').run(
+        species,
+        String(name || species).slice(0, 24),
+        userId,
+      );
+      io.emit('garden:update', gardenList());
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      logActivity(io, userId, 'garden', `${u.display_name} planted a ${species} 🌱`, 'sprout');
+      awardStars(io, 2);
+      markActive(io, userId);
+    });
+    socket.on('garden:care', ({ plantId, action }) => {
+      if (action === 'water')
+        db.prepare("UPDATE garden SET watered_at=datetime('now'), growth=MIN(100,growth+12) WHERE id=?").run(plantId);
+      else if (action === 'sun')
+        db.prepare("UPDATE garden SET fertilized_at=datetime('now'), growth=MIN(100,growth+9) WHERE id=?").run(plantId);
+      else return;
+      recomputeGardenPlant(plantId);
+      io.emit('garden:update', gardenList());
+      awardStars(io, 2);
+      markActive(io, userId);
+    });
+    socket.on('garden:rename', ({ plantId, name }) => {
+      db.prepare('UPDATE garden SET name=? WHERE id=?').run(String(name).slice(0, 24), plantId);
+      io.emit('garden:update', gardenList());
+    });
+    socket.on('garden:remove', ({ plantId }) => {
+      db.prepare('DELETE FROM garden WHERE id=?').run(plantId);
+      io.emit('garden:update', gardenList());
+    });
+
     // ── ARCADE: real-time turn-based matches ──
     socket.on('match:new', ({ game }) => {
       if (!ARCADE.CATALOG.some((g) => g.id === game)) return;
@@ -333,6 +367,22 @@ function recomputePlantGrowth() {
   if (stage >= 4) growth = 100;
   db.prepare(`UPDATE plant SET growth=?, stage=? WHERE id=1`).run(growth, stage);
   return db.prepare('SELECT * FROM plant WHERE id=1').get();
+}
+
+const GARDEN_SPECIES = ['monstera', 'cactus', 'sunflower', 'bonsai', 'succulent', 'bamboo', 'rose', 'tulip'];
+function gardenList() {
+  return db.prepare('SELECT * FROM garden ORDER BY planted_at').all();
+}
+function recomputeGardenPlant(id) {
+  const p = db.prepare('SELECT * FROM garden WHERE id=?').get(id);
+  if (!p) return;
+  let { growth, stage } = p;
+  while (growth >= 100 && stage < 4) {
+    growth -= 100;
+    stage++;
+  }
+  if (stage >= 4) growth = 100;
+  db.prepare('UPDATE garden SET growth=?, stage=? WHERE id=?').run(growth, stage, id);
 }
 
 module.exports = { register, logActivity, recomputePetMood, recomputePlantGrowth, online };

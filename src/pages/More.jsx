@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Clock, BarChart3, Sun, LineChart, Tv, CalendarDays, Dices, ChevronRight } from 'lucide-react';
+import { Clock, BarChart3, Sun, LineChart, Tv, CalendarDays, Dices, Sprout, ChevronRight } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const ITEMS = [
+  { to: '/garden', label: 'Our garden', sub: 'grow plants together', icon: Sprout, color: '#9be89b' },
   { to: '/checkin', label: 'Daily check-in', sub: 'how was your day?', icon: Sun, color: '#fde047' },
   { to: '/timeline', label: 'Timeline', sub: 'our story so far', icon: Clock, color: '#f5a3c7' },
   { to: '/stats', label: 'Our stats', sub: 'days together & more', icon: BarChart3, color: '#67e8f9' },

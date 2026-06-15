@@ -56,6 +56,7 @@ export const useStore = create((set, get) => ({
   arcade: [],
   matches: [],
   gamePending: {}, // gameId -> { status:'turn'|'ready', sessionId }
+  garden: [],
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -120,6 +121,7 @@ export const useStore = create((set, get) => ({
         truthordare: st.truthordare || null,
         arcade: st.arcade || [],
         matches: st.matches || [],
+        garden: st.garden || [],
         moods,
         ready: true,
       });
@@ -180,6 +182,7 @@ export const useStore = create((set, get) => ({
     s.on('match:update', (m) =>
       set((st) => ({ matches: [m, ...st.matches.filter((x) => x.id !== m.id)] })),
     );
+    s.on('garden:update', (garden) => set({ garden }));
     s.on('game:started', () => get().refreshPending());
     s.on('game:seen', () => get().refreshPending());
     s.on('game:complete', () => get().refreshPending());
@@ -230,6 +233,9 @@ export const useStore = create((set, get) => ({
   },
   refreshMatches: async () => {
     set({ matches: await api.get('/api/matches') });
+  },
+  refreshGarden: async () => {
+    set({ garden: await api.get('/api/garden') });
   },
   refreshPending: async () => {
     const me = get().me;

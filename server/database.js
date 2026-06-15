@@ -233,6 +233,58 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── GARDEN (collection of plants, multiple species) ── */
+  CREATE TABLE IF NOT EXISTS garden (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    species       TEXT NOT NULL,
+    name          TEXT,
+    growth        REAL DEFAULT 0,
+    stage         INTEGER DEFAULT 0,
+    watered_at    DATETIME,
+    fertilized_at DATETIME,
+    planted_by    INTEGER REFERENCES users(id),
+    planted_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── CAMPFIRE (keep-our-flame-alive singleton) ── */
+  CREATE TABLE IF NOT EXISTS campfire (
+    id        INTEGER PRIMARY KEY CHECK (id=1),
+    fuel      REAL DEFAULT 55,
+    logs      INTEGER DEFAULT 3,
+    stoked_at DATETIME,
+    lit_since DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── AQUARIUM (fish tank singleton) ── */
+  CREATE TABLE IF NOT EXISTS aquarium (
+    id          INTEGER PRIMARY KEY CHECK (id=1),
+    cleanliness REAL DEFAULT 100,
+    food        INTEGER DEFAULT 3,
+    fish        INTEGER DEFAULT 2,
+    fed_at      DATETIME,
+    cleaned_at  DATETIME,
+    started_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── LOVE JAR (collection of hearts/notes) ── */
+  CREATE TABLE IF NOT EXISTS love_jar (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind       TEXT DEFAULT 'heart',
+    body       TEXT,
+    added_by   INTEGER REFERENCES users(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  /* ── STAR MAP (collection of stars) ── */
+  CREATE TABLE IF NOT EXISTS stars (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    label      TEXT,
+    x          REAL,
+    y          REAL,
+    added_by   INTEGER REFERENCES users(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── REAL-TIME MATCHES (tic-tac-toe, connect 4, …) ── */
   CREATE TABLE IF NOT EXISTS matches (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -314,6 +366,19 @@ function seed() {
   db.prepare(`INSERT OR IGNORE INTO pet (id) VALUES (1)`).run();
   db.prepare(`INSERT OR IGNORE INTO plant (id) VALUES (1)`).run();
   db.prepare(`INSERT OR IGNORE INTO room_decor (id) VALUES (1)`).run();
+  db.prepare(`INSERT OR IGNORE INTO campfire (id) VALUES (1)`).run();
+  db.prepare(`INSERT OR IGNORE INTO aquarium (id) VALUES (1)`).run();
+
+  // Seed the garden with Mercury's monstera 🌿
+  const gn = db.prepare('SELECT COUNT(*) c FROM garden').get().c;
+  if (gn === 0) {
+    const mercury = db.prepare("SELECT id FROM users WHERE username='mercury'").get();
+    db.prepare(`INSERT INTO garden (species,name,planted_by) VALUES (?,?,?)`).run(
+      'monstera',
+      "mercury's monstera",
+      mercury ? mercury.id : 2,
+    );
+  }
 
   // Seed a couple of sweet starter special dates if none exist
   const sd = db.prepare('SELECT COUNT(*) c FROM special_dates').get().c;

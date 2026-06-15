@@ -65,6 +65,7 @@ app.get('/api/state', (req, res) => {
     couple: db.prepare('SELECT * FROM couple WHERE id=1').get(),
     pet: db.prepare('SELECT * FROM pet WHERE id=1').get(),
     plant: db.prepare('SELECT * FROM plant WHERE id=1').get(),
+    garden: db.prepare('SELECT * FROM garden ORDER BY planted_at').all(),
     radio: RADIO,
     games: GAMES,
     today: ensureTodayPrompt(),
@@ -355,6 +356,11 @@ app.post('/api/games/seen', (req, res) => {
     io.emit('game:seen', { sessionId: Number(sessionId), userId: Number(userId) });
   }
   res.json({ ok: true });
+});
+
+// ── GARDEN ──
+app.get('/api/garden', (req, res) => {
+  res.json(db.prepare('SELECT * FROM garden ORDER BY planted_at').all());
 });
 
 // ── ARCADE MATCHES ──

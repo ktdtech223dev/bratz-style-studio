@@ -35,6 +35,7 @@ import Watchlist from './pages/Watchlist';
 import Calendar from './pages/Calendar';
 import TruthOrDare from './pages/TruthOrDare';
 import Match from './pages/Match';
+import Garden from './pages/Garden';
 
 function Shell({ children, tabs = true }) {
   return (
@@ -93,6 +94,7 @@ export default function App() {
           <Route path="/calendar" element={<Shell tabs={false}><Calendar /></Shell>} />
           <Route path="/truthordare" element={<Shell tabs={false}><TruthOrDare /></Shell>} />
           <Route path="/match/:id" element={<Shell tabs={false}><Match /></Shell>} />
+          <Route path="/garden" element={<Shell tabs={false}><Garden /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />
