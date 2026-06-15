@@ -53,6 +53,9 @@ export const useStore = create((set, get) => ({
   watchlist: [],
   events: [],
   truthordare: null,
+  arcade: [],
+  matches: [],
+  gamePending: {}, // gameId -> { status:'turn'|'ready', sessionId }
   affectionQueue: [],
   activity: [],
   notes: [],
@@ -115,9 +118,12 @@ export const useStore = create((set, get) => ({
         decor: st.decor || null,
         pushKey: st.pushKey || null,
         truthordare: st.truthordare || null,
+        arcade: st.arcade || [],
+        matches: st.matches || [],
         moods,
         ready: true,
       });
+      get().refreshPending();
     } catch (e) {
       set({ ready: true });
     }
@@ -171,6 +177,13 @@ export const useStore = create((set, get) => ({
     s.on('watchlist:deleted', ({ id }) => set((st) => ({ watchlist: st.watchlist.filter((w) => w.id !== id) })));
     s.on('event:new', (e) => set((st) => ({ events: [...st.events.filter((x) => x.id !== e.id), e] })));
     s.on('event:deleted', ({ id }) => set((st) => ({ events: st.events.filter((e) => e.id !== id) })));
+    s.on('match:update', (m) =>
+      set((st) => ({ matches: [m, ...st.matches.filter((x) => x.id !== m.id)] })),
+    );
+    s.on('game:started', () => get().refreshPending());
+    s.on('game:seen', () => get().refreshPending());
+    s.on('game:complete', () => get().refreshPending());
+    s.on('game:answer_progress', () => get().refreshPending());
     s.on('status:update', ({ userId, status, at }) =>
       set((st) => ({
         users: st.users.map((u) => (u.id === userId ? { ...u, status, status_at: at } : u)),
@@ -214,6 +227,16 @@ export const useStore = create((set, get) => ({
   },
   refreshEvents: async () => {
     set({ events: await api.get('/api/events') });
+  },
+  refreshMatches: async () => {
+    set({ matches: await api.get('/api/matches') });
+  },
+  refreshPending: async () => {
+    const me = get().me;
+    if (!me) return;
+    try {
+      set({ gamePending: await api.get(`/api/games/pending?userId=${me.id}`) });
+    } catch {}
   },
   refreshNotes: async () => {
     const r = await api.get('/api/notes');

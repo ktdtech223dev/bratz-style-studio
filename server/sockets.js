@@ -2,6 +2,13 @@
 const { db } = require('./database');
 const { markActive, awardStars } = require('./economy');
 const { notifyUser } = require('./push');
+const ARCADE = require('./arcade');
+
+function matchRow(id) {
+  const m = db.prepare('SELECT * FROM matches WHERE id=?').get(id);
+  if (!m) return null;
+  return { ...m, state: JSON.parse(m.state) };
+}
 
 // Track connected sockets by userId
 const online = {}; // userId -> Set(socketId)
@@ -173,6 +180,91 @@ function register(io) {
           url: '/',
         });
       }
+    });
+
+    // ── ARCADE: real-time turn-based matches ──
+    socket.on('match:new', ({ game }) => {
+      if (!ARCADE.CATALOG.some((g) => g.id === game)) return;
+      const state = ARCADE.newState(game);
+      const r = db
+        .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
+        .run(game, JSON.stringify(state), userId, 'active', userId);
+      const m = matchRow(r.lastInsertRowid);
+      io.emit('match:update', m);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      logActivity(io, userId, 'game', `${u.display_name} started ${ARCADE.title(game)}`, 'gamepad');
+      notifyUser(partnerOf(userId), {
+        title: `🎮 ${u.display_name} started ${ARCADE.title(game)}`,
+        body: 'their move first — get ready to play back!',
+        url: `/match/${m.id}`,
+      });
+      markActive(io, userId);
+    });
+
+    socket.on('match:move', ({ matchId, move }) => {
+      const m = matchRow(matchId);
+      if (!m || m.status !== 'active' || m.turn !== userId) return;
+      let result;
+      try {
+        result = ARCADE.applyMove(m.game, m.state, move, userId);
+      } catch (e) {
+        return; // invalid move, ignore
+      }
+      const next = partnerOf(userId);
+      const status = result.done ? 'done' : 'active';
+      const turn = result.done ? null : next;
+      db.prepare(
+        `UPDATE matches SET state=?, turn=?, status=?, winner=?, updated_at=datetime('now') WHERE id=?`,
+      ).run(JSON.stringify(result.state), turn, status, result.winner, matchId);
+      const updated = matchRow(matchId);
+      io.emit('match:update', updated);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      if (result.done) {
+        if (result.winner && result.winner !== 0) awardStars(io, 5);
+        const msg =
+          result.winner === 0
+            ? `${ARCADE.title(m.game)} ended in a draw`
+            : `${u.display_name} won ${ARCADE.title(m.game)}`;
+        logActivity(io, userId, 'game', msg, 'gamepad');
+        notifyUser(next, {
+          title: `🎮 ${ARCADE.title(m.game)} finished`,
+          body: result.winner === 0 ? "it's a draw!" : `${u.display_name} won — rematch?`,
+          url: `/match/${matchId}`,
+        });
+      } else {
+        notifyUser(next, {
+          title: `🎮 Your move in ${ARCADE.title(m.game)}`,
+          body: `${u.display_name} just played — your turn!`,
+          url: `/match/${matchId}`,
+        });
+      }
+      markActive(io, userId);
+    });
+
+    socket.on('match:seen', ({ matchId }) => {
+      const m = db.prepare('SELECT seen_by FROM matches WHERE id=?').get(matchId);
+      if (!m) return;
+      const seen = new Set((m.seen_by || '').split(',').filter(Boolean).map(Number));
+      seen.add(userId);
+      db.prepare('UPDATE matches SET seen_by=? WHERE id=?').run([...seen].join(','), matchId);
+      io.emit('match:update', matchRow(matchId));
+    });
+
+    socket.on('match:rematch', ({ matchId }) => {
+      const old = db.prepare('SELECT game FROM matches WHERE id=?').get(matchId);
+      if (!old) return;
+      const state = ARCADE.newState(old.game);
+      const r = db
+        .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
+        .run(old.game, JSON.stringify(state), userId, 'active', userId);
+      const m = matchRow(r.lastInsertRowid);
+      io.emit('match:update', m);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      notifyUser(partnerOf(userId), {
+        title: `🎮 Rematch! ${ARCADE.title(old.game)}`,
+        body: `${u.display_name} wants to play again`,
+        url: `/match/${m.id}`,
+      });
     });
 
     // ── MUSIC station (shared, synced play state) ──

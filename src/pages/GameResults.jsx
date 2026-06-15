@@ -35,7 +35,8 @@ export default function GameResults() {
 
   useEffect(() => {
     api.get(`/api/games/session/${sessionId}`).then(({ answers }) => setAnswers(answers || []));
-  }, [sessionId]);
+    if (me) api.post('/api/games/seen', { sessionId, userId: me.id }).catch(() => {});
+  }, [sessionId, me]);
 
   if (!game) return <PageHeader title="Results" />;
 

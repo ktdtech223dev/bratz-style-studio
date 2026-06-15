@@ -233,6 +233,20 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  /* ── REAL-TIME MATCHES (tic-tac-toe, connect 4, …) ── */
+  CREATE TABLE IF NOT EXISTS matches (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    game       TEXT NOT NULL,
+    state      TEXT NOT NULL,
+    turn       INTEGER,
+    status     TEXT DEFAULT 'active',
+    winner     INTEGER,
+    created_by INTEGER REFERENCES users(id),
+    seen_by    TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   /* ── SHARED CALENDAR EVENTS ── */
   CREATE TABLE IF NOT EXISTS events (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -273,6 +287,12 @@ const userCols = db.prepare('PRAGMA table_info(users)').all();
 if (!userCols.some((c) => c.name === 'status')) {
   db.exec(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'awake'`);
   db.exec(`ALTER TABLE users ADD COLUMN status_at DATETIME`);
+}
+
+// "Seen" tracking on game sessions so completed-game badges clear after viewing.
+const gsCols = db.prepare('PRAGMA table_info(game_sessions)').all();
+if (!gsCols.some((c) => c.name === 'seen_by')) {
+  db.exec(`ALTER TABLE game_sessions ADD COLUMN seen_by TEXT DEFAULT ''`);
 }
 
 // ── SEED ──

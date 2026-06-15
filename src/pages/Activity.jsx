@@ -15,6 +15,7 @@ import {
   Sun,
   Tv,
   CalendarDays,
+  Gamepad2,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
@@ -34,6 +35,7 @@ const ICONS = {
   sun: { I: Sun, c: '#fde047' },
   tv: { I: Tv, c: '#c084fc' },
   calendar: { I: CalendarDays, c: '#9be89b' },
+  gamepad: { I: Gamepad2, c: '#fbbf24' },
 };
 
 export default function Activity() {

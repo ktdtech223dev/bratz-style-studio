@@ -16,6 +16,15 @@ const GAMES = require('./games-data');
 const DECOR = require('./decor-data');
 const PUSH = require('./push');
 const PARTY = require('./party-data');
+const ARCADE = require('./arcade');
+
+function partnerId(userId) {
+  return Number(userId) === 1 ? 2 : 1;
+}
+function matchRow(id) {
+  const m = db.prepare('SELECT * FROM matches WHERE id=?').get(id);
+  return m ? { ...m, state: JSON.parse(m.state) } : null;
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -62,6 +71,11 @@ app.get('/api/state', (req, res) => {
     decor: DECOR.resolve(db.prepare('SELECT * FROM room_decor WHERE id=1').get()),
     pushKey: PUSH.publicKey(),
     truthordare: PARTY,
+    arcade: ARCADE.CATALOG,
+    matches: db
+      .prepare(`SELECT * FROM matches ORDER BY updated_at DESC LIMIT 40`)
+      .all()
+      .map((m) => ({ ...m, state: JSON.parse(m.state) })),
   });
 });
 
@@ -235,6 +249,16 @@ app.post('/api/games/start', (req, res) => {
     .prepare(`INSERT INTO game_sessions (game_id,started_by) VALUES (?,?)`)
     .run(gameId, Number(userId));
   io.emit('game:answer_progress', { sessionId: r.lastInsertRowid, userId: Number(userId) });
+  io.emit('game:started', { gameId, by: Number(userId) });
+  const game = gameById(gameId);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (game && u) {
+    PUSH.notifyUser(partnerId(userId), {
+      title: `💞 ${u.display_name} started ${game.title}`,
+      body: 'play it back to see how you match!',
+      url: `/games/${gameId}`,
+    });
+  }
   res.json({ sessionId: r.lastInsertRowid });
 });
 app.post('/api/games/answer', (req, res) => {
@@ -257,14 +281,28 @@ app.post('/api/games/answer', (req, res) => {
     const counts = db
       .prepare('SELECT user_id, COUNT(*) c FROM game_answers WHERE session_id=? GROUP BY user_id')
       .all(sessionId);
+    const myCount = counts.find((c) => c.user_id === Number(userId))?.c || 0;
+    const partnerCount = counts.find((c) => c.user_id === partnerId(userId))?.c || 0;
     const bothDone = counts.length >= 2 && counts.every((c) => c.c >= need);
+    const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
     if (bothDone) {
       db.prepare('UPDATE game_sessions SET completed=1 WHERE id=?').run(sessionId);
       awardStars(io, 15);
       grantTreat(io, 1);
       io.emit('game:complete', { sessionId: Number(sessionId), gameId: session.game_id });
-      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
       logActivity(io, Number(userId), 'game', `You both completed ${game.title}`, 'trophy');
+      PUSH.notifyUser(partnerId(userId), {
+        title: `✅ ${game.title} is ready`,
+        body: 'you both finished — tap to see the reveal!',
+        url: `/games/${session.game_id}/results/${sessionId}`,
+      });
+    } else if (myCount === need && partnerCount < need && u) {
+      // I just finished my part; nudge my partner to play back.
+      PUSH.notifyUser(partnerId(userId), {
+        title: `💞 ${u.display_name} is waiting`,
+        body: `${u.display_name} finished ${game.title} — your turn!`,
+        url: `/games/${session.game_id}`,
+      });
     }
   }
   markActive(io, Number(userId));
@@ -280,6 +318,74 @@ app.get('/api/games/history/:gameId', (req, res) => {
     .prepare(`SELECT * FROM game_sessions WHERE game_id=? ORDER BY played_at DESC`)
     .all(req.params.gameId);
   res.json(sessions);
+});
+// Per-game badge state for a user: 'turn' (partner played, your move) | 'ready' (done, unseen).
+app.get('/api/games/pending', (req, res) => {
+  const uid = Number(req.query.userId);
+  const sessions = db.prepare('SELECT * FROM game_sessions ORDER BY played_at DESC').all();
+  const out = {};
+  const processed = new Set();
+  for (const s of sessions) {
+    if (processed.has(s.game_id)) continue; // only the most recent session per game
+    processed.add(s.game_id);
+    const game = gameById(s.game_id);
+    if (!game) continue;
+    const need = game.questions.length * (game.format === 'party' ? 1 : 2);
+    const counts = db
+      .prepare('SELECT user_id, COUNT(*) c FROM game_answers WHERE session_id=? GROUP BY user_id')
+      .all(s.id);
+    const mine = counts.find((c) => c.user_id === uid)?.c || 0;
+    const partner = counts.find((c) => c.user_id !== uid)?.c || 0;
+    if (s.completed) {
+      const seen = (s.seen_by || '').split(',').filter(Boolean).map(Number);
+      if (!seen.includes(uid)) out[s.game_id] = { status: 'ready', sessionId: s.id };
+    } else if (partner > 0 && mine < need) {
+      out[s.game_id] = { status: 'turn', sessionId: s.id };
+    }
+  }
+  res.json(out);
+});
+app.post('/api/games/seen', (req, res) => {
+  const { sessionId, userId } = req.body;
+  const s = db.prepare('SELECT seen_by FROM game_sessions WHERE id=?').get(sessionId);
+  if (s) {
+    const seen = new Set((s.seen_by || '').split(',').filter(Boolean).map(Number));
+    seen.add(Number(userId));
+    db.prepare('UPDATE game_sessions SET seen_by=? WHERE id=?').run([...seen].join(','), sessionId);
+    io.emit('game:seen', { sessionId: Number(sessionId), userId: Number(userId) });
+  }
+  res.json({ ok: true });
+});
+
+// ── ARCADE MATCHES ──
+app.get('/api/matches', (req, res) => {
+  res.json(
+    db
+      .prepare('SELECT * FROM matches ORDER BY updated_at DESC LIMIT 40')
+      .all()
+      .map((m) => ({ ...m, state: JSON.parse(m.state) })),
+  );
+});
+app.post('/api/matches', (req, res) => {
+  const { game, userId } = req.body;
+  if (!ARCADE.CATALOG.some((g) => g.id === game)) return res.status(400).json({ error: 'unknown game' });
+  const state = ARCADE.newState(game);
+  const r = db
+    .prepare(`INSERT INTO matches (game,state,turn,status,created_by) VALUES (?,?,?,?,?)`)
+    .run(game, JSON.stringify(state), Number(userId), 'active', Number(userId));
+  const m = matchRow(r.lastInsertRowid);
+  io.emit('match:update', m);
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) {
+    logActivity(io, Number(userId), 'game', `${u.display_name} started ${ARCADE.title(game)}`, 'gamepad');
+    PUSH.notifyUser(partnerId(userId), {
+      title: `🎮 ${u.display_name} started ${ARCADE.title(game)}`,
+      body: 'get ready to play back!',
+      url: `/match/${m.id}`,
+    });
+  }
+  markActive(io, Number(userId));
+  res.json(m);
 });
 
 // ── ABOUT US ──
