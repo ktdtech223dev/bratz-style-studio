@@ -23,6 +23,8 @@ import {
   AreaRug,
   CatCollar,
 } from './furniture';
+import { getFloorplan } from './themes';
+import Exterior from './Exterior';
 
 // ── 3-bedroom dollhouse (open roof). 3 columns × 2 rows + an attached garden. ──
 const HALF_X = 3.7;
@@ -422,107 +424,101 @@ function Avatars() {
   );
 }
 
-// ── The whole house: 2 bedrooms (shared "Our room" + baby), living, study,
-// kitchen, sunroom + garden. Per-room point lights were removed for perf — a
-// hemisphere + ambient in Room3D light the whole house cheaply. ──
+// role (nav fitting) → renderer
+const FITTING = {
+  tv: (f, d) => <TV position={f.at} rotation={[0, f.rot || 0, 0]} />,
+  speaker: (f) => <Speaker position={f.at} />,
+  frames: (f) => <WallFrames position={f.at} rotation={[0, f.rot || 0, 0]} />,
+  coffeetable: (f, d) => <CoffeeTable position={f.at} color={d.table.color} />,
+  armchair: (f, d) => <ArmchairWithCat position={f.at} rotation={[0, f.rot || 0, 0]} collar={d.collar} />,
+  fireplace: (f) => <Fireplace position={f.at} rotation={[0, f.rot || 0, 0]} />,
+  fishtank: (f) => <FishTank3D position={f.at} />,
+  kitchen: (f, d) => <KitchenArea position={f.at} tableColor={d.table.color} />,
+  plant: (f, d) => <RoomPlant position={f.at} pot={d.pot} />,
+  telescope: (f) => <Telescope position={f.at} />,
+};
+
+// decorative furniture kind → component (colors from live decor)
+function furnPiece(it, d, key) {
+  const pos = it.at;
+  const rot = [0, it.rot || 0, 0];
+  switch (it.kind) {
+    case 'sofa':
+      return <Sofa key={key} color={d.sofa.color} style={d.sofa.style} position={pos} rotation={rot} />;
+    case 'bed':
+      return <BedFrame key={key} color={d.bed.color} sheets={d.bed.sheets} position={pos} rotation={rot} />;
+    case 'crib':
+      return <Crib key={key} color="#cdbfe6" position={pos} rotation={rot} />;
+    case 'dresser':
+      return <Dresser key={key} color="#6b4f33" position={pos} rotation={rot} />;
+    case 'nightstand':
+      return <NightStand key={key} color={d.bed.color} position={pos} rotation={rot} />;
+    case 'bookshelf':
+      return <Bookshelf key={key} color="#3a3160" position={pos} rotation={rot} />;
+    case 'lamp':
+      return <FloorLamp key={key} color={d.lamp.color} position={pos} rotation={rot} />;
+    case 'rug':
+      return <AreaRug key={key} color={d.rug.color} position={pos} rotation={rot} />;
+    case 'dining':
+      return <DiningSet key={key} color={d.table.color} position={pos} rotation={rot} />;
+    case 'toybox':
+      return <Toybox key={key} color="#7dd3fc" position={pos} rotation={rot} />;
+    default:
+      return null;
+  }
+}
+
+// ── The whole house — theme-driven from a floorplan descriptor. Per-room point
+// lights removed for perf; hemisphere + ambient in Room3D light it cheaply. ──
 export default function Furniture() {
   const d = useDecorColors();
   const { wall, floor, gardenpot } = d;
   const theme = useStore((s) => s.decor)?.theme || 'modern';
-
-  // per-room floor tints
-  const floors = [
-    { c: floor[0], at: KS }, // Our room
-    { c: '#43354f', at: LV }, // Living
-    { c: '#2f3a4e', at: MC }, // Study
-    { c: '#4a4258', at: BABY }, // Baby
-    { c: '#3c3340', at: KT }, // Kitchen
-    { c: '#34405a', at: ST }, // Sunroom
-  ];
+  const fp = getFloorplan(theme);
+  const b = fp.bounds;
 
   return (
     <group>
       <Environment theme={theme} />
-      {/* base floor */}
+      <Exterior variant={fp.exterior} palette={fp.palette} bounds={b} />
+
+      {/* base floor + per-room tints */}
       <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
-        <planeGeometry args={[HALF_X * 2, HALF_Z * 2]} />
+        <planeGeometry args={[b.halfX * 2, b.halfZ * 2]} />
         <meshStandardMaterial color={floor[1]} roughness={1} />
       </mesh>
-      {floors.map((f, i) => (
-        <mesh key={i} position={[f.at[0], 0, f.at[1]]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
-          <planeGeometry args={[2.35, 2.5]} />
-          <meshStandardMaterial color={f.c} roughness={1} />
+      {fp.rooms.map((r) => (
+        <mesh key={r.id} position={[r.center[0], 0, r.center[1]]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
+          <planeGeometry args={[r.size[0], r.size[1]]} />
+          <meshStandardMaterial color={r.floor} roughness={1} />
         </mesh>
       ))}
 
-      {/* exterior walls (south has a garden doorway) */}
-      <Wall a={[-HALF_X, -HALF_Z]} b={[HALF_X, -HALF_Z]} color={wall[0]} />
-      <Wall a={[-HALF_X, -HALF_Z]} b={[-HALF_X, HALF_Z]} color={wall[1]} />
-      <Wall a={[HALF_X, -HALF_Z]} b={[HALF_X, HALF_Z]} color={wall[1]} />
-      <Wall a={[-HALF_X, HALF_Z]} b={[-0.6, HALF_Z]} color={wall[1]} />
-      <Wall a={[0.6, HALF_Z]} b={[HALF_X, HALF_Z]} color={wall[1]} />
-
-      {/* interior column walls (x=-1.25 and x=1.25) with door gaps */}
-      {[-1.25, 1.25].map((x) => (
-        <group key={x}>
-          <Wall a={[x, -HALF_Z]} b={[x, -1.85]} color={wall[1]} height={WALL_H * 0.96} />
-          <Wall a={[x, -0.85]} b={[x, 0.85]} color={wall[1]} height={WALL_H * 0.96} />
-          <Wall a={[x, 1.85]} b={[x, HALF_Z]} color={wall[1]} height={WALL_H * 0.96} />
-        </group>
+      {/* walls */}
+      {fp.walls.map((w, i) => (
+        <Wall key={`w${i}`} a={w.a} b={w.b} color={wall[0]} />
       ))}
-      {/* interior row wall (z=0) with door gaps at each column centre */}
-      <Wall a={[-HALF_X, 0]} b={[-2.95, 0]} color={wall[1]} height={WALL_H * 0.96} />
-      <Wall a={[-1.95, 0]} b={[-0.5, 0]} color={wall[1]} height={WALL_H * 0.96} />
-      <Wall a={[0.5, 0]} b={[1.95, 0]} color={wall[1]} height={WALL_H * 0.96} />
-      <Wall a={[2.95, 0]} b={[HALF_X, 0]} color={wall[1]} height={WALL_H * 0.96} />
 
-      {/* windows on the back wall */}
-      <Window position={[KS[0], 1.35, -HALF_Z + 0.07]} />
-      <Window position={[MC[0], 1.35, -HALF_Z + 0.07]} moon={false} />
+      {/* windows */}
+      {fp.windows.map((w, i) => (
+        <Window key={`win${i}`} position={w.at} rotation={[0, w.rot || 0, 0]} moon={w.moon} />
+      ))}
 
-      {/* ════ OUR ROOM — shared bedroom (back-left) ════ */}
-      <BedFrame color={d.bed.color} sheets={d.bed.sheets} position={[KS[0], 0, KS[1] - 0.55]} />
-      <NightStand color={d.bed.color} position={[KS[0] - 0.9, 0, KS[1] - 0.7]} />
-      <NightStand color={d.bed.color} position={[KS[0] + 0.9, 0, KS[1] - 0.7]} />
-      <Dresser color="#6b4f33" position={[KS[0] + 0.8, 0, KS[1] + 0.8]} rotation={[0, -Math.PI / 2, 0]} />
-      <MoodLight position={[KS[0], 1.55, KS[1] - 0.5]} spread={0.5} />
+      {/* nav fittings */}
+      {fp.fittings.map((f, i) => (
+        <group key={`fit${i}`}>{(FITTING[f.role] || (() => null))(f, d)}</group>
+      ))}
 
-      {/* ════ LIVING (back-centre) ════ */}
-      <AreaRug color={d.rug.color} position={[LV[0], 0, LV[1] + 0.1]} />
-      <Sofa color={d.sofa.color} style={d.sofa.style} position={[LV[0], 0, LV[1] - 0.7]} />
-      <CoffeeTable color={d.table.color} position={[LV[0], 0, LV[1] + 0.15]} />
-      <TV position={[LV[0], 1.3, -HALF_Z + 0.16]} />
-      <Speaker position={[LV[0] + 1.0, 0.3, -HALF_Z + 0.35]} />
-      <ArmchairWithCat position={[LV[0] + 0.95, 0, LV[1] + 0.6]} rotation={[0, -0.6, 0]} collar={d.collar} />
-      <FloorLamp color={d.lamp.color} position={[LV[0] - 1.0, 0, LV[1] + 0.7]} />
-      <WallFrames position={[LV[0], 1.5, -HALF_Z + 0.08]} />
+      {/* decorative furniture */}
+      {fp.furniture.map((it, i) => furnPiece(it, d, `u${i}`))}
+
+      {/* mood lights */}
+      {fp.mood.map((p, i) => (
+        <MoodLight key={`m${i}`} position={p} spread={0.5} />
+      ))}
+
       <Avatars />
-
-      {/* ════ STUDY (back-right, formerly the 3rd bedroom) ════ */}
-      <Bookshelf color="#3a3160" position={[MC[0] + 0.7, 0, -HALF_Z + 0.2]} />
-      <RoomPlant position={[MC[0] - 0.7, 0, MC[1] + 0.5]} pot={d.pot} />
-      <Dresser color="#5e4a6e" position={[MC[0] + 0.1, 0, MC[1] + 0.8]} />
-
-      {/* ════ BABY ROOM (front-left) ════ */}
-      <AreaRug color="#a9c7dd" position={[BABY[0], 0, BABY[1]]} />
-      <Crib color="#cdbfe6" position={[BABY[0] - 0.3, 0, BABY[1] - 0.5]} />
-      <Toybox color="#7dd3fc" position={[BABY[0] + 0.7, 0, BABY[1] + 0.6]} />
-      <Dresser color="#e7c4c9" position={[BABY[0] + 0.75, 0, BABY[1] - 0.7]} rotation={[0, -Math.PI / 2, 0]} />
-
-      {/* ════ KITCHEN (front-centre) ════ */}
-      <KitchenArea position={[KT[0], 0, HALF_Z - 0.4]} tableColor={d.table.color} />
-      <DiningSet color={d.table.color} position={[KT[0], 0, KT[1] - 0.3]} />
-      <Fireplace position={[-1.25 + 0.16, 0, KT[1]]} rotation={[0, Math.PI / 2, 0]} />
-
-      {/* ════ SUNROOM (front-right) ════ */}
-      <FishTank3D position={[HALF_X - 0.5, 0, ST[1] - 0.4]} />
-      <Sofa color={d.sofa.color} style="loveseat" position={[ST[0], 0, ST[1] + 0.5]} rotation={[0, Math.PI, 0]} />
-      <FloorLamp color={d.lamp.color} position={[ST[0] + 0.8, 0, ST[1] - 0.8]} />
-
-      {/* ════ GARDEN (attached, south) ════ */}
-      <GardenArea position={[0, 0, HALF_Z + 1.5]} potColors={gardenpot} />
-      <Telescope position={[1.9, 0, HALF_Z + 1.4]} />
-
+      <GardenArea position={fp.garden} potColors={gardenpot} />
       <DustMotes count={8} />
     </group>
   );
