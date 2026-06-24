@@ -34,7 +34,7 @@ export default function Room3D() {
         <Canvas
           shadows
           dpr={[1, 2]}
-          camera={{ position: [6.5, 5.6, 7.2], fov: 42, near: 0.1, far: 60 }}
+          camera={{ position: [7.5, 6.2, 9], fov: 44, near: 0.1, far: 70 }}
           gl={{ antialias: true, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
             // fall back to SVG if the context is lost on mobile
@@ -49,18 +49,18 @@ export default function Room3D() {
 
           {/* cool moonlight — the only shadow caster; covers the whole footprint */}
           <directionalLight
-            position={[-6, 9, 5]}
+            position={[-7, 11, 6]}
             intensity={0.95}
             color="#aab8ff"
             castShadow
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
             shadow-camera-near={0.5}
-            shadow-camera-far={40}
-            shadow-camera-left={-7}
-            shadow-camera-right={7}
-            shadow-camera-top={7}
-            shadow-camera-bottom={-7}
+            shadow-camera-far={50}
+            shadow-camera-left={-9}
+            shadow-camera-right={9}
+            shadow-camera-top={9}
+            shadow-camera-bottom={-9}
             shadow-bias={-0.0005}
           />
 
@@ -71,10 +71,10 @@ export default function Room3D() {
             enableZoom
             screenSpacePanning
             minDistance={3.5}
-            maxDistance={20}
-            minPolarAngle={Math.PI * 0.12}
+            maxDistance={26}
+            minPolarAngle={Math.PI * 0.1}
             maxPolarAngle={Math.PI * 0.49}
-            target={[0, 0.5, 0]}
+            target={[0, 0.4, 0.6]}
             enableDamping
             dampingFactor={0.08}
             zoomSpeed={0.8}

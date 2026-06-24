@@ -27,6 +27,7 @@ import {
   Brain,
   Zap,
   MessageCircleHeart,
+  ChefHat,
   Search,
   X,
 } from 'lucide-react';
@@ -43,6 +44,7 @@ const SECTIONS = [
       { to: '/garden', label: 'Our garden', sub: 'grow plants together', icon: Sprout, color: '#9be89b' },
       { to: '/campfire', label: 'Our campfire', sub: 'keep the flame alive', icon: Flame, color: '#fb923c' },
       { to: '/fishtank', label: 'Our fish tank', sub: 'feed the fish', icon: Fish, color: '#67e8f9' },
+      { to: '/recipes', label: 'Our recipes', sub: 'cook together', icon: ChefHat, color: '#fdba74' },
     ],
   },
   {
