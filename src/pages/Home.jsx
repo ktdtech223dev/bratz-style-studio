@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Map, Music, Smile, ListChecks, Hammer, MoreHorizontal, Moon, Sun, Sparkles, X, ChevronRight } from 'lucide-react';
+import { Image, Map, Music, Smile, ListChecks, Hammer, MoreHorizontal, Moon, Sun, Sparkles, X, ChevronRight, Move } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
@@ -142,6 +142,13 @@ export default function Home() {
             aria-label="Decorate room"
           >
             <Hammer size={15} /> Decorate
+          </button>
+          <button
+            onClick={() => nav('/arrange')}
+            className="glass absolute left-3 top-3 flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--cyan)] shadow-elev2"
+            aria-label="Arrange furniture"
+          >
+            <Move size={15} /> Arrange
           </button>
         </div>
 

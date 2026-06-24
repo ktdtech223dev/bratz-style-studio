@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFrame } from '@react-three/fiber';
+import { useStore } from '../../store/useStore';
 
 // Tappable hotspot that navigates on click. Highlights on hover with a cheap
 // scale pulse on a ref (NO per-hotspot pointLight — that was the main perf cost
@@ -8,6 +9,7 @@ import { useFrame } from '@react-three/fiber';
 // compatibility (callers still pass it) but no longer spawns a light.
 export default function Hotspot({ to, label, glow, children, ...groupProps }) {
   const nav = useNavigate();
+  const arrange = useStore((s) => s.arrangeMode);
   const [hover, setHover] = useState(false);
   const ref = useRef();
 
@@ -24,6 +26,7 @@ export default function Hotspot({ to, label, glow, children, ...groupProps }) {
         ref={ref}
         onClick={(e) => {
           e.stopPropagation();
+          if (arrange) return; // inert while arranging furniture
           nav(to);
         }}
         onPointerOver={(e) => {

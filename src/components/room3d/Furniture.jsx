@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
+import * as THREE from 'three';
 import useDecorColors from './useDecorColors';
 import { useStore } from '../../store/useStore';
 import { api } from '../../lib/api';
@@ -402,11 +403,14 @@ function Telescope({ position }) {
 
 // Avatars for me + partner — at their saved layout spot (or the theme seed),
 // shown active when present.
-function Avatars({ seed }) {
+function Avatars({ seed, bounds }) {
   const users = useStore((s) => s.users);
   const presence = useStore((s) => s.presence);
   const me = useStore((s) => s.me);
   const avatarLayout = useStore((s) => s.avatarLayout);
+  const arrange = useStore((s) => s.arrangeMode);
+  const sel = useStore((s) => s.arrangeSel);
+  const setSel = useStore((s) => s.setArrangeSel);
   return (
     <group>
       {(users || []).slice(0, 2).map((u, i) => {
@@ -414,15 +418,24 @@ function Avatars({ seed }) {
         const s = (seed && seed[i]) || [0, 0, 0];
         const pos = saved ? [saved.x, 0, saved.z] : [s[0], 0, s[1]];
         const rot = saved ? saved.rot || 0 : s[2] || 0;
+        const active = u.id === me?.id || !!presence?.[u.id];
+        if (arrange && u.id === me?.id && bounds) {
+          return (
+            <DraggablePiece
+              key={u.id}
+              position={pos}
+              rot={rot}
+              bounds={bounds}
+              selected={sel === `a${u.id}`}
+              onSelect={() => setSel(`a${u.id}`)}
+              onMoved={(x, z) => api.post('/api/avatars/move', { userId: u.id, x, z, rot }).catch(() => {})}
+            >
+              <Avatar color={u.color} name={u.display_name} active={active} />
+            </DraggablePiece>
+          );
+        }
         return (
-          <Avatar
-            key={u.id}
-            color={u.color}
-            name={u.display_name}
-            active={u.id === me?.id || !!presence?.[u.id]}
-            position={pos}
-            rotation={[0, rot, 0]}
-          />
+          <Avatar key={u.id} color={u.color} name={u.display_name} active={active} position={pos} rotation={[0, rot, 0]} />
         );
       })}
     </group>
@@ -472,6 +485,72 @@ function furnPiece(kind, pos, rotY, d, key) {
   }
 }
 
+const clampN = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// Wraps a piece so it can be selected + dragged on the floor plane in arrange
+// mode. Disables OrbitControls while dragging (controls.makeDefault required).
+function DraggablePiece({ position, rot, bounds, selected, onSelect, onMoved, children }) {
+  const controls = useThree((s) => s.controls);
+  const ref = useRef();
+  const drag = useRef(false);
+  const grab = useRef([0, 0]);
+  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
+  const hit = useMemo(() => new THREE.Vector3(), []);
+  const hx = bounds.halfX + 0.2;
+  const zMin = -bounds.halfZ - 0.2;
+  const zMax = bounds.halfZ + 2.6;
+
+  function down(e) {
+    e.stopPropagation();
+    onSelect();
+    try { e.target.setPointerCapture(e.pointerId); } catch {}
+    drag.current = true;
+    if (controls) controls.enabled = false;
+    if (e.ray.intersectPlane(plane, hit) && ref.current) {
+      grab.current = [hit.x - ref.current.position.x, hit.z - ref.current.position.z];
+    }
+  }
+  function move(e) {
+    if (!drag.current || !ref.current) return;
+    if (e.ray.intersectPlane(plane, hit)) {
+      ref.current.position.x = clampN(hit.x - grab.current[0], -hx, hx);
+      ref.current.position.z = clampN(hit.z - grab.current[1], zMin, zMax);
+    }
+  }
+  function end(e) {
+    if (!drag.current) return;
+    drag.current = false;
+    if (controls) controls.enabled = true;
+    try { e.target.releasePointerCapture(e.pointerId); } catch {}
+    if (ref.current) onMoved(ref.current.position.x, ref.current.position.z);
+  }
+
+  return (
+    <group
+      ref={ref}
+      position={position}
+      rotation={[0, rot || 0, 0]}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={end}
+      onPointerCancel={end}
+    >
+      {/* invisible, raycastable hit proxy (children use raycast=null) */}
+      <mesh position={[0, 0.4, 0]}>
+        <boxGeometry args={[1.0, 0.9, 1.0]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+      {selected && (
+        <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+          <ringGeometry args={[0.5, 0.66, 32]} />
+          <meshBasicMaterial color="#ff6ba8" transparent opacity={0.85} toneMapped={false} />
+        </mesh>
+      )}
+      {children}
+    </group>
+  );
+}
+
 // ── The whole house — theme-driven from a floorplan descriptor. Per-room point
 // lights removed for perf; hemisphere + ambient in Room3D light it cheaply. ──
 export default function Furniture() {
@@ -482,6 +561,9 @@ export default function Furniture() {
   const b = fp.bounds;
   const placed = useStore((s) => s.placedFurniture);
   const ready = useStore((s) => s.ready);
+  const arrange = useStore((s) => s.arrangeMode);
+  const sel = useStore((s) => s.arrangeSel);
+  const setSel = useStore((s) => s.setArrangeSel);
 
   // seed furniture from the floorplan defaults on first run (empty DB)
   useEffect(() => {
@@ -502,6 +584,14 @@ export default function Furniture() {
     <group>
       <Environment theme={theme} />
       <Exterior variant={fp.exterior} palette={fp.palette} bounds={b} />
+
+      {/* tap empty floor to deselect while arranging */}
+      {arrange && (
+        <mesh position={[0, 0.005, 0.8]} rotation={[-Math.PI / 2, 0, 0]} onPointerDown={() => setSel(null)}>
+          <planeGeometry args={[22, 22]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
 
       {/* base floor + per-room tints */}
       <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
@@ -530,15 +620,29 @@ export default function Furniture() {
         <group key={`fit${i}`}>{(FITTING[f.role] || (() => null))(f, d)}</group>
       ))}
 
-      {/* decorative furniture (DB instances if present, else floorplan defaults) */}
-      {furnList.map((f) => furnPiece(f.kind, f.pos, f.rot, d, f.key))}
+      {/* decorative furniture (draggable in arrange mode) */}
+      {arrange
+        ? placed.map((p) => (
+            <DraggablePiece
+              key={`p${p.id}`}
+              position={[p.x, 0, p.z]}
+              rot={p.rot}
+              bounds={b}
+              selected={sel === `f${p.id}`}
+              onSelect={() => setSel(`f${p.id}`)}
+              onMoved={(x, z) => api.post(`/api/furniture/${p.id}`, { x, z, rot: p.rot }).catch(() => {})}
+            >
+              {furnPiece(p.kind, [0, 0, 0], 0, d, `c${p.id}`)}
+            </DraggablePiece>
+          ))
+        : furnList.map((f) => furnPiece(f.kind, f.pos, f.rot, d, f.key))}
 
       {/* mood lights */}
       {fp.mood.map((p, i) => (
         <MoodLight key={`m${i}`} position={p} spread={0.5} />
       ))}
 
-      <Avatars seed={fp.avatars} />
+      <Avatars seed={fp.avatars} bounds={b} />
       <GardenArea position={fp.garden} potColors={gardenpot} />
       <DustMotes count={8} />
     </group>

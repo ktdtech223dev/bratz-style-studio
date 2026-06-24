@@ -77,6 +77,7 @@ export const useStore = create((set, get) => ({
   placedFurniture: [],
   avatarLayout: {},
   arrangeMode: false,
+  arrangeSel: null,
   today: null,
   diaryEntries: [],
   theme: loadTheme(),
@@ -350,7 +351,8 @@ export const useStore = create((set, get) => ({
   refreshFurniture: async () => {
     set({ placedFurniture: (await api.get('/api/furniture')).placed });
   },
-  setArrangeMode: (v) => set({ arrangeMode: v }),
+  setArrangeMode: (v) => set({ arrangeMode: v, arrangeSel: null }),
+  setArrangeSel: (v) => set({ arrangeSel: v }),
 }));
 
 function mergeUsers(prev, next) {
