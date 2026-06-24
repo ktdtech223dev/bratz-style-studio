@@ -42,7 +42,6 @@ export default function Room3D() {
           }}
         >
           <color attach="background" args={['#12152e']} />
-          <fog attach="fog" args={['#12152e', 16, 34]} />
 
           {/* cheap global fill — replaces the per-room point lights */}
           <ambientLight intensity={0.5} color="#4a4f7a" />

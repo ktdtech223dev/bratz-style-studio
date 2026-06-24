@@ -7,6 +7,7 @@ import Hotspot from './Hotspot';
 import Cat from './Cat';
 import Plant3D from './Plant3D';
 import MoodLight from './MoodLight';
+import Environment from './Environment';
 import Avatar from './Avatar';
 import GardenArea from './GardenArea';
 import {
@@ -427,6 +428,7 @@ function Avatars() {
 export default function Furniture() {
   const d = useDecorColors();
   const { wall, floor, gardenpot } = d;
+  const theme = useStore((s) => s.decor)?.theme || 'modern';
 
   // per-room floor tints
   const floors = [
@@ -440,6 +442,7 @@ export default function Furniture() {
 
   return (
     <group>
+      <Environment theme={theme} />
       {/* base floor */}
       <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow raycast={() => null}>
         <planeGeometry args={[HALF_X * 2, HALF_Z * 2]} />

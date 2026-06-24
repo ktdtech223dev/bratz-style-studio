@@ -14,6 +14,7 @@ const SLOTS = [
   { id: 'collar', label: 'Cat collar' },
   { id: 'pot', label: 'Plant pot' },
   { id: 'gardenpot', label: 'Garden pots' },
+  { id: 'theme', label: 'House theme' },
 ];
 
 const ITEMS = [
@@ -103,6 +104,14 @@ const ITEMS = [
   { id: 'gpot_sage', slot: 'gardenpot', name: 'Sage', price: 40, swatch: '#9fb39a', data: { gardenpot: ['#9fb39a', '#7c9077'] } },
   { id: 'gpot_blue', slot: 'gardenpot', name: 'Glazed blue', price: 40, swatch: '#5b8def', data: { gardenpot: ['#5b8def', '#3f68b8'] } },
   { id: 'gpot_charcoal', slot: 'gardenpot', name: 'Charcoal', price: 40, swatch: '#3a3d44', data: { gardenpot: ['#3a3d44', '#26282e'] } },
+
+  // ── HOUSE THEMES (id only; the 3D house renders the floorplan/exterior/world) ──
+  { id: 'theme_modern', slot: 'theme', name: 'Modern home', price: 0, swatch: '#6a6ab0', data: { theme: 'modern' } },
+  { id: 'theme_forest', slot: 'theme', name: 'Forest cabin', price: 220, swatch: '#3f5e4a', data: { theme: 'forest' } },
+  { id: 'theme_tuscan', slot: 'theme', name: 'Tuscan mansion', price: 280, swatch: '#c08a4a', data: { theme: 'tuscan' } },
+  { id: 'theme_beach', slot: 'theme', name: 'Beach house', price: 220, swatch: '#7ec8d8', data: { theme: 'beach' } },
+  { id: 'theme_cottage', slot: 'theme', name: 'Cozy cottage', price: 200, swatch: '#9fb39a', data: { theme: 'cottage' } },
+  { id: 'theme_chalet', slot: 'theme', name: 'Snowy chalet', price: 240, swatch: '#cdd6e6', data: { theme: 'chalet' } },
 ];
 
 const DEFAULTS = {
@@ -117,6 +126,7 @@ const DEFAULTS = {
   collar: 'collar_none',
   pot: 'pot_pink',
   gardenpot: 'gpot_terra',
+  theme: 'theme_modern',
 };
 
 function itemById(id) {

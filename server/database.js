@@ -428,7 +428,7 @@ db.exec(`
 
 // New room_decor furniture slots (guarded — additive, NULL falls back to DEFAULTS).
 const rdCols = db.prepare('PRAGMA table_info(room_decor)').all();
-for (const col of ['sofa', 'bed', 'coffeetable', 'lamp', 'rug', 'collar', 'gardenpot']) {
+for (const col of ['sofa', 'bed', 'coffeetable', 'lamp', 'rug', 'collar', 'gardenpot', 'theme']) {
   if (!rdCols.some((c) => c.name === col)) {
     db.exec(`ALTER TABLE room_decor ADD COLUMN ${col} TEXT`);
   }
