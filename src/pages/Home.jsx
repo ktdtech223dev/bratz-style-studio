@@ -280,7 +280,7 @@ export default function Home() {
           })}
         </div>
 
-        <p className="mt-3 text-center text-xs text-[var(--muted)]">or tap around the room ✨</p>
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">drag to walk around our house · pinch to zoom · tap things ✨</p>
       </div>
 
       <Sheet open={reunionOpen} onClose={() => setReunionOpen(false)} title="Next reunion 💜">

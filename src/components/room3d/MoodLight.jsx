@@ -79,9 +79,10 @@ function Orb({ color, position }) {
   );
 }
 
-// Renders one orb for me + one for partner above the bed. Each shows that
-// user's current mood color (moods[userId]?.color), tinting the room.
-export default function MoodLight() {
+// Renders one orb for me + one for partner. Each shows that user's current mood
+// color (moods[userId]?.color), tinting the room. `position` places the pair and
+// `spread` sets how far apart the two orbs hang.
+export default function MoodLight({ position = [0, 1.95, -1.2], spread = 0.55 }) {
   const moods = useStore((s) => s.moods);
   const me = useStore((s) => s.me);
   const partner = useStore((s) => s.partner);
@@ -90,9 +91,9 @@ export default function MoodLight() {
   const partnerColor = (partner && moods?.[partner.id]?.color) || NEUTRAL;
 
   return (
-    <group>
-      <Orb color={myColor} position={[-0.55, 1.95, -1.2]} />
-      <Orb color={partnerColor} position={[0.55, 1.95, -1.2]} />
+    <group position={position}>
+      <Orb color={myColor} position={[-spread, 0, 0]} />
+      <Orb color={partnerColor} position={[spread, 0, 0]} />
     </group>
   );
 }
