@@ -1,12 +1,38 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil, Check } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import PlantSprite from '../components/PlantSprite';
+import Plant3D from '../components/room3d/Plant3D';
+import { hasWebGL } from '../components/room3d/useWebGL';
 import CareButton from '../components/CareButton';
 import { useStore } from '../store/useStore';
 import { daysSince } from '../lib/time';
+
+// 3D bonsai inside the growth ring. Falls back to the 2D sprite when WebGL is
+// unavailable (and while the canvas mounts via Suspense).
+function PlantVisual({ stage, potColors }) {
+  if (!hasWebGL()) return <PlantSprite stage={stage} size={190} potColors={potColors} />;
+  return (
+    <Canvas
+      dpr={[1, 2]}
+      camera={{ position: [0, 0.3, 2.2], fov: 40 }}
+      gl={{ antialias: true }}
+      style={{ width: '100%', height: '100%' }}
+    >
+      <ambientLight intensity={0.6} color="#cfd6ff" />
+      <directionalLight position={[2, 3, 2]} intensity={1.1} color="#fff3d6" />
+      <pointLight position={[-2, 1, 1]} intensity={0.5} color="#b8a9e8" />
+      <Suspense fallback={null}>
+        <Plant3D stage={stage} potColors={potColors} position={[0, -0.35, 0]} scale={1.5} />
+      </Suspense>
+      <OrbitControls enablePan={false} enableZoom={false} autoRotate autoRotateSpeed={1.2} target={[0, 0.1, 0]} />
+    </Canvas>
+  );
+}
 
 const STAGE_NAMES = ['Sprout', 'Seedling', 'Baby Bonsai', 'Young Bonsai', 'Full Bonsai'];
 
@@ -49,10 +75,10 @@ export default function Plant() {
             />
           </svg>
           <div
-            className="absolute inset-6 flex items-center justify-center rounded-full"
+            className="absolute inset-6 overflow-hidden rounded-full"
             style={{ background: 'radial-gradient(circle at 50% 35%, #313a73, #1a1f4a)' }}
           >
-            <PlantSprite stage={stage} size={190} potColors={decor?.pot} />
+            <PlantVisual stage={stage} potColors={decor?.pot} />
           </div>
         </div>
 

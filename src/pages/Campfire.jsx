@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import CareButton from '../components/CareButton';
 import CampfireSprite from '../components/CampfireSprite';
+import CareBurst from '../components/CareBurst';
 import { useStore } from '../store/useStore';
 
 export default function Campfire() {
   const campfire = useStore((s) => s.campfire);
   const emit = useStore((s) => s.emit);
+  const [burst, setBurst] = useState(0);
   if (!campfire) return <PageHeader title="Our campfire" />;
 
   const fuel = campfire.fuel ?? 0;
@@ -19,10 +22,11 @@ export default function Campfire() {
       <PageHeader title="Our campfire" sub="keep our flame alive 🔥" />
       <div className="px-5">
         <div
-          className="mx-auto mt-2 flex h-72 items-center justify-center rounded-3xl"
+          className="relative mx-auto mt-2 flex h-72 items-center justify-center overflow-hidden rounded-3xl"
           style={{ background: 'radial-gradient(circle at 50% 70%, #3a2a1a, #1a1f4a 70%)' }}
         >
-          <CampfireSprite fuel={fuel} size={210} />
+          <CampfireSprite fuel={fuel} size={210} burst={burst} />
+          <CareBurst trigger={burst} kind="sparks" />
         </div>
 
         <div className="mt-3 text-center">
@@ -44,7 +48,10 @@ export default function Campfire() {
               lastAt={campfire.stoked_at}
               cooldownHrs={2}
               color="#fb923c"
-              onPress={() => emit('campfire:care', { action: 'stoke' })}
+              onPress={() => {
+                setBurst((b) => b + 1);
+                emit('campfire:care', { action: 'stoke' });
+              }}
             />
             <CareButton
               emoji="🪵"
@@ -52,7 +59,10 @@ export default function Campfire() {
               count={logs}
               color="#c98a5e"
               disabled={logs <= 0}
-              onPress={() => emit('campfire:care', { action: 'addlog' })}
+              onPress={() => {
+                setBurst((b) => b + 1);
+                emit('campfire:care', { action: 'addlog' });
+              }}
             />
           </div>
           <p className="mt-4 text-center text-xs text-[var(--muted)]">

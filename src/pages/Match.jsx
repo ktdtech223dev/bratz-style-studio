@@ -12,6 +12,9 @@ const TITLES = {
   gomoku: 'Five in a Row',
   battleship: 'Battleship',
   pictionary: 'Pictionary',
+  memory: '🃏 Memory match',
+  dotsandboxes: '⬜ Dots & boxes',
+  reversi: '⚫ Reversi',
 };
 
 export default function Match() {
@@ -102,6 +105,31 @@ export default function Match() {
             done={match.status === 'done'}
             onPlay={play}
           />
+        )}
+        {match.game === 'memory' && (
+          <Memory
+            state={match.state}
+            me={me?.id}
+            colorOf={colorOf}
+            nameOf={nameOf}
+            myTurn={myTurn}
+            createdBy={match.created_by}
+            onPlay={play}
+          />
+        )}
+        {match.game === 'dotsandboxes' && (
+          <DotsAndBoxes
+            state={match.state}
+            me={me?.id}
+            colorOf={colorOf}
+            nameOf={nameOf}
+            myTurn={myTurn}
+            createdBy={match.created_by}
+            onPlay={play}
+          />
+        )}
+        {match.game === 'reversi' && (
+          <Reversi state={match.state} me={me?.id} colorOf={colorOf} myTurn={myTurn} onPlay={play} />
         )}
         {isPictionary && <PictionaryBoard match={match} me={me} emit={emit} />}
 
@@ -316,6 +344,255 @@ function Battleship({ state, me, colorOf, myTurn, done, onPlay }) {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Score strip shared by Memory + Dots & boxes ──
+function ScoreStrip({ scores, me, colorOf, nameOf, createdBy }) {
+  const p2 = createdBy === 1 ? 2 : 1;
+  const players = [createdBy, p2];
+  return (
+    <div className="mb-4 flex justify-center gap-3">
+      {players.map((uid) => {
+        const isMe = uid === me;
+        return (
+          <div
+            key={uid}
+            className="flex min-w-[88px] items-center justify-center gap-2 rounded-2xl border px-3 py-2"
+            style={{
+              borderColor: 'var(--border)',
+              background: 'var(--card)',
+            }}
+          >
+            <span className="h-3.5 w-3.5 rounded-full" style={{ background: colorOf(uid) }} />
+            <span className="text-sm font-bold text-[var(--text2)]">{isMe ? 'You' : nameOf(uid)}</span>
+            <span className="text-lg font-extrabold" style={{ color: colorOf(uid) }}>
+              {scores?.[uid] ?? 0}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Memory({ state, me, colorOf, nameOf, myTurn, createdBy, onPlay }) {
+  const cards = state.cards || [];
+  const matched = state.matched || [];
+  const pending = state.pending || [];
+  const scores = state.scores || {};
+  const isUp = (i) => matched.includes(i) || pending.includes(i);
+  return (
+    <div>
+      <ScoreStrip scores={scores} me={me} colorOf={colorOf} nameOf={nameOf} createdBy={createdBy} />
+      <div className="mx-auto grid w-full max-w-[340px] grid-cols-4 gap-2.5">
+        {cards.map((face, i) => {
+          const up = isUp(i);
+          const done = matched.includes(i);
+          const canTap = myTurn && !up;
+          return (
+            <motion.button
+              key={i}
+              whileTap={canTap ? { scale: 0.9 } : {}}
+              onClick={() => canTap && onPlay(i)}
+              disabled={!canTap}
+              className="relative flex aspect-square items-center justify-center rounded-2xl border-2 text-3xl"
+              style={{
+                background: up ? 'var(--card2)' : 'var(--card)',
+                borderColor: done ? '#9be89b' : up ? 'var(--border-strong)' : 'var(--border)',
+                opacity: done ? 0.92 : 1,
+              }}
+            >
+              {up ? (
+                <motion.span
+                  initial={{ rotateY: 90, opacity: 0 }}
+                  animate={{ rotateY: 0, opacity: 1 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {face}
+                </motion.span>
+              ) : (
+                <span
+                  className="h-2/3 w-2/3 rounded-xl"
+                  style={{ background: 'var(--grad-accent-soft)', opacity: 0.5 }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DotsAndBoxes({ state, me, colorOf, nameOf, myTurn, createdBy, onPlay }) {
+  const G = state.grid || 3; // boxes per side
+  const edges = state.edges || [];
+  const boxes = state.boxes || [];
+  const scores = state.scores || {};
+  const H = (G + 1) * G; // count of horizontal edges
+  // edge id helpers (mirror server)
+  const hId = (r, c) => r * G + c; // horizontal edge at dot-row r, between cols c,c+1
+  const vId = (r, c) => H + r * (G + 1) + c; // vertical edge at box-row r, dot-col c
+  const D = 2 * G + 1; // dimension of the dot/edge lattice (dots + gaps)
+
+  // cell sizing: dots are small, edges fill the gaps
+  const dot = 10;
+  const gap = 40;
+  const colTemplate = Array.from({ length: D })
+    .map((_, k) => (k % 2 === 0 ? `${dot}px` : `${gap}px`))
+    .join(' ');
+
+  const tap = (id) => myTurn && edges[id] === 0 && onPlay(id);
+
+  const cellAt = (gr, gc) => {
+    const isDotRow = gr % 2 === 0;
+    const isDotCol = gc % 2 === 0;
+    if (isDotRow && isDotCol) {
+      // a dot
+      return <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--border-strong)' }} />;
+    }
+    if (isDotRow && !isDotCol) {
+      // horizontal edge: dot-row r = gr/2, between cols (gc-1)/2 .. that col index
+      const r = gr / 2;
+      const c = (gc - 1) / 2;
+      const id = hId(r, c);
+      const owner = edges[id];
+      return (
+        <button
+          onClick={() => tap(id)}
+          disabled={!myTurn || owner !== 0}
+          className="h-2 w-full rounded-full transition-colors"
+          style={{ background: owner ? colorOf(owner) : myTurn ? 'var(--border)' : 'var(--card2)' }}
+        />
+      );
+    }
+    if (!isDotRow && isDotCol) {
+      // vertical edge: box-row r = (gr-1)/2, dot-col c = gc/2
+      const r = (gr - 1) / 2;
+      const c = gc / 2;
+      const id = vId(r, c);
+      const owner = edges[id];
+      return (
+        <button
+          onClick={() => tap(id)}
+          disabled={!myTurn || owner !== 0}
+          className="h-full w-2 rounded-full transition-colors"
+          style={{ background: owner ? colorOf(owner) : myTurn ? 'var(--border)' : 'var(--card2)' }}
+        />
+      );
+    }
+    // box center
+    const r = (gr - 1) / 2;
+    const c = (gc - 1) / 2;
+    const owner = boxes[r * G + c];
+    return (
+      <span
+        className="flex h-full w-full items-center justify-center rounded-md text-sm font-extrabold"
+        style={{ background: owner ? colorOf(owner) + '33' : 'transparent', color: owner ? colorOf(owner) : 'transparent' }}
+      >
+        {owner ? (owner === me ? 'You' : '') : ''}
+      </span>
+    );
+  };
+
+  return (
+    <div>
+      <ScoreStrip scores={scores} me={me} colorOf={colorOf} nameOf={nameOf} createdBy={createdBy} />
+      <div className="mx-auto w-fit rounded-2xl bg-[var(--bg2)] p-4">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: colTemplate,
+            gridTemplateRows: colTemplate,
+            alignItems: 'center',
+            justifyItems: 'center',
+          }}
+        >
+          {Array.from({ length: D * D }).map((_, k) => {
+            const gr = Math.floor(k / D);
+            const gc = k % D;
+            return (
+              <div key={k} className="flex h-full w-full items-center justify-center">
+                {cellAt(gr, gc)}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Reversi({ state, me, colorOf, myTurn, onPlay }) {
+  const size = state.size || 6;
+  const board = state.board || [];
+  const last = state.last;
+
+  // compute my legal moves for affordance dots
+  const legal = new Set();
+  if (myTurn && me) {
+    const opp = me === 1 ? 2 : 1;
+    const dirs = [
+      [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1],
+    ];
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] !== 0) continue;
+      const r0 = Math.floor(i / size);
+      const c0 = i % size;
+      let ok = false;
+      for (const [dr, dc] of dirs) {
+        let r = r0 + dr;
+        let c = c0 + dc;
+        let seen = 0;
+        while (r >= 0 && r < size && c >= 0 && c < size && board[r * size + c] === opp) {
+          seen++;
+          r += dr;
+          c += dc;
+        }
+        if (seen > 0 && r >= 0 && r < size && c >= 0 && c < size && board[r * size + c] === me) {
+          ok = true;
+          break;
+        }
+      }
+      if (ok) legal.add(i);
+    }
+  }
+
+  return (
+    <div
+      className="mx-auto w-full max-w-[330px] rounded-2xl p-2"
+      style={{ background: '#1f7a3f', display: 'grid', gridTemplateColumns: `repeat(${size}, 1fr)`, gap: 4 }}
+    >
+      {board.map((cell, i) => {
+        const playable = legal.has(i);
+        return (
+          <motion.button
+            key={i}
+            whileTap={playable ? { scale: 0.88 } : {}}
+            onClick={() => playable && onPlay(i)}
+            disabled={!playable}
+            className="relative flex aspect-square items-center justify-center rounded-md"
+            style={{ background: i === last ? '#2f9c55' : '#23713c', boxShadow: 'inset 0 0 0 1px #0003' }}
+          >
+            {cell !== 0 && (
+              <motion.span
+                initial={{ scale: 0.6 }}
+                animate={{ scale: 1 }}
+                className="h-4/5 w-4/5 rounded-full"
+                style={{ background: colorOf(cell), boxShadow: `0 1px 4px #0006, 0 0 8px ${colorOf(cell)}55` }}
+              />
+            )}
+            {cell === 0 && playable && (
+              <span
+                className="h-1/4 w-1/4 rounded-full"
+                style={{ background: colorOf(me), opacity: 0.4 }}
+              />
+            )}
+          </motion.button>
+        );
+      })}
     </div>
   );
 }

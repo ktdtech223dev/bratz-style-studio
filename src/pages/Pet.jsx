@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import Card from '../components/Card';
 import PetSprite from '../components/PetSprite';
 import CareButton from '../components/CareButton';
+import CareBurst from '../components/CareBurst';
 import { useStore } from '../store/useStore';
 import { daysSince } from '../lib/time';
 
@@ -22,10 +23,18 @@ export default function Pet() {
   const decor = useStore((s) => s.decor);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(pet?.name || 'atlas');
+  const [burst, setBurst] = useState(0);
+  const [burstKind, setBurstKind] = useState('hearts');
 
   if (!pet) return <PageHeader title="Our pet" />;
 
   const treats = pet.treats ?? 0;
+
+  const care = (action, kind) => {
+    setBurstKind(kind);
+    setBurst((b) => b + 1);
+    emit('pet:care', { action });
+  };
 
   return (
     <div>
@@ -34,13 +43,18 @@ export default function Pet() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="mx-auto mt-2 flex h-64 w-64 items-center justify-center rounded-full"
+          className="relative mx-auto mt-2 flex h-64 w-64 items-center justify-center rounded-full"
           style={{
             background: 'radial-gradient(circle at 50% 35%, #313a73, #1a1f4a)',
             boxShadow: 'inset 0 0 60px rgba(0,0,0,0.4), 0 0 50px rgba(184,169,232,0.2)',
           }}
         >
-          <PetSprite mood={pet.mood} size={210} colors={decor?.cat} />
+          <PetSprite
+            mood={pet.mood}
+            size={210}
+            colors={{ body: decor?.body, face: decor?.face, eye: decor?.eye }}
+          />
+          <CareBurst trigger={burst} kind={burstKind} />
         </motion.div>
 
         <div className="mt-2 text-center text-lg font-extrabold capitalize">
@@ -56,7 +70,7 @@ export default function Pet() {
               lastAt={pet.fed_at}
               cooldownHrs={12}
               color="#fdba74"
-              onPress={() => emit('pet:care', { action: 'feed' })}
+              onPress={() => care('feed', 'food')}
             />
             <CareButton
               emoji="🧶"
@@ -64,7 +78,7 @@ export default function Pet() {
               lastAt={pet.played_at}
               cooldownHrs={10}
               color="#67e8f9"
-              onPress={() => emit('pet:care', { action: 'play' })}
+              onPress={() => care('play', 'sparks')}
             />
             <CareButton
               emoji="❤️"
@@ -72,7 +86,7 @@ export default function Pet() {
               lastAt={pet.petted_at}
               cooldownHrs={8}
               color="#ff6ba8"
-              onPress={() => emit('pet:care', { action: 'pet' })}
+              onPress={() => care('pet', 'hearts')}
             />
             <CareButton
               emoji="🦴"
@@ -82,7 +96,7 @@ export default function Pet() {
               cooldownHrs={0}
               color="#9be89b"
               disabled={treats <= 0}
-              onPress={() => emit('pet:care', { action: 'treat' })}
+              onPress={() => care('treat', 'hearts')}
             />
           </div>
           <p className="mt-4 text-center text-xs text-[var(--muted)]">
