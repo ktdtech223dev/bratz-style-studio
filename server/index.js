@@ -874,6 +874,35 @@ function bucketItem(id) {
     .get(id);
 }
 
+// ── RECIPES (shared cookbook, opened from the fridge) ──
+app.get('/api/recipes', (req, res) => {
+  res.json(
+    db
+      .prepare(
+        `SELECT r.*, u.display_name added_name, u.color added_color
+         FROM recipes r LEFT JOIN users u ON u.id=r.added_by ORDER BY r.created_at DESC`,
+      )
+      .all(),
+  );
+});
+app.post('/api/recipes', (req, res) => {
+  const { title, ingredients, steps, userId } = req.body;
+  if (!title || !String(title).trim()) return res.status(400).json({ error: 'Title required' });
+  const r = db
+    .prepare(`INSERT INTO recipes (title,ingredients,steps,added_by) VALUES (?,?,?,?)`)
+    .run(String(title).slice(0, 120), String(ingredients || '').slice(0, 4000), String(steps || '').slice(0, 8000), Number(userId));
+  io.emit('recipes:changed');
+  const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
+  if (u) logActivity(io, Number(userId), 'recipe', `${u.display_name} saved a recipe: ${title}`, 'book');
+  markActive(io, Number(userId));
+  res.json({ ok: true, id: r.lastInsertRowid });
+});
+app.delete('/api/recipes/:id', (req, res) => {
+  db.prepare('DELETE FROM recipes WHERE id=?').run(req.params.id);
+  io.emit('recipes:changed');
+  res.json({ ok: true });
+});
+
 // ── ROOM DECOR ──
 app.get('/api/decor', (req, res) => {
   const equipped = db.prepare('SELECT * FROM room_decor WHERE id=1').get();
@@ -907,7 +936,7 @@ app.post('/api/decor/equip', (req, res) => {
   const isDefault = DECOR.DEFAULTS[slot] === itemId;
   const owned = db.prepare('SELECT 1 FROM owned_decor WHERE item_id=?').get(itemId);
   if (!owned && !isDefault) return res.status(400).json({ error: 'Not owned' });
-  const col = ['wallpaper', 'floor', 'cat', 'pot'].includes(slot) ? slot : null;
+  const col = DECOR.SLOTS.some((s) => s.id === slot) ? slot : null;
   if (!col) return res.status(400).json({ error: 'Bad slot' });
   db.prepare(`UPDATE room_decor SET ${col}=? WHERE id=1`).run(itemId);
   const row = db.prepare('SELECT * FROM room_decor WHERE id=1').get();

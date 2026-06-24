@@ -73,6 +73,7 @@ export const useStore = create((set, get) => ({
   activity: [],
   notes: [],
   photos: [],
+  recipes: [],
   today: null,
   diaryEntries: [],
   theme: loadTheme(),
@@ -221,6 +222,7 @@ export const useStore = create((set, get) => ({
     s.on('giftwishes:changed', () => get().refreshGiftWishes());
     s.on('dedications:changed', () => get().refreshDedications());
     s.on('spinner:changed', () => get().refreshSpinner());
+    s.on('recipes:changed', () => get().refreshRecipes());
     s.on('habits:changed', () => get().refreshHabits());
     s.on('kiss:incoming', () => set({ kissAt: Date.now() }));
     s.on('tz:update', ({ userId, tz }) =>
@@ -334,6 +336,9 @@ export const useStore = create((set, get) => ({
   refreshActivity: async () => {
     const r = await api.get('/api/activity');
     set({ activity: r });
+  },
+  refreshRecipes: async () => {
+    set({ recipes: await api.get('/api/recipes') });
   },
 }));
 

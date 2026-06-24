@@ -400,7 +400,7 @@ db.exec(`
   );
 `);
 
-// ── ADDITIVE FEATURE TABLES (photo reactions, note replies) ──
+// ── ADDITIVE FEATURE TABLES (photo reactions, note replies, recipes) ──
 db.exec(`
   CREATE TABLE IF NOT EXISTS photo_reactions (
     photo_id   INTEGER REFERENCES photos(id),
@@ -416,7 +416,23 @@ db.exec(`
     body       TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS recipes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT NOT NULL,
+    ingredients TEXT,
+    steps       TEXT,
+    added_by    INTEGER REFERENCES users(id),
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
+
+// New room_decor furniture slots (guarded — additive, NULL falls back to DEFAULTS).
+const rdCols = db.prepare('PRAGMA table_info(room_decor)').all();
+for (const col of ['sofa', 'bed', 'coffeetable', 'lamp', 'rug', 'collar', 'gardenpot']) {
+  if (!rdCols.some((c) => c.name === col)) {
+    db.exec(`ALTER TABLE room_decor ADD COLUMN ${col} TEXT`);
+  }
+}
 
 // ── MIGRATIONS ──
 // Add game_answers.kind for the self/guess format. If the column is missing we're
