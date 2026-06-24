@@ -241,7 +241,7 @@ export function NightStand({ color = WOOD, ...props }) {
             side={2}
           />
         </mesh>
-        <pointLight position={[0, 0.15, 0]} color={lampShade} intensity={0.5} distance={1.4} decay={2} />
+        {/* emissive shade only — no real pointLight (perf: keep scene light count low) */}
       </group>
     </group>
   );

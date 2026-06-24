@@ -421,23 +421,21 @@ function Avatars() {
   );
 }
 
-function Fill({ position, color = '#6a6ab0', intensity = 0.3 }) {
-  return <pointLight position={position} color={color} intensity={intensity} distance={4.5} decay={2} />;
-}
-
-// ── The whole 3-bedroom house ──
+// ── The whole house: 2 bedrooms (shared "Our room" + baby), living, study,
+// kitchen, sunroom + garden. Per-room point lights were removed for perf — a
+// hemisphere + ambient in Room3D light the whole house cheaply. ──
 export default function Furniture() {
   const d = useDecorColors();
   const { wall, floor, gardenpot } = d;
 
   // per-room floor tints
   const floors = [
-    { c: floor[0], at: KS },
-    { c: '#43354f', at: LV },
-    { c: '#3a3550', at: MC },
-    { c: '#4a4258', at: BABY },
-    { c: '#3c3340', at: KT },
-    { c: '#2f3a4e', at: ST },
+    { c: floor[0], at: KS }, // Our room
+    { c: '#43354f', at: LV }, // Living
+    { c: '#2f3a4e', at: MC }, // Study
+    { c: '#4a4258', at: BABY }, // Baby
+    { c: '#3c3340', at: KT }, // Kitchen
+    { c: '#34405a', at: ST }, // Sunroom
   ];
 
   return (
@@ -479,11 +477,12 @@ export default function Furniture() {
       <Window position={[KS[0], 1.35, -HALF_Z + 0.07]} />
       <Window position={[MC[0], 1.35, -HALF_Z + 0.07]} moon={false} />
 
-      {/* ════ KESHAWN'S ROOM (back-left) ════ */}
-      <BedFrame color={d.bed.color} sheets={d.bed.sheets} position={[KS[0] - 0.35, 0, KS[1] - 0.55]} />
-      <NightStand color={d.bed.color} position={[KS[0] + 0.55, 0, KS[1] - 0.9]} />
-      <Dresser color="#6b4f33" position={[KS[0] + 0.8, 0, KS[1] + 0.6]} rotation={[0, -Math.PI / 2, 0]} />
-      <Fill position={[KS[0], 1.6, KS[1]]} color="#7a6ab0" intensity={0.26} />
+      {/* ════ OUR ROOM — shared bedroom (back-left) ════ */}
+      <BedFrame color={d.bed.color} sheets={d.bed.sheets} position={[KS[0], 0, KS[1] - 0.55]} />
+      <NightStand color={d.bed.color} position={[KS[0] - 0.9, 0, KS[1] - 0.7]} />
+      <NightStand color={d.bed.color} position={[KS[0] + 0.9, 0, KS[1] - 0.7]} />
+      <Dresser color="#6b4f33" position={[KS[0] + 0.8, 0, KS[1] + 0.8]} rotation={[0, -Math.PI / 2, 0]} />
+      <MoodLight position={[KS[0], 1.55, KS[1] - 0.5]} spread={0.5} />
 
       {/* ════ LIVING (back-centre) ════ */}
       <AreaRug color={d.rug.color} position={[LV[0], 0, LV[1] + 0.1]} />
@@ -494,39 +493,34 @@ export default function Furniture() {
       <ArmchairWithCat position={[LV[0] + 0.95, 0, LV[1] + 0.6]} rotation={[0, -0.6, 0]} collar={d.collar} />
       <FloorLamp color={d.lamp.color} position={[LV[0] - 1.0, 0, LV[1] + 0.7]} />
       <WallFrames position={[LV[0], 1.5, -HALF_Z + 0.08]} />
-      <MoodLight position={[LV[0], 1.6, LV[1] - 0.2]} spread={0.45} />
       <Avatars />
 
-      {/* ════ MERCURY'S ROOM (back-right) ════ */}
-      <BedFrame color="#caa56e" sheets="#ece3cf" position={[MC[0] + 0.35, 0, MC[1] - 0.55]} rotation={[0, 0, 0]} />
-      <Dresser color="#caa56e" position={[MC[0] - 0.8, 0, MC[1] + 0.6]} rotation={[0, Math.PI / 2, 0]} />
-      <NightStand color="#caa56e" position={[MC[0] - 0.55, 0, MC[1] - 0.9]} />
-      <Fill position={[MC[0], 1.6, MC[1]]} color="#b07a9a" intensity={0.26} />
+      {/* ════ STUDY (back-right, formerly the 3rd bedroom) ════ */}
+      <Bookshelf color="#3a3160" position={[MC[0] + 0.7, 0, -HALF_Z + 0.2]} />
+      <RoomPlant position={[MC[0] - 0.7, 0, MC[1] + 0.5]} pot={d.pot} />
+      <Dresser color="#5e4a6e" position={[MC[0] + 0.1, 0, MC[1] + 0.8]} />
 
       {/* ════ BABY ROOM (front-left) ════ */}
       <AreaRug color="#a9c7dd" position={[BABY[0], 0, BABY[1]]} />
       <Crib color="#cdbfe6" position={[BABY[0] - 0.3, 0, BABY[1] - 0.5]} />
       <Toybox color="#7dd3fc" position={[BABY[0] + 0.7, 0, BABY[1] + 0.6]} />
       <Dresser color="#e7c4c9" position={[BABY[0] + 0.75, 0, BABY[1] - 0.7]} rotation={[0, -Math.PI / 2, 0]} />
-      <Fill position={[BABY[0], 1.5, BABY[1]]} color="#9fb3d0" intensity={0.34} />
 
       {/* ════ KITCHEN (front-centre) ════ */}
       <KitchenArea position={[KT[0], 0, HALF_Z - 0.4]} tableColor={d.table.color} />
       <DiningSet color={d.table.color} position={[KT[0], 0, KT[1] - 0.3]} />
       <Fireplace position={[-1.25 + 0.16, 0, KT[1]]} rotation={[0, Math.PI / 2, 0]} />
-      <Fill position={[KT[0], 1.5, KT[1]]} color="#caa07a" intensity={0.3} />
 
-      {/* ════ STUDY (front-right) ════ */}
-      <Bookshelf color="#3a3160" position={[ST[0] + 0.7, 0, HALF_Z - 0.2]} rotation={[0, Math.PI, 0]} />
+      {/* ════ SUNROOM (front-right) ════ */}
       <FishTank3D position={[HALF_X - 0.5, 0, ST[1] - 0.4]} />
-      <RoomPlant position={[ST[0] - 0.7, 0, ST[1] + 0.5]} pot={d.pot} />
-      <Fill position={[ST[0], 1.6, ST[1]]} color="#5fb0a0" intensity={0.28} />
+      <Sofa color={d.sofa.color} style="loveseat" position={[ST[0], 0, ST[1] + 0.5]} rotation={[0, Math.PI, 0]} />
+      <FloorLamp color={d.lamp.color} position={[ST[0] + 0.8, 0, ST[1] - 0.8]} />
 
       {/* ════ GARDEN (attached, south) ════ */}
       <GardenArea position={[0, 0, HALF_Z + 1.5]} potColors={gardenpot} />
       <Telescope position={[1.9, 0, HALF_Z + 1.4]} />
 
-      <DustMotes count={16} />
+      <DustMotes count={8} />
     </group>
   );
 }

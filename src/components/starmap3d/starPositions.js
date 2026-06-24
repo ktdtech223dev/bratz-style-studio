@@ -13,7 +13,7 @@ export const DOME_R = 9;
 
 // Clamp elevation so stars never sit exactly at the pole (degenerate) or below
 // the horizon line.
-const EL_TOP = Math.PI * 0.46; // near straight up
+const EL_TOP = Math.PI * 0.4; // high overhead, but within the camera's reach
 const EL_BOT = Math.PI * 0.05; // just above the horizon
 
 export function starToVec3(x, y, radius = DOME_R) {

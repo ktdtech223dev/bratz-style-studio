@@ -167,9 +167,10 @@ function Scene({ stars, onSelect, selectedId }) {
         target={[0, 0.6, 0.001]}
         minDistance={0.1}
         maxDistance={6}
-        // full azimuth (it's a sky), clamp pitch so you can't flip under the floor
-        minPolarAngle={Math.PI * 0.18}
-        maxPolarAngle={Math.PI * 0.62}
+        // full azimuth (it's a sky); allow looking nearly straight up to reach
+        // the highest stars, with a gentle clamp before the very nadir
+        minPolarAngle={Math.PI * 0.04}
+        maxPolarAngle={Math.PI * 0.82}
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={-0.45 /* invert so dragging feels like looking around */}

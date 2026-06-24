@@ -33,7 +33,7 @@ export default function Room3D() {
       <div className="aspect-[360/520] w-full">
         <Canvas
           shadows
-          dpr={[1, 2]}
+          dpr={[1, 1.5]}
           camera={{ position: [7.5, 6.2, 9], fov: 44, near: 0.1, far: 70 }}
           gl={{ antialias: true, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
@@ -44,8 +44,9 @@ export default function Room3D() {
           <color attach="background" args={['#12152e']} />
           <fog attach="fog" args={['#12152e', 16, 34]} />
 
-          {/* ambient fill (a touch brighter for the larger house) */}
-          <ambientLight intensity={0.4} color="#3a3f73" />
+          {/* cheap global fill — replaces the per-room point lights */}
+          <ambientLight intensity={0.5} color="#4a4f7a" />
+          <hemisphereLight args={['#cdd4ff', '#3a3550', 0.7]} />
 
           {/* cool moonlight — the only shadow caster; covers the whole footprint */}
           <directionalLight
@@ -53,8 +54,8 @@ export default function Room3D() {
             intensity={0.95}
             color="#aab8ff"
             castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
             shadow-camera-near={0.5}
             shadow-camera-far={50}
             shadow-camera-left={-9}
