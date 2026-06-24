@@ -52,6 +52,7 @@ import Weather from './pages/Weather';
 import DailyDuo from './pages/DailyDuo';
 import SoloMemory from './pages/SoloMemory';
 import SoloReaction from './pages/SoloReaction';
+import Recipes from './pages/Recipes';
 import KissOverlay from './components/KissOverlay';
 
 function Shell({ children, tabs = true }) {
@@ -129,6 +130,7 @@ export default function App() {
           <Route path="/dailyduo" element={<Shell tabs={false}><DailyDuo /></Shell>} />
           <Route path="/solo/memory" element={<Shell tabs={false}><SoloMemory /></Shell>} />
           <Route path="/solo/reaction" element={<Shell tabs={false}><SoloReaction /></Shell>} />
+          <Route path="/recipes" element={<Shell tabs={false}><Recipes /></Shell>} />
           <Route path="/photos" element={<Shell tabs={false}><Photos /></Shell>} />
           <Route path="/diary" element={<Shell tabs={false}><Diary /></Shell>} />
           <Route path="/diary/:date" element={<Shell tabs={false}><DiaryEntry /></Shell>} />
