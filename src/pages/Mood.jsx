@@ -47,6 +47,8 @@ export const MOODS = [
   { mood: 'Lazy', emoji: '😪', color: '#cdc7a0' },
   { mood: 'Tired', emoji: '🥱', color: '#8ea3c9' },
   { mood: 'Hungry', emoji: '😋', color: '#fdba74' },
+  { mood: 'Craving sweet', emoji: '🍰', color: '#f5a3c7' },
+  { mood: 'Craving snacks', emoji: '🍫', color: '#c98a5e' },
   { mood: 'Grumpy', emoji: '😒', color: '#c2a878' },
   { mood: 'Unsure', emoji: '😕', color: '#c084fc' },
   { mood: 'Worried', emoji: '😟', color: '#b8a9e8' },

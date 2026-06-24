@@ -19,9 +19,16 @@ export default function Sheet({ open, onClose, title, children }) {
             animate={{ y: 0 }}
             exit={{ y: 420 }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 120 || info.velocity.y > 600) onClose && onClose();
+            }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[520px] rounded-t-3xl bg-[var(--bg2)] p-5 pb-8 safe-bottom"
+            className="w-full max-w-[520px] rounded-t-3xl bg-grad-card p-5 pb-8 shadow-cardlg safe-bottom"
           >
+            <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-white/15" />
             {title && (
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-extrabold">{title}</h3>

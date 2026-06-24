@@ -30,10 +30,25 @@ module.exports = {
       borderRadius: {
         '2xl': '1.25rem',
         '3xl': '1.75rem',
+        '4xl': '2rem',
       },
       boxShadow: {
         soft: '0 8px 30px rgba(0,0,0,0.25)',
         glow: '0 0 24px rgba(184,169,232,0.35)',
+        elev1: 'var(--elev-1)',
+        elev2: 'var(--elev-2)',
+        elev3: 'var(--elev-3)',
+        // elevation layered with a top rim highlight — the premium "raised" look
+        card: 'var(--elev-2), var(--rim)',
+        cardlg: 'var(--elev-3), var(--rim)',
+      },
+      backgroundImage: {
+        'grad-accent': 'var(--grad-accent)',
+        'grad-accent-soft': 'var(--grad-accent-soft)',
+        'grad-card': 'var(--grad-card)',
+      },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(.22,.61,.36,1)',
       },
     },
   },

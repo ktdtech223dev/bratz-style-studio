@@ -1,16 +1,92 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Heart } from 'lucide-react';
+import { Plus, Heart, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
 import { dateLabel, relTime } from '../lib/time';
+
+function NoteCard({ n, i, me, emit }) {
+  const [reply, setReply] = useState('');
+  const replies = n.replies || [];
+
+  function send() {
+    const body = reply.trim();
+    if (!body) return;
+    emit('note:reply', { noteId: n.id, body });
+    setReply('');
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.04 }}
+      className="rounded-2xl border border-[var(--border)] bg-grad-card p-4 shadow-card"
+    >
+      <div className="flex gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          style={{ background: (n.from_color || '#b8a9e8') + '33' }}
+        >
+          <Heart size={18} fill={n.from_color || '#b8a9e8'} color={n.from_color || '#b8a9e8'} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-extrabold" style={{ color: n.from_color }}>
+              From: {n.from_user === me?.id ? 'You' : n.from_name}
+            </span>
+            <span className="text-xs text-[var(--muted)]">{relTime(n.created_at)}</span>
+          </div>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--text)]">{n.body}</p>
+        </div>
+      </div>
+
+      {/* replies thread */}
+      {replies.length > 0 && (
+        <div className="mt-3 space-y-2 border-t border-[var(--border)] pt-3">
+          {replies.map((r) => (
+            <div key={r.id} className="flex items-start gap-2">
+              <span className="mt-0.5 shrink-0 text-xs font-extrabold" style={{ color: r.from_color }}>
+                {r.from_user === me?.id ? 'You' : r.from_name}
+              </span>
+              <p className="flex-1 whitespace-pre-wrap text-sm text-[var(--text2)]">{r.body}</p>
+              <span className="shrink-0 text-[10px] text-[var(--muted)]">{relTime(r.created_at)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* reply composer */}
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') send();
+          }}
+          placeholder="write a reply…"
+          className="flex-1 rounded-full bg-[var(--bg2)] px-3.5 py-2 text-sm text-[var(--text)] placeholder:text-[var(--muted)]"
+        />
+        <button
+          onClick={send}
+          disabled={!reply.trim()}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--pink-hot)] text-white transition-transform active:scale-90 disabled:opacity-40"
+          aria-label="Send reply"
+        >
+          <Send size={16} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Notes() {
   const notes = useStore((s) => s.notes);
   const refreshNotes = useStore((s) => s.refreshNotes);
   const partner = useStore((s) => s.partner);
   const me = useStore((s) => s.me);
+  const emit = useStore((s) => s.emit);
   const nav = useNavigate();
 
   useEffect(() => {
@@ -59,29 +135,7 @@ export default function Notes() {
               </div>
               <div className="space-y-3">
                 {items.map((n, i) => (
-                  <motion.div
-                    key={n.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="flex gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-soft"
-                  >
-                    <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                      style={{ background: (n.from_color || '#b8a9e8') + '33' }}
-                    >
-                      <Heart size={18} fill={n.from_color || '#b8a9e8'} color={n.from_color || '#b8a9e8'} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-extrabold" style={{ color: n.from_color }}>
-                          From: {n.from_user === me?.id ? 'You' : n.from_name}
-                        </span>
-                        <span className="text-xs text-[var(--muted)]">{relTime(n.created_at)}</span>
-                      </div>
-                      <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--text)]">{n.body}</p>
-                    </div>
-                  </motion.div>
+                  <NoteCard key={n.id} n={n} i={i} me={me} emit={emit} />
                 ))}
               </div>
             </div>

@@ -6,6 +6,8 @@ import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
 import { dateLabel } from '../lib/time';
 
+const REACTS = ['😍', '🥰', '😂', '🔥', '💜', '😮'];
+
 export default function Photos() {
   const photos = useStore((s) => s.photos);
   const refreshPhotos = useStore((s) => s.refreshPhotos);
@@ -70,6 +72,19 @@ export default function Photos() {
 
   function likedByMe(p) {
     return (p.liked_by || '').split(',').filter(Boolean).map(Number).includes(me.id);
+  }
+
+  function reactionList(p) {
+    return (p.reactions || '')
+      .split(',')
+      .filter(Boolean)
+      .map((s) => {
+        const [uid, ...rest] = s.split(':');
+        return { userId: Number(uid), emoji: rest.join(':') };
+      });
+  }
+  function myReaction(p) {
+    return reactionList(p).find((x) => x.userId === me.id)?.emoji;
   }
 
   return (
@@ -141,20 +156,51 @@ export default function Photos() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between p-4">
-                    <div className="flex-1">
-                      {p.caption && <p className="text-sm font-medium">{p.caption}</p>}
-                      <p className="text-xs text-[var(--muted)]">by {p.poster_name}</p>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        {p.caption && <p className="text-sm font-medium">{p.caption}</p>}
+                        <p className="text-xs text-[var(--muted)]">by {p.poster_name}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {reactionList(p).length > 0 && (
+                          <div className="flex items-center gap-0.5 rounded-full bg-black/20 px-2 py-1 text-sm leading-none">
+                            {reactionList(p).map((r, ri) => (
+                              <span key={ri}>{r.emoji}</span>
+                            ))}
+                          </div>
+                        )}
+                        <button onClick={() => emit('photo:like', { photoId: p.id })} className="flex items-center gap-1.5">
+                          <Heart
+                            size={22}
+                            className="transition-transform active:scale-125"
+                            fill={likedByMe(p) ? '#ff6ba8' : 'none'}
+                            color={likedByMe(p) ? '#ff6ba8' : 'var(--muted)'}
+                          />
+                          {p.likes > 0 && <span className="text-sm font-bold text-[var(--pink-hot)]">{p.likes}</span>}
+                        </button>
+                      </div>
                     </div>
-                    <button onClick={() => emit('photo:like', { photoId: p.id })} className="flex items-center gap-1.5">
-                      <Heart
-                        size={22}
-                        className="transition-transform active:scale-125"
-                        fill={likedByMe(p) ? '#ff6ba8' : 'none'}
-                        color={likedByMe(p) ? '#ff6ba8' : 'var(--muted)'}
-                      />
-                      {p.likes > 0 && <span className="text-sm font-bold text-[var(--pink-hot)]">{p.likes}</span>}
-                    </button>
+                    {/* emoji reactions */}
+                    <div className="mt-3 flex items-center gap-1.5">
+                      {REACTS.map((e) => {
+                        const active = myReaction(p) === e;
+                        return (
+                          <button
+                            key={e}
+                            onClick={() => emit('photo:react', { photoId: p.id, emoji: e })}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition-transform active:scale-90"
+                            style={{
+                              background: active ? 'var(--grad-accent-soft)' : 'rgba(255,255,255,0.04)',
+                              boxShadow: active ? 'var(--rim)' : 'none',
+                              border: active ? '1px solid var(--border-strong)' : '1px solid transparent',
+                            }}
+                          >
+                            {e}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </motion.div>
               ))}

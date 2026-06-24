@@ -26,7 +26,7 @@ export default function TabBar() {
     );
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[520px] px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-2">
-      <div className="glass flex items-stretch justify-around rounded-[26px] border border-[var(--border)] py-2 shadow-soft">
+      <div className="glass flex items-stretch justify-around rounded-[26px] border border-[var(--border-strong)] py-2 shadow-cardlg">
         {TABS.map((t) => {
           const active = t.match(pathname);
           const Icon = t.icon;
@@ -45,8 +45,8 @@ export default function TabBar() {
                   <motion.span
                     layoutId="tab-glow"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    className="absolute inset-0 rounded-2xl"
-                    style={{ background: t.color + '22', boxShadow: `0 0 18px ${t.color}55` }}
+                    className="absolute inset-0 rounded-2xl bg-grad-accent-soft"
+                    style={{ boxShadow: `0 0 18px ${t.color}55, inset 0 1px 0 rgba(255,255,255,0.08)` }}
                   />
                 )}
                 <motion.span animate={{ scale: active ? 1.08 : 1, y: active ? -1 : 0 }} className="relative z-10">

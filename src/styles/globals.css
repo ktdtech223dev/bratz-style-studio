@@ -23,6 +23,26 @@
   --text: #e8e6f5;
   --text2: #9590b8;
   --muted: #6b6896;
+
+  /* ── Premium design tokens (additive; derived from the accents above so
+     every theme inherits them automatically via color-mix) ── */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --elev-2: 0 6px 16px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --elev-3: 0 14px 40px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.25);
+  --rim: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+
+  --grad-accent: linear-gradient(135deg, var(--pink-hot), var(--purple));
+  --grad-accent-soft: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pink-hot) 22%, transparent),
+    color-mix(in srgb, var(--purple) 15%, transparent)
+  );
+  --grad-card: linear-gradient(180deg, color-mix(in srgb, var(--card2) 55%, var(--card)), var(--card));
+
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 0.14s;
+  --dur: 0.24s;
 }
 
 /* ── Alternate themes (set via html[data-theme]) ── */

@@ -132,11 +132,13 @@ export default function Home() {
       </div>
 
       <div className="px-4 pt-1">
-        <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] shadow-soft">
+        <div className="relative overflow-hidden rounded-3xl border border-[var(--border-strong)] shadow-cardlg">
           <RoomScene />
+          {/* top vignette for depth over the scene */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent" />
           <button
             onClick={() => nav('/decorate')}
-            className="glass absolute right-3 top-3 flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--orange)] shadow-soft"
+            className="glass absolute right-3 top-3 flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-[var(--orange)] shadow-elev2"
             aria-label="Decorate room"
           >
             <Hammer size={15} /> Decorate
@@ -264,7 +266,7 @@ export default function Home() {
                 transition={{ delay: 0.05 + i * 0.05 }}
                 whileTap={{ scale: 0.93 }}
                 onClick={() => nav(q.to)}
-                className="flex w-[74px] shrink-0 flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--card)] py-3"
+                className="flex w-[74px] shrink-0 flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-grad-card py-3 shadow-elev1"
               >
                 <span
                   className="flex h-10 w-10 items-center justify-center rounded-xl"

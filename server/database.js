@@ -400,6 +400,24 @@ db.exec(`
   );
 `);
 
+// ── ADDITIVE FEATURE TABLES (photo reactions, note replies) ──
+db.exec(`
+  CREATE TABLE IF NOT EXISTS photo_reactions (
+    photo_id   INTEGER REFERENCES photos(id),
+    user_id    INTEGER REFERENCES users(id),
+    emoji      TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (photo_id, user_id)
+  );
+  CREATE TABLE IF NOT EXISTS note_replies (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_id    INTEGER REFERENCES notes(id),
+    from_user  INTEGER REFERENCES users(id),
+    body       TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
 // ── MIGRATIONS ──
 // Add game_answers.kind for the self/guess format. If the column is missing we're
 // upgrading from the old game format, so clear stale sessions for a clean reset.

@@ -13,6 +13,8 @@ function matchRow(id) {
 
 // Track connected sockets by userId
 const online = {}; // userId -> Set(socketId)
+const handsPressing = {}; // userId -> bool (live hold-hands state)
+const lastHandsNotify = {}; // userId -> ms (throttle reach-out pushes)
 
 function partnerOf(userId) {
   return userId === 1 ? 2 : 1;
@@ -168,6 +170,65 @@ function register(io) {
       io.emit('photo:liked', { photoId, userId, likes, liked: !existing });
     });
 
+    // ── PHOTO reactions (emoji reacts beyond a like) ──
+    socket.on('photo:react', ({ photoId, emoji }) => {
+      if (!photoId || !emoji) return;
+      const e = String(emoji).slice(0, 8);
+      const existing = db
+        .prepare('SELECT emoji FROM photo_reactions WHERE photo_id=? AND user_id=?')
+        .get(photoId, userId);
+      const removing = existing && existing.emoji === e;
+      if (removing) {
+        db.prepare('DELETE FROM photo_reactions WHERE photo_id=? AND user_id=?').run(photoId, userId);
+      } else {
+        db.prepare(
+          `INSERT INTO photo_reactions (photo_id,user_id,emoji) VALUES (?,?,?)
+           ON CONFLICT(photo_id,user_id) DO UPDATE SET emoji=excluded.emoji, created_at=datetime('now')`,
+        ).run(photoId, userId, e);
+      }
+      const reactions = db
+        .prepare("SELECT group_concat(user_id || ':' || emoji) r FROM photo_reactions WHERE photo_id=?")
+        .get(photoId).r;
+      io.emit('photo:reacted', { photoId: Number(photoId), reactions });
+      if (!removing) {
+        const photo = db.prepare('SELECT posted_by FROM photos WHERE id=?').get(photoId);
+        if (photo && photo.posted_by && photo.posted_by !== userId) {
+          const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+          notifyUser(photo.posted_by, {
+            title: `${e} ${u.display_name} reacted to your photo`,
+            body: 'tap to see',
+            url: '/photos',
+          });
+        }
+      }
+      markActive(io, userId);
+    });
+
+    // ── NOTE replies (threaded) ──
+    socket.on('note:reply', ({ noteId, body }) => {
+      if (!noteId || !body || !String(body).trim()) return;
+      const r = db
+        .prepare('INSERT INTO note_replies (note_id,from_user,body) VALUES (?,?,?)')
+        .run(noteId, userId, String(body).slice(0, 1000));
+      const reply = db
+        .prepare(
+          `SELECT r.*, u.display_name from_name, u.color from_color
+           FROM note_replies r JOIN users u ON u.id=r.from_user WHERE r.id=?`,
+        )
+        .get(r.lastInsertRowid);
+      io.emit('note:reply_new', { noteId: Number(noteId), reply });
+      const note = db.prepare('SELECT from_user FROM notes WHERE id=?').get(noteId);
+      const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+      const target = note && note.from_user && note.from_user !== userId ? note.from_user : partnerOf(userId);
+      notifyUser(target, {
+        title: `💬 ${u.display_name} replied to a note`,
+        body: String(body).slice(0, 80),
+        url: '/notes',
+      });
+      logActivity(io, userId, 'note', `${u.display_name} replied to a note 💬`, 'heart');
+      markActive(io, userId);
+    });
+
     // ── AWAKE / ASLEEP STATUS ──
     socket.on('status:set', ({ status }) => {
       const st = status === 'asleep' ? 'asleep' : 'awake';
@@ -201,6 +262,22 @@ function register(io) {
     // ── HOLD HANDS LIVE (ephemeral presence relay) ──
     socket.on('hands:press', ({ pressing }) => {
       socket.broadcast.emit('hands:press', { userId, pressing: !!pressing });
+      // When someone starts reaching out and their partner isn't already holding,
+      // push a (throttled) "reaching for your hand" notification.
+      if (pressing) {
+        const pid = partnerOf(userId);
+        const now = Date.now();
+        if (!handsPressing[pid] && now - (lastHandsNotify[userId] || 0) > 90000) {
+          lastHandsNotify[userId] = now;
+          const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(userId);
+          notifyUser(pid, {
+            title: `🤚 ${u.display_name} is reaching for your hand`,
+            body: 'open Us and hold hands across the miles 💞',
+            url: '/holdhands',
+          });
+        }
+      }
+      handsPressing[userId] = !!pressing;
     });
 
     // ── GARDEN (collection of plants) ──
@@ -294,7 +371,9 @@ function register(io) {
       }
       const next = partnerOf(userId);
       const status = result.done ? 'done' : 'active';
-      const turn = result.done ? null : next;
+      // result.turnAgain lets a game keep the same player's turn (e.g. Memory match
+      // pairs, Dots & boxes completed boxes). Defaults to alternating.
+      const turn = result.done ? null : result.turnAgain ? userId : next;
       db.prepare(
         `UPDATE matches SET state=?, turn=?, status=?, winner=?, updated_at=datetime('now') WHERE id=?`,
       ).run(JSON.stringify(result.state), turn, status, result.winner, matchId);
@@ -313,10 +392,10 @@ function register(io) {
           body: result.winner === 0 ? "it's a draw!" : `${u.display_name} won — rematch?`,
           url: `/match/${matchId}`,
         });
-      } else {
-        notifyUser(next, {
+      } else if (turn && turn !== userId) {
+        notifyUser(turn, {
           title: `🎮 Your move in ${ARCADE.title(m.game)}`,
-          body: `${u.display_name} just played — your turn!`,
+          body: `${u.display_name} just played — play them back!`,
           url: `/match/${matchId}`,
         });
       }

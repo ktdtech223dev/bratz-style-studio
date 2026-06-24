@@ -9,7 +9,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { db, hashPin, DATA_DIR } = require('./database');
 const { register, logActivity } = require('./sockets');
-const { ensureTodayPrompt, scheduleMidnight, todayStr } = require('./clock');
+const { ensureTodayPrompt, scheduleMidnight, scheduleDailyReminders, todayStr } = require('./clock');
 const { awardStars, grantTreat, diaryGrants, markActive } = require('./economy');
 const RADIO = require('./radio');
 const GAMES = require('./games-data');
@@ -107,6 +107,7 @@ app.get('/api/photos', (req, res) => {
       `SELECT p.*,
         (SELECT COUNT(*) FROM photo_likes WHERE photo_id=p.id) likes,
         (SELECT group_concat(user_id) FROM photo_likes WHERE photo_id=p.id) liked_by,
+        (SELECT group_concat(user_id || ':' || emoji) FROM photo_reactions WHERE photo_id=p.id) reactions,
         u.display_name poster_name, u.color poster_color
       FROM photos p JOIN users u ON u.id=p.posted_by
       ORDER BY p.posted_at DESC`,
@@ -212,6 +213,11 @@ app.post('/api/diary', (req, res) => {
     awardStars(io, 5);
     const u = db.prepare('SELECT display_name FROM users WHERE id=?').get(Number(userId));
     logActivity(io, Number(userId), 'diary', `${u.display_name} answered today's prompt`, 'book');
+    PUSH.notifyUser(partnerId(userId), {
+      title: `📔 ${u.display_name} answered today's prompt`,
+      body: 'tap to read it & share yours',
+      url: '/diary',
+    });
     diaryGrants(io, date);
   }
   markActive(io, Number(userId));
@@ -228,14 +234,18 @@ app.get('/api/diary/history', (req, res) => {
 
 // ── NOTES ──
 app.get('/api/notes', (req, res) => {
-  res.json(
-    db
-      .prepare(
-        `SELECT n.*, u.display_name from_name, u.color from_color
-         FROM notes n JOIN users u ON u.id=n.from_user ORDER BY n.created_at DESC`,
-      )
-      .all(),
+  const notes = db
+    .prepare(
+      `SELECT n.*, u.display_name from_name, u.color from_color
+       FROM notes n JOIN users u ON u.id=n.from_user ORDER BY n.created_at DESC`,
+    )
+    .all();
+  const replyStmt = db.prepare(
+    `SELECT r.*, u.display_name from_name, u.color from_color
+     FROM note_replies r JOIN users u ON u.id=r.from_user WHERE r.note_id=? ORDER BY r.created_at ASC`,
   );
+  for (const n of notes) n.replies = replyStmt.all(n.id);
+  res.json(notes);
 });
 
 // ── GAMES ──
@@ -1187,6 +1197,7 @@ app.get('*', (req, res) => {
 
 register(io);
 scheduleMidnight(io);
+scheduleDailyReminders(io);
 ensureTodayPrompt();
 
 const PORT = process.env.PORT || 3000;

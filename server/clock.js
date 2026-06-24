@@ -97,6 +97,63 @@ function rolloverStreaks() {
   }
 }
 
+// Milliseconds until the next occurrence of a target hour (server TZ).
+function msUntilHour(targetHour) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date());
+  const h = +parts.find((p) => p.type === 'hour').value % 24;
+  const m = +parts.find((p) => p.type === 'minute').value;
+  const s = +parts.find((p) => p.type === 'second').value;
+  let secs = ((targetHour - h) * 3600 - m * 60 - s);
+  if (secs <= 0) secs += 24 * 3600; // already passed today → tomorrow
+  return secs * 1000;
+}
+
+// Evening nudge: remind whoever still hasn't answered today's prompt or checked in.
+function sendDailyReminders() {
+  const { notifyUser } = require('./push');
+  const date = todayStr();
+  const day = ensureTodayPrompt();
+  const users = db.prepare('SELECT id FROM users').all();
+  for (const u of users) {
+    const didDiary = db.prepare('SELECT 1 FROM diary_entries WHERE date=? AND user_id=?').get(date, u.id);
+    const didCheckin = db.prepare('SELECT 1 FROM checkins WHERE date=? AND user_id=?').get(date, u.id);
+    if (!didDiary) {
+      notifyUser(u.id, {
+        title: '📔 Today’s prompt is waiting',
+        body: day.prompt ? day.prompt.slice(0, 90) : 'share a little about your day',
+        url: '/diary',
+      });
+    }
+    if (!didCheckin) {
+      notifyUser(u.id, {
+        title: '☀️ Don’t forget to check in',
+        body: 'how was your day? let them know 💜',
+        url: '/checkin',
+      });
+    }
+  }
+}
+
+// Schedule the evening reminder (default 20:00 server TZ), then reschedule daily.
+function scheduleDailyReminders(io) {
+  const hour = Number(process.env.REMINDER_HOUR || 20);
+  const ms = msUntilHour(hour);
+  setTimeout(() => {
+    try {
+      sendDailyReminders();
+    } catch (e) {
+      console.error('daily reminder error', e);
+    }
+    scheduleDailyReminders(io); // reschedule for the next day
+  }, ms + 1000);
+}
+
 // Notify both partners about events happening today.
 function eventReminders() {
   const today = todayStr();
@@ -120,7 +177,10 @@ module.exports = {
   todayStr,
   ensureTodayPrompt,
   scheduleMidnight,
+  scheduleDailyReminders,
+  sendDailyReminders,
   msUntilMidnight,
+  msUntilHour,
   rolloverStreaks,
   eventReminders,
   TZ,

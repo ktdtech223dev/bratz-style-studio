@@ -176,6 +176,18 @@ export const useStore = create((set, get) => ({
         ),
       })),
     );
+    s.on('photo:reacted', ({ photoId, reactions }) =>
+      set((st) => ({
+        photos: st.photos.map((p) => (p.id === photoId ? { ...p, reactions } : p)),
+      })),
+    );
+    s.on('note:reply_new', ({ noteId, reply }) =>
+      set((st) => ({
+        notes: st.notes.map((n) =>
+          n.id === noteId ? { ...n, replies: [...(n.replies || []), reply] } : n,
+        ),
+      })),
+    );
     s.on('activity:new', (a) => set((st) => ({ activity: [a, ...st.activity] })));
     s.on('music:update', (m) =>
       set({ currentStation: m.stationId, musicPlaying: !!m.stationId && m.playing !== false, stationMeta: m }),
