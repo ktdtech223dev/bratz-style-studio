@@ -74,6 +74,9 @@ export const useStore = create((set, get) => ({
   notes: [],
   photos: [],
   recipes: [],
+  placedFurniture: [],
+  avatarLayout: {},
+  arrangeMode: false,
   today: null,
   diaryEntries: [],
   theme: loadTheme(),
@@ -130,6 +133,8 @@ export const useStore = create((set, get) => ({
         games: st.games,
         today: st.today,
         decor: st.decor || null,
+        placedFurniture: st.placedFurniture || [],
+        avatarLayout: st.avatarLayout || {},
         pushKey: st.pushKey || null,
         truthordare: st.truthordare || null,
         arcade: st.arcade || [],
@@ -223,6 +228,8 @@ export const useStore = create((set, get) => ({
     s.on('dedications:changed', () => get().refreshDedications());
     s.on('spinner:changed', () => get().refreshSpinner());
     s.on('recipes:changed', () => get().refreshRecipes());
+    s.on('furniture:changed', () => get().refreshFurniture());
+    s.on('avatars:changed', (layout) => set({ avatarLayout: layout }));
     s.on('habits:changed', () => get().refreshHabits());
     s.on('kiss:incoming', () => set({ kissAt: Date.now() }));
     s.on('tz:update', ({ userId, tz }) =>
@@ -340,6 +347,10 @@ export const useStore = create((set, get) => ({
   refreshRecipes: async () => {
     set({ recipes: await api.get('/api/recipes') });
   },
+  refreshFurniture: async () => {
+    set({ placedFurniture: (await api.get('/api/furniture')).placed });
+  },
+  setArrangeMode: (v) => set({ arrangeMode: v }),
 }));
 
 function mergeUsers(prev, next) {

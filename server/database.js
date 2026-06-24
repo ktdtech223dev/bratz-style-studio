@@ -424,11 +424,20 @@ db.exec(`
     added_by    INTEGER REFERENCES users(id),
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS placed_furniture (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind       TEXT NOT NULL,
+    x          REAL NOT NULL,
+    z          REAL NOT NULL,
+    rot        REAL DEFAULT 0,
+    scale      REAL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
-// New room_decor furniture slots (guarded — additive, NULL falls back to DEFAULTS).
+// New room_decor furniture slots + avatar_layout JSON (guarded — additive).
 const rdCols = db.prepare('PRAGMA table_info(room_decor)').all();
-for (const col of ['sofa', 'bed', 'coffeetable', 'lamp', 'rug', 'collar', 'gardenpot', 'theme']) {
+for (const col of ['sofa', 'bed', 'coffeetable', 'lamp', 'rug', 'collar', 'gardenpot', 'theme', 'avatar_layout']) {
   if (!rdCols.some((c) => c.name === col)) {
     db.exec(`ALTER TABLE room_decor ADD COLUMN ${col} TEXT`);
   }

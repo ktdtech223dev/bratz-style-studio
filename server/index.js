@@ -73,6 +73,8 @@ app.get('/api/state', (req, res) => {
     games: GAMES,
     today: ensureTodayPrompt(),
     decor: DECOR.resolve(db.prepare('SELECT * FROM room_decor WHERE id=1').get()),
+    placedFurniture: db.prepare('SELECT * FROM placed_furniture ORDER BY id').all(),
+    avatarLayout: JSON.parse(db.prepare('SELECT avatar_layout FROM room_decor WHERE id=1').get()?.avatar_layout || '{}'),
     pushKey: PUSH.publicKey(),
     truthordare: PARTY,
     arcade: ARCADE.CATALOG,
@@ -873,6 +875,69 @@ function bucketItem(id) {
     )
     .get(id);
 }
+
+// ── PLACED FURNITURE (Sims-style arrange) ──
+const FURN_KINDS = ['sofa', 'bed', 'crib', 'dresser', 'nightstand', 'bookshelf', 'lamp', 'rug', 'dining', 'toybox'];
+function clampXZ(v, lim) {
+  return Math.max(-lim, Math.min(lim, Number(v) || 0));
+}
+app.get('/api/furniture', (req, res) => {
+  res.json({ placed: db.prepare('SELECT * FROM placed_furniture ORDER BY id').all() });
+});
+app.post('/api/furniture', (req, res) => {
+  const { kind, x, z, rot } = req.body;
+  if (!FURN_KINDS.includes(kind)) return res.status(400).json({ error: 'bad kind' });
+  const r = db
+    .prepare('INSERT INTO placed_furniture (kind,x,z,rot) VALUES (?,?,?,?)')
+    .run(kind, clampXZ(x, 4.5), clampXZ(z, 6.5), Number(rot) || 0);
+  io.emit('furniture:changed');
+  res.json({ ok: true, id: r.lastInsertRowid });
+});
+app.post('/api/furniture/:id', (req, res) => {
+  const { x, z, rot, scale } = req.body;
+  const row = db.prepare('SELECT id FROM placed_furniture WHERE id=?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'not found' });
+  db.prepare('UPDATE placed_furniture SET x=?, z=?, rot=?, scale=? WHERE id=?').run(
+    clampXZ(x, 4.5),
+    clampXZ(z, 6.5),
+    Number(rot) || 0,
+    Math.max(0.5, Math.min(2, Number(scale) || 1)),
+    req.params.id,
+  );
+  io.emit('furniture:changed');
+  res.json({ ok: true });
+});
+app.delete('/api/furniture/:id', (req, res) => {
+  db.prepare('DELETE FROM placed_furniture WHERE id=?').run(req.params.id);
+  io.emit('furniture:changed');
+  res.json({ ok: true });
+});
+// seed/reset the furniture set from a theme's floorplan defaults (client supplies positions)
+app.post('/api/furniture-seed', (req, res) => {
+  const { furniture, reset } = req.body;
+  if (!Array.isArray(furniture)) return res.status(400).json({ error: 'bad payload' });
+  const count = db.prepare('SELECT COUNT(*) c FROM placed_furniture').get().c;
+  if (!reset && count > 0) return res.json({ ok: true, skipped: true });
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM placed_furniture').run();
+    const ins = db.prepare('INSERT INTO placed_furniture (kind,x,z,rot) VALUES (?,?,?,?)');
+    for (const f of furniture) {
+      if (FURN_KINDS.includes(f.kind)) ins.run(f.kind, clampXZ(f.x, 4.5), clampXZ(f.z, 6.5), Number(f.rot) || 0);
+    }
+  });
+  tx();
+  io.emit('furniture:changed');
+  res.json({ ok: true });
+});
+app.post('/api/avatars/move', (req, res) => {
+  const { userId, x, z, rot } = req.body;
+  const row = db.prepare('SELECT avatar_layout FROM room_decor WHERE id=1').get();
+  const layout = JSON.parse(row?.avatar_layout || '{}');
+  layout[String(Number(userId))] = { x: clampXZ(x, 4.5), z: clampXZ(z, 6.5), rot: Number(rot) || 0 };
+  db.prepare('UPDATE room_decor SET avatar_layout=? WHERE id=1').run(JSON.stringify(layout));
+  io.emit('avatars:changed', layout);
+  res.json({ ok: true });
+});
 
 // ── RECIPES (shared cookbook, opened from the fridge) ──
 app.get('/api/recipes', (req, res) => {

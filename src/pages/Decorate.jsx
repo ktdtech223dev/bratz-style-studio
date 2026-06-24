@@ -4,6 +4,7 @@ import { Star, Check, Lock } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import RoomScene from '../components/RoomScene';
 import { hasWebGL } from '../components/room3d/useWebGL';
+import { getFloorplan } from '../components/room3d/themes';
 import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
 
@@ -39,6 +40,14 @@ export default function Decorate() {
     setBusy(item.id);
     try {
       await api.post('/api/decor/equip', { slot: item.slot, itemId: item.id });
+      // changing the house theme resets furniture to that theme's defaults
+      if (item.slot === 'theme') {
+        const fp = getFloorplan(item.data?.theme);
+        await api.post('/api/furniture-seed', {
+          reset: true,
+          furniture: fp.furniture.map((it) => ({ kind: it.kind, x: it.at[0], z: it.at[2], rot: it.rot || 0 })),
+        });
+      }
       await load();
     } catch (e) {}
     setBusy(null);

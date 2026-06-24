@@ -1,8 +1,9 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
 import useDecorColors from './useDecorColors';
 import { useStore } from '../../store/useStore';
+import { api } from '../../lib/api';
 import Hotspot from './Hotspot';
 import Cat from './Cat';
 import Plant3D from './Plant3D';
@@ -399,27 +400,31 @@ function Telescope({ position }) {
   );
 }
 
-// Avatars for me + partner, shown active when present.
-function Avatars() {
+// Avatars for me + partner — at their saved layout spot (or the theme seed),
+// shown active when present.
+function Avatars({ seed }) {
   const users = useStore((s) => s.users);
   const presence = useStore((s) => s.presence);
   const me = useStore((s) => s.me);
-  const spots = [
-    { p: [LV[0] - 0.55, 0, LV[1] + 0.7], r: 0.5 },
-    { p: [LV[0] + 0.55, 0, LV[1] + 0.7], r: -0.5 },
-  ];
+  const avatarLayout = useStore((s) => s.avatarLayout);
   return (
     <group>
-      {(users || []).slice(0, 2).map((u, i) => (
-        <Avatar
-          key={u.id}
-          color={u.color}
-          name={u.display_name}
-          active={u.id === me?.id || !!presence?.[u.id]}
-          position={spots[i].p}
-          rotation={[0, spots[i].r, 0]}
-        />
-      ))}
+      {(users || []).slice(0, 2).map((u, i) => {
+        const saved = avatarLayout?.[u.id];
+        const s = (seed && seed[i]) || [0, 0, 0];
+        const pos = saved ? [saved.x, 0, saved.z] : [s[0], 0, s[1]];
+        const rot = saved ? saved.rot || 0 : s[2] || 0;
+        return (
+          <Avatar
+            key={u.id}
+            color={u.color}
+            name={u.display_name}
+            active={u.id === me?.id || !!presence?.[u.id]}
+            position={pos}
+            rotation={[0, rot, 0]}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -439,10 +444,9 @@ const FITTING = {
 };
 
 // decorative furniture kind → component (colors from live decor)
-function furnPiece(it, d, key) {
-  const pos = it.at;
-  const rot = [0, it.rot || 0, 0];
-  switch (it.kind) {
+function furnPiece(kind, pos, rotY, d, key) {
+  const rot = [0, rotY || 0, 0];
+  switch (kind) {
     case 'sofa':
       return <Sofa key={key} color={d.sofa.color} style={d.sofa.style} position={pos} rotation={rot} />;
     case 'bed':
@@ -476,6 +480,23 @@ export default function Furniture() {
   const theme = useStore((s) => s.decor)?.theme || 'modern';
   const fp = getFloorplan(theme);
   const b = fp.bounds;
+  const placed = useStore((s) => s.placedFurniture);
+  const ready = useStore((s) => s.ready);
+
+  // seed furniture from the floorplan defaults on first run (empty DB)
+  useEffect(() => {
+    if (!ready || placed.length > 0) return;
+    api
+      .post('/api/furniture-seed', {
+        furniture: fp.furniture.map((it) => ({ kind: it.kind, x: it.at[0], z: it.at[2], rot: it.rot || 0 })),
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, placed.length, theme]);
+
+  const furnList = placed.length
+    ? placed.map((p) => ({ kind: p.kind, pos: [p.x, 0, p.z], rot: p.rot, key: `p${p.id}` }))
+    : fp.furniture.map((it, i) => ({ kind: it.kind, pos: it.at, rot: it.rot, key: `u${i}` }));
 
   return (
     <group>
@@ -509,15 +530,15 @@ export default function Furniture() {
         <group key={`fit${i}`}>{(FITTING[f.role] || (() => null))(f, d)}</group>
       ))}
 
-      {/* decorative furniture */}
-      {fp.furniture.map((it, i) => furnPiece(it, d, `u${i}`))}
+      {/* decorative furniture (DB instances if present, else floorplan defaults) */}
+      {furnList.map((f) => furnPiece(f.kind, f.pos, f.rot, d, f.key))}
 
       {/* mood lights */}
       {fp.mood.map((p, i) => (
         <MoodLight key={`m${i}`} position={p} spread={0.5} />
       ))}
 
-      <Avatars />
+      <Avatars seed={fp.avatars} />
       <GardenArea position={fp.garden} potColors={gardenpot} />
       <DustMotes count={8} />
     </group>
