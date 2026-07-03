@@ -403,6 +403,10 @@ function Telescope({ position }) {
 
 // Avatars for me + partner — at their saved layout spot (or the theme seed),
 // shown active when present.
+// Per-user avatar skin tone (by username).
+const SKIN = { keshawn: '#5f3f27' };
+const skinFor = (u) => SKIN[u?.username] || '#e9c6a8';
+
 function Avatars({ seed, bounds }) {
   const users = useStore((s) => s.users);
   const presence = useStore((s) => s.presence);
@@ -430,12 +434,12 @@ function Avatars({ seed, bounds }) {
               onSelect={() => setSel(`a${u.id}`)}
               onMoved={(x, z) => api.post('/api/avatars/move', { userId: u.id, x, z, rot }).catch(() => {})}
             >
-              <Avatar color={u.color} name={u.display_name} active={active} />
+              <Avatar color={u.color} skin={skinFor(u)} name={u.display_name} active={active} />
             </DraggablePiece>
           );
         }
         return (
-          <Avatar key={u.id} color={u.color} name={u.display_name} active={active} position={pos} rotation={[0, rot, 0]} />
+          <Avatar key={u.id} color={u.color} skin={skinFor(u)} name={u.display_name} active={active} position={pos} rotation={[0, rot, 0]} />
         );
       })}
     </group>

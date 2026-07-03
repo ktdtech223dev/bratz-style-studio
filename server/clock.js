@@ -20,13 +20,10 @@ function ensureTodayPrompt() {
   const existing = db.prepare('SELECT * FROM diary_days WHERE date=?').get(date);
   if (existing) return existing;
 
-  // Pick a prompt not used recently
-  const recent = db
-    .prepare(`SELECT prompt FROM diary_days ORDER BY date DESC LIMIT 30`)
-    .all()
-    .map((r) => r.prompt);
-
-  const pool = PROMPTS.filter((p) => !recent.includes(p.text));
+  // Pick a prompt that has NEVER been used — no journal question ever repeats
+  // (until the whole bank is exhausted, then it falls back to the full set).
+  const used = new Set(db.prepare(`SELECT prompt FROM diary_days`).all().map((r) => r.prompt));
+  const pool = PROMPTS.filter((p) => !used.has(p.text));
   const src = pool.length ? pool : PROMPTS;
   const pick = src[Math.floor(Math.random() * src.length)];
 
